@@ -1,149 +1,191 @@
 {
   "nav": {
-    "about": "About",
-    "news": "News",
-    "banks": "Banks",
-    "credits": "Credits",
-    "deposits": "Deposits",
-    "insurance": "Insurance",
-    "contact": "Contact",
-    "search": "Search",
-    "darkMode": "Dark mode",
-    "comparison": "Comparison",
-    "compareCredits": "Compare Credits",
-    "creditTypes": {
-      "cash": "Cash Credit",
-      "mortgage": "Mortgage",
-      "auto": "Auto Credit",
-      "business": "Business Credit"
-    },
-    "insuranceTypes": {
-      "auto": "Auto Insurance",
-      "health": "Health Insurance",
-      "property": "Property Insurance",
-      "travel": "Travel Insurance"
-    }
+    "dashboard": "Dashboard",
+    "myAlerts": "My Alerts",
+    "newAlert": "New Alert",
+    "settings": "Settings",
+    "signIn": "Sign In",
+    "getStarted": "Get Started",
+    "logout": "Logout"
   },
   "home": {
-    "latestNews": "Latest news",
-    "popularOffers": "Popular offers",
-    "partnerBanks": "Partner banks",
-    "moreNews": "More",
-    "moreOffers": "More",
-    "moreBanks": "More",
-    "allNews": "All news",
-    "viewAll": "View all",
-    "categories": {
-      "news": "Agenda",
-      "finance": "Finance",
-      "insurance": "Insurance",
-      "realEstate": "Real Estate",
-      "interviews": "Interviews"
-    },
-    "offers": {
-      "credit": "Credit",
-      "creditCard": "Credit card",
-      "debitCard": "Debit card",
-      "autoCredit": "Auto credit",
-      "mortgage": "Mortgage",
-      "deposit": "Deposit"
-    },
-    "appDownload": {
-      "title": "Download the app to stay updated with financial news",
-      "downloadOnAppStore": "Download on App Store",
-      "downloadOnGooglePlay": "Get it on Google Play"
-    },
-    "newsletter": {
-      "title": "SUBSCRIBE TO UPDATES",
-      "description": "Subscribe to monthly notifications to stay informed about financial innovations.",
-      "placeholder": "Enter email",
-      "button": "Subscribe!"
-    },
-    "banks": "Banks",
-    "insuranceOrganizations": "Insurance Organizations"
-  },
-  "offer": {
-    "annualRate": "Annual rate",
-    "duration": "Duration",
-    "monthly": "Monthly",
-    "maxCreditLimit": "Maximum credit limit",
-    "month": "Month",
-    "currency": "AZN",
-    "apply": "Apply",
-    "details": "Details",
-    "advantages": {
-      "noCollateral": "No collateral required",
-      "fastApproval": "Fast approval",
-      "flexiblePayment": "Flexible payment"
-    }
-  },
-  "currency": {
-    "exchangeRates": "Exchange rates",
-    "buy": "Buy",
-    "sell": "Sell"
-  },
-  "footer": {
+    "subtitle": "Intelligent monitoring that never sleeps",
+    "aiPowered": "AI-Powered",
+    "realtime": "Real-time",
+    "secure": "Secure",
     "services": "Services",
-    "company": "Company",
-    "resources": "Resources",
-    "contact": "Contact us",
-    "services_items": {
-      "cashCredits": "Cash credits",
-      "creditCards": "Credit cards",
-      "autoCredits": "Auto credits",
-      "mortgage": "Mortgage",
-      "businessCredits": "Business credits",
-      "deposits": "Deposits"
-    },
-    "company_items": {
-      "about": "About us",
-      "contact": "Contact",
-      "terms": "Terms of use",
-      "rules": "Rules",
-      "faq": "FAQ"
-    },
-    "resources_items": {
-      "blog": "Blog",
-      "calculator": "Currency calculator"
-    },
-    "copyright": "All rights reserved © {year} Kredit.az",
-    "newsletter": {
-      "title": "SUBSCRIBE TO UPDATES",
-      "description": "Subscribe to monthly notifications to stay informed about financial innovations.",
-      "placeholder": "Enter email",
-      "button": "Subscribe!"
+    "servicesTitle": "Monitor Everything That Matters",
+    "uptime": "Uptime",
+    "responseTime": "Response Time",
+    "activeAlerts": "Active Alerts",
+    "monitoring": "Monitoring"
+  },
+  "auth": {
+    "signIn": "Sign In",
+    "signUp": "Sign Up",
+    "email": "Email",
+    "password": "Password",
+    "confirmPassword": "Confirm Password",
+    "name": "Name",
+    "phone": "Phone",
+    "rememberMe": "Remember me",
+    "forgotPassword": "Forgot password?",
+    "noAccount": "Don't have an account?",
+    "hasAccount": "Already have an account?",
+    "createAccount": "Create account",
+    "signInWithGoogle": "Sign in with Google",
+    "signInWithFacebook": "Sign in with Facebook",
+    "or": "or",
+    "agreeToTerms": "I agree to the terms and conditions",
+    "privacyPolicy": "Privacy Policy",
+    "termsOfService": "Terms of Service"
+  },
+  "dashboard": {
+    "welcome": "Welcome back, {name}!",
+    "subtitle": "Manage your alerts and stay informed",
+    "createFirstAlert": "Create Your First Alert",
+    "activeAlerts": "Active Alerts",
+    "notificationsSent": "Notifications Sent",
+    "systemStatus": "System Status",
+    "ready": "Ready",
+    "yourAlerts": "Your Alerts",
+    "noAlertsYet": "No alerts yet",
+    "noAlertsDescription": "Create your first alert to start monitoring what matters to you",
+    "allAlerts": "All Alerts",
+    "viewManageAlerts": "View and manage all your alerts"
+  },
+  "alerts": {
+    "createNew": "Create New Alert",
+    "quickSetup": "Quick Setup",
+    "title": "Title",
+    "type": "Type",
+    "status": "Status",
+    "active": "Active",
+    "paused": "Paused",
+    "edit": "Edit",
+    "delete": "Delete",
+    "types": {
+      "crypto": "Crypto",
+      "weather": "Weather",
+      "stock": "Stock",
+      "news": "News",
+      "custom": "Custom"
     }
   },
-  "contact": {
-    "form": {
-      "firstName": "First name",
-      "lastName": "Last name",
-      "phone": "Phone",
-      "email": "Email",
-      "message": "Message",
-      "terms": "I accept the terms",
-      "submit": "Send",
-      "success": "Your message has been sent successfully!",
-      "error": "An error occurred. Please try again."
-    }
+  "settings": {
+    "title": "Settings",
+    "account": "Account",
+    "notifications": "Notifications",
+    "privacy": "Privacy",
+    "manageAccount": "Manage your account and preferences"
   },
   "common": {
     "loading": "Loading...",
     "error": "An error occurred",
     "retry": "Try again",
-    "noData": "No data found",
-    "readMore": "Read more",
-    "showLess": "Show less",
-    "page": "Page",
-    "of": "of",
-    "results": "results",
-    "filter": "Filter",
-    "filters": "Filters",
-    "amount": "Amount",
-    "duration": "Duration",
-    "months": "months",
-    "bank": "Bank",
-    "allBanks": "All Banks",
-    "noCreditsFound": "No credits found matching your criteria"
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "back": "Back",
+    "next": "Next",
+    "finish": "Finish",
+    "close": "Close",
+    "search": "Search"
+  },
+  "search": {
+    "placeholder1": "Bitcoin reaches $100,000",
+    "placeholder2": "Website goes down",
+    "placeholder3": "Stock price drops 5%",
+    "placeholder4": "Weather alert in my area",
+    "placeholder5": "Currency rate changes",
+    "monitorWhen": "Monitor when",
+    "createAlert": "Create Alert",
+    "suggestion1": "Bitcoin $100k",
+    "suggestion2": "Website Monitor",
+    "suggestion3": "Stock Alerts",
+    "suggestion4": "Weather Updates"
+  },
+  "services": {
+    "crypto": {
+      "name": "Cryptocurrency",
+      "description": "Track Bitcoin, Ethereum & 50+ coins with real-time price alerts"
+    },
+    "stocks": {
+      "name": "Stock Market",
+      "description": "Monitor global stocks & indices"
+    },
+    "website": {
+      "name": "Website Uptime",
+      "description": "Instant downtime alerts"
+    },
+    "weather": {
+      "name": "Weather Alerts",
+      "description": "Severe weather notifications for your area"
+    },
+    "currency": {
+      "name": "Exchange Rates",
+      "description": "Currency fluctuation tracking"
+    },
+    "flight": {
+      "name": "Flight Tracker",
+      "description": "Gate changes & delays",
+      "stats": "On Time"
+    },
+    "popular": "Popular"
+  },
+  "footer": {
+    "allRightsReserved": "All rights reserved.",
+    "help": "Help",
+    "apiDocs": "API Docs",
+    "privacy": "Privacy",
+    "terms": "Terms"
+  },
+  "metadata": {
+    "title": "Alert.az - Unified Notification Platform",
+    "description": "Monitor everything that matters. Get instant alerts for crypto, stocks, weather, and more."
+  },
+  "login": {
+    "welcomeBack": "Welcome Back",
+    "signInToManage": "Sign in to manage your alerts",
+    "emailAddress": "Email Address",
+    "password": "Password",
+    "forgotPassword": "Forgot password?",
+    "signIn": "Sign In",
+    "signingIn": "Signing in...",
+    "orContinueWith": "or continue with",
+    "google": "Google",
+    "github": "GitHub",
+    "noAccount": "Don't have an account?",
+    "signUp": "Sign up",
+    "invalidCredentials": "Invalid email or password",
+    "emailPlaceholder": "you@example.com",
+    "passwordPlaceholder": "••••••••"
+  },
+  "register": {
+    "createAccount": "Create Account",
+    "startMonitoring": "Start monitoring what matters to you",
+    "fullName": "Full Name",
+    "emailAddress": "Email Address",
+    "password": "Password",
+    "confirmPassword": "Confirm Password",
+    "mustBe8Chars": "Must be at least 8 characters",
+    "agreeToTerms": "I agree to the",
+    "termsOfService": "Terms of Service",
+    "and": "and",
+    "privacyPolicy": "Privacy Policy",
+    "creatingAccount": "Creating account...",
+    "orContinueWith": "or continue with",
+    "google": "Google",
+    "github": "GitHub",
+    "alreadyHaveAccount": "Already have an account?",
+    "signIn": "Sign in",
+    "passwordsDoNotMatch": "Passwords do not match",
+    "passwordMin8": "Password must be at least 8 characters",
+    "registrationFailed": "Registration failed. Please try again.",
+    "namePlaceholder": "John Doe",
+    "emailPlaceholder": "you@example.com",
+    "passwordPlaceholder": "••••••••"
   }
 }

@@ -1,149 +1,191 @@
 {
   "nav": {
-    "about": "О нас",
-    "news": "Новости",
-    "banks": "Банки",
-    "credits": "Кредиты",
-    "deposits": "Депозиты",
-    "insurance": "Страхование",
-    "contact": "Контакты",
-    "search": "Поиск",
-    "darkMode": "Темный режим",
-    "comparison": "Сравнение",
-    "compareCredits": "Сравнить кредиты",
-    "creditTypes": {
-      "cash": "Наличный кредит",
-      "mortgage": "Ипотека",
-      "auto": "Автокредит",
-      "business": "Бизнес кредит"
-    },
-    "insuranceTypes": {
-      "auto": "Автострахование",
-      "health": "Медицинское страхование",
-      "property": "Страхование имущества",
-      "travel": "Туристическое страхование"
-    }
+    "dashboard": "Панель управления",
+    "myAlerts": "Мои уведомления",
+    "newAlert": "Новое уведомление",
+    "settings": "Настройки",
+    "signIn": "Войти",
+    "getStarted": "Начать",
+    "logout": "Выход"
   },
   "home": {
-    "latestNews": "Последние новости",
-    "popularOffers": "Популярные предложения",
-    "partnerBanks": "Банки-партнеры",
-    "moreNews": "Больше",
-    "moreOffers": "Больше",
-    "moreBanks": "Больше",
-    "allNews": "Все новости",
-    "viewAll": "Все",
-    "categories": {
-      "news": "Новости дня",
-      "finance": "Финансы",
-      "insurance": "Страхование",
-      "realEstate": "Недвижимость",
-      "interviews": "Интервью"
-    },
-    "offers": {
-      "credit": "Кредит",
-      "creditCard": "Кредитная карта",
-      "debitCard": "Дебетовая карта",
-      "autoCredit": "Автокредит",
-      "mortgage": "Ипотека",
-      "deposit": "Депозит"
-    },
-    "appDownload": {
-      "title": "Скачайте приложение, чтобы быть в курсе финансовых новостей",
-      "downloadOnAppStore": "Загрузить в App Store",
-      "downloadOnGooglePlay": "Доступно в Google Play"
-    },
-    "newsletter": {
-      "title": "ПОДПИШИТЕСЬ НА НОВОСТИ",
-      "description": "Подпишитесь на ежемесячные уведомления, чтобы быть в курсе финансовых инноваций.",
-      "placeholder": "Введите email",
-      "button": "Подписаться!"
-    },
-    "banks": "Банки",
-    "insuranceOrganizations": "Страховые организации"
+    "subtitle": "Интеллектуальный мониторинг, который никогда не спит",
+    "aiPowered": "С ИИ",
+    "realtime": "Реальное время",
+    "secure": "Безопасно",
+    "services": "Сервисы",
+    "servicesTitle": "Мониторинг всего, что важно",
+    "uptime": "Время работы",
+    "responseTime": "Время отклика",
+    "activeAlerts": "Активные уведомления",
+    "monitoring": "Мониторинг"
   },
-  "offer": {
-    "annualRate": "Годовая ставка",
-    "duration": "Срок",
-    "monthly": "Ежемесячно",
-    "maxCreditLimit": "Максимальный кредитный лимит",
-    "month": "Месяц",
-    "currency": "AZN",
-    "apply": "Подать заявку",
-    "details": "Подробнее",
-    "advantages": {
-      "noCollateral": "Без залога",
-      "fastApproval": "Быстрое одобрение",
-      "flexiblePayment": "Гибкий график платежей"
+  "auth": {
+    "signIn": "Войти",
+    "signUp": "Регистрация",
+    "email": "Электронная почта",
+    "password": "Пароль",
+    "confirmPassword": "Подтвердите пароль",
+    "name": "Имя",
+    "phone": "Телефон",
+    "rememberMe": "Запомнить меня",
+    "forgotPassword": "Забыли пароль?",
+    "noAccount": "Нет учетной записи?",
+    "hasAccount": "Уже есть учетная запись?",
+    "createAccount": "Создать учетную запись",
+    "signInWithGoogle": "Войти через Google",
+    "signInWithFacebook": "Войти через Facebook",
+    "or": "или",
+    "agreeToTerms": "Я согласен с условиями использования",
+    "privacyPolicy": "Политика конфиденциальности",
+    "termsOfService": "Условия использования"
+  },
+  "dashboard": {
+    "welcome": "Добро пожаловать, {name}!",
+    "subtitle": "Управляйте своими уведомлениями и оставайтесь в курсе",
+    "createFirstAlert": "Создайте свое первое уведомление",
+    "activeAlerts": "Активные уведомления",
+    "notificationsSent": "Отправлено уведомлений",
+    "systemStatus": "Статус системы",
+    "ready": "Готов",
+    "yourAlerts": "Ваши уведомления",
+    "noAlertsYet": "Пока нет уведомлений",
+    "noAlertsDescription": "Создайте свое первое уведомление, чтобы начать отслеживать то, что важно для вас",
+    "allAlerts": "Все уведомления",
+    "viewManageAlerts": "Просмотр и управление всеми уведомлениями"
+  },
+  "alerts": {
+    "createNew": "Создать новое уведомление",
+    "quickSetup": "Быстрая настройка",
+    "title": "Заголовок",
+    "type": "Тип",
+    "status": "Статус",
+    "active": "Активно",
+    "paused": "Приостановлено",
+    "edit": "Редактировать",
+    "delete": "Удалить",
+    "types": {
+      "crypto": "Криптовалюта",
+      "weather": "Погода",
+      "stock": "Акции",
+      "news": "Новости",
+      "custom": "Пользовательский"
     }
   },
-  "currency": {
-    "exchangeRates": "Курсы валют",
-    "buy": "Покупка",
-    "sell": "Продажа"
-  },
-  "footer": {
-    "services": "Услуги",
-    "company": "Компания",
-    "resources": "Ресурсы",
-    "contact": "Контакты",
-    "services_items": {
-      "cashCredits": "Наличные кредиты",
-      "creditCards": "Кредитные карты",
-      "autoCredits": "Автокредиты",
-      "mortgage": "Ипотека",
-      "businessCredits": "Бизнес кредиты",
-      "deposits": "Депозиты"
-    },
-    "company_items": {
-      "about": "О нас",
-      "contact": "Контакты",
-      "terms": "Пользовательское соглашение",
-      "rules": "Правила",
-      "faq": "FAQ"
-    },
-    "resources_items": {
-      "blog": "Блог",
-      "calculator": "Валютный калькулятор"
-    },
-    "copyright": "Все права защищены © {year} Kredit.az",
-    "newsletter": {
-      "title": "ПОДПИШИТЕСЬ НА НОВОСТИ",
-      "description": "Подпишитесь на ежемесячные уведомления, чтобы быть в курсе финансовых инноваций.",
-      "placeholder": "Введите email",
-      "button": "Подписаться!"
-    }
-  },
-  "contact": {
-    "form": {
-      "firstName": "Имя",
-      "lastName": "Фамилия",
-      "phone": "Телефон",
-      "email": "Email",
-      "message": "Сообщение",
-      "terms": "Я принимаю условия",
-      "submit": "Отправить",
-      "success": "Ваше сообщение успешно отправлено!",
-      "error": "Произошла ошибка. Пожалуйста, попробуйте еще раз."
-    }
+  "settings": {
+    "title": "Настройки",
+    "account": "Учетная запись",
+    "notifications": "Уведомления",
+    "privacy": "Конфиденциальность",
+    "manageAccount": "Управление учетной записью и настройками"
   },
   "common": {
     "loading": "Загрузка...",
     "error": "Произошла ошибка",
     "retry": "Попробовать снова",
-    "noData": "Данные не найдены",
-    "readMore": "Читать далее",
-    "showLess": "Показать меньше",
-    "page": "Страница",
-    "of": "из",
-    "results": "результатов",
-    "filter": "Фильтр",
-    "filters": "Фильтры",
-    "amount": "Сумма",
-    "duration": "Срок",
-    "months": "месяцев",
-    "bank": "Банк",
-    "allBanks": "Все банки",
-    "noCreditsFound": "Кредиты, соответствующие вашим критериям, не найдены"
+    "save": "Сохранить",
+    "cancel": "Отмена",
+    "delete": "Удалить",
+    "edit": "Редактировать",
+    "create": "Создать",
+    "back": "Назад",
+    "next": "Следующий",
+    "finish": "Завершить",
+    "close": "Закрыть",
+    "search": "Поиск"
+  },
+  "search": {
+    "placeholder1": "Биткоин достигает $100,000",
+    "placeholder2": "Сайт не работает",
+    "placeholder3": "Цена акций падает на 5%",
+    "placeholder4": "Погодное предупреждение в моем районе",
+    "placeholder5": "Изменение курса валют",
+    "monitorWhen": "Отслеживать когда",
+    "createAlert": "Создать уведомление",
+    "suggestion1": "Bitcoin $100k",
+    "suggestion2": "Мониторинг сайта",
+    "suggestion3": "Уведомления об акциях",
+    "suggestion4": "Обновления погоды"
+  },
+  "services": {
+    "crypto": {
+      "name": "Криптовалюта",
+      "description": "Отслеживайте Bitcoin, Ethereum и более 50 монет с уведомлениями о ценах в реальном времени"
+    },
+    "stocks": {
+      "name": "Фондовый рынок",
+      "description": "Мониторинг мировых акций и индексов"
+    },
+    "website": {
+      "name": "Время работы сайта",
+      "description": "Мгновенные уведомления о простое"
+    },
+    "weather": {
+      "name": "Погодные уведомления",
+      "description": "Уведомления о суровой погоде в вашем районе"
+    },
+    "currency": {
+      "name": "Обменные курсы",
+      "description": "Отслеживание колебаний валют"
+    },
+    "flight": {
+      "name": "Отслеживание рейсов",
+      "description": "Изменения выхода и задержки",
+      "stats": "Вовремя"
+    },
+    "popular": "Популярно"
+  },
+  "footer": {
+    "allRightsReserved": "Все права защищены.",
+    "help": "Помощь",
+    "apiDocs": "Документация API",
+    "privacy": "Конфиденциальность",
+    "terms": "Условия"
+  },
+  "metadata": {
+    "title": "Alert.az - Единая платформа уведомлений",
+    "description": "Отслеживайте все, что важно. Получайте мгновенные уведомления о криптовалютах, акциях, погоде и многом другом."
+  },
+  "login": {
+    "welcomeBack": "Добро пожаловать",
+    "signInToManage": "Войдите, чтобы управлять уведомлениями",
+    "emailAddress": "Электронная почта",
+    "password": "Пароль",
+    "forgotPassword": "Забыли пароль?",
+    "signIn": "Войти",
+    "signingIn": "Вход...",
+    "orContinueWith": "или продолжить с",
+    "google": "Google",
+    "github": "GitHub",
+    "noAccount": "Нет учетной записи?",
+    "signUp": "Регистрация",
+    "invalidCredentials": "Неверный email или пароль",
+    "emailPlaceholder": "you@example.com",
+    "passwordPlaceholder": "••••••••"
+  },
+  "register": {
+    "createAccount": "Создать учетную запись",
+    "startMonitoring": "Начните отслеживать то, что важно для вас",
+    "fullName": "Полное имя",
+    "emailAddress": "Электронная почта",
+    "password": "Пароль",
+    "confirmPassword": "Подтвердите пароль",
+    "mustBe8Chars": "Минимум 8 символов",
+    "agreeToTerms": "Я согласен с",
+    "termsOfService": "Условиями использования",
+    "and": "и",
+    "privacyPolicy": "Политикой конфиденциальности",
+    "creatingAccount": "Создание учетной записи...",
+    "orContinueWith": "или продолжить с",
+    "google": "Google",
+    "github": "GitHub",
+    "alreadyHaveAccount": "Уже есть учетная запись?",
+    "signIn": "Войти",
+    "passwordsDoNotMatch": "Пароли не совпадают",
+    "passwordMin8": "Пароль должен содержать не менее 8 символов",
+    "registrationFailed": "Регистрация не удалась. Попробуйте еще раз.",
+    "namePlaceholder": "Иван Иванов",
+    "emailPlaceholder": "you@example.com",
+    "passwordPlaceholder": "••••••••"
   }
 }

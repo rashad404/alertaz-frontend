@@ -2,8 +2,10 @@
 
 import Link from 'next/link';
 import { Mail, Phone, Shield, HelpCircle, FileText } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 export default function Footer() {
+  const t = useTranslations();
   const currentYear = new Date().getFullYear();
 
   return (
@@ -14,7 +16,7 @@ export default function Footer() {
           {/* Left: Copyright */}
           <div className="text-center md:text-left">
             <p className="text-sm text-gray-600 dark:text-gray-400">
-              © {currentYear} Alert.az. All rights reserved.
+              © {currentYear} Alert.az. {t('footer.allRightsReserved')}
             </p>
           </div>
 
@@ -25,26 +27,26 @@ export default function Footer() {
               className="text-gray-600 dark:text-gray-400 hover:text-[rgb(81,91,195)] transition-colors flex items-center gap-1"
             >
               <HelpCircle className="w-3.5 h-3.5" />
-              <span>Help</span>
+              <span>{t('footer.help')}</span>
             </Link>
             <Link
               href="/docs"
               className="text-gray-600 dark:text-gray-400 hover:text-[rgb(81,91,195)] transition-colors flex items-center gap-1"
             >
               <FileText className="w-3.5 h-3.5" />
-              <span>API Docs</span>
+              <span>{t('footer.apiDocs')}</span>
             </Link>
             <Link
               href="/privacy"
               className="text-gray-600 dark:text-gray-400 hover:text-[rgb(81,91,195)] transition-colors flex items-center gap-1"
             >
               <Shield className="w-3.5 h-3.5" />
-              <span>Privacy</span>
+              <span>{t('footer.privacy')}</span>
             </Link>
             <Link
               href="/terms"
               className="text-gray-600 dark:text-gray-400 hover:text-[rgb(81,91,195)] transition-colors">
-              Terms
+              {t('footer.terms')}
             </Link>
           </div>
 

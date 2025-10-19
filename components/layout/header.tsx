@@ -5,8 +5,10 @@ import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
 import { Menu, X, Bell, User, Activity, Plus, LogOut } from 'lucide-react';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
+import { useTranslations } from 'next-intl';
 
 export default function Header() {
+  const t = useTranslations();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState<any>(null);
@@ -63,7 +65,7 @@ export default function Header() {
                   className="flex items-center gap-1.5 px-3 py-1.5 bg-[rgb(81,91,195)] text-white rounded-lg hover:bg-[rgb(61,71,175)] transition-colors text-sm font-medium"
                 >
                   <Plus className="w-4 h-4" />
-                  <span>New Alert</span>
+                  <span>{t('nav.newAlert')}</span>
                 </Link>
 
                 <Link
@@ -74,7 +76,7 @@ export default function Header() {
                       : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
                   }`}
                 >
-                  Dashboard
+                  {t('nav.dashboard')}
                 </Link>
 
                 <Link
@@ -85,7 +87,7 @@ export default function Header() {
                       : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
                   }`}
                 >
-                  My Alerts
+                  {t('nav.myAlerts')}
                 </Link>
               </>
             )}
@@ -114,13 +116,13 @@ export default function Header() {
                   href="/login"
                   className="text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
                 >
-                  Sign In
+                  {t('nav.signIn')}
                 </Link>
                 <Link
                   href="/register"
                   className="px-4 py-1.5 bg-[rgb(81,91,195)] text-white text-sm font-medium rounded-lg hover:bg-[rgb(61,71,175)] transition-colors"
                 >
-                  Get Started
+                  {t('nav.getStarted')}
                 </Link>
               </div>
             )}
@@ -153,28 +155,28 @@ export default function Header() {
                   onClick={() => setIsMenuOpen(false)}
                 >
                   <Plus className="w-4 h-4" />
-                  New Alert
+                  {t('nav.newAlert')}
                 </Link>
                 <Link
                   href="/dashboard"
                   className="block px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg"
                   onClick={() => setIsMenuOpen(false)}
                 >
-                  Dashboard
+                  {t('nav.dashboard')}
                 </Link>
                 <Link
                   href="/alerts"
                   className="block px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg"
                   onClick={() => setIsMenuOpen(false)}
                 >
-                  My Alerts
+                  {t('nav.myAlerts')}
                 </Link>
                 <Link
                   href="/settings"
                   className="block px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg"
                   onClick={() => setIsMenuOpen(false)}
                 >
-                  Settings
+                  {t('nav.settings')}
                 </Link>
                 <button
                   onClick={() => {
@@ -183,7 +185,7 @@ export default function Header() {
                   }}
                   className="w-full text-left px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg"
                 >
-                  Logout
+                  {t('nav.logout')}
                 </button>
               </div>
             ) : (
@@ -193,14 +195,14 @@ export default function Header() {
                   className="block px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg"
                   onClick={() => setIsMenuOpen(false)}
                 >
-                  Sign In
+                  {t('nav.signIn')}
                 </Link>
                 <Link
                   href="/register"
                   className="block px-3 py-2 text-sm font-medium text-white bg-[rgb(81,91,195)] hover:bg-[rgb(61,71,175)] rounded-lg"
                   onClick={() => setIsMenuOpen(false)}
                 >
-                  Get Started
+                  {t('nav.getStarted')}
                 </Link>
               </div>
             )}

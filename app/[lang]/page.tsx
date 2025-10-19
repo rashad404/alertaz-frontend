@@ -4,12 +4,14 @@ import { useEffect, useState } from 'react';
 import SearchMonitor from '@/components/home/SearchMonitor';
 import ServiceGrid from '@/components/home/ServiceGrid';
 import { Bell, Sparkles, Zap, Shield } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 interface HomePageProps {
   params: Promise<{ lang: string }>;
 }
 
 export default function HomePage({ params }: HomePageProps) {
+  const t = useTranslations();
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
@@ -64,7 +66,7 @@ export default function HomePage({ params }: HomePageProps) {
               <span className="gradient-text">Alert.az</span>
             </h1>
             <p className="mt-4 text-xl text-gray-600 dark:text-gray-400 font-light">
-              Intelligent monitoring that never sleeps
+              {t('home.subtitle')}
             </p>
           </div>
 
@@ -72,15 +74,15 @@ export default function HomePage({ params }: HomePageProps) {
           <div className="flex justify-center gap-3 mb-12">
             <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-gradient-to-r from-emerald-500/10 to-cyan-500/10 border border-emerald-500/20">
               <Sparkles className="w-3 h-3 text-emerald-500" />
-              <span className="text-xs font-medium text-emerald-600 dark:text-emerald-400">AI-Powered</span>
+              <span className="text-xs font-medium text-emerald-600 dark:text-emerald-400">{t('home.aiPowered')}</span>
             </span>
             <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-gradient-to-r from-purple-500/10 to-pink-500/10 border border-purple-500/20">
               <Zap className="w-3 h-3 text-purple-500" />
-              <span className="text-xs font-medium text-purple-600 dark:text-purple-400">Real-time</span>
+              <span className="text-xs font-medium text-purple-600 dark:text-purple-400">{t('home.realtime')}</span>
             </span>
             <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-gradient-to-r from-blue-500/10 to-indigo-500/10 border border-blue-500/20">
               <Shield className="w-3 h-3 text-blue-500" />
-              <span className="text-xs font-medium text-blue-600 dark:text-blue-400">Secure</span>
+              <span className="text-xs font-medium text-blue-600 dark:text-blue-400">{t('home.secure')}</span>
             </span>
           </div>
 
@@ -93,9 +95,9 @@ export default function HomePage({ params }: HomePageProps) {
       <section className="relative px-6 py-20">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-12">
-            <span className="text-sm font-medium text-purple-600 dark:text-purple-400 uppercase tracking-wider">Services</span>
+            <span className="text-sm font-medium text-purple-600 dark:text-purple-400 uppercase tracking-wider">{t('home.services')}</span>
             <h2 className="mt-2 text-4xl font-bold text-gray-900 dark:text-white">
-              Monitor Everything That Matters
+              {t('home.servicesTitle')}
             </h2>
           </div>
           <ServiceGrid />
@@ -109,19 +111,19 @@ export default function HomePage({ params }: HomePageProps) {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
               <div className="text-center">
                 <div className="text-4xl font-bold bg-gradient-to-br from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-2">99.9%</div>
-                <div className="text-sm font-medium text-gray-700 dark:text-gray-300">Uptime</div>
+                <div className="text-sm font-medium text-gray-700 dark:text-gray-300">{t('home.uptime')}</div>
               </div>
               <div className="text-center">
                 <div className="text-4xl font-bold bg-gradient-to-br from-blue-600 to-cyan-600 bg-clip-text text-transparent mb-2">10ms</div>
-                <div className="text-sm font-medium text-gray-700 dark:text-gray-300">Response Time</div>
+                <div className="text-sm font-medium text-gray-700 dark:text-gray-300">{t('home.responseTime')}</div>
               </div>
               <div className="text-center">
                 <div className="text-4xl font-bold bg-gradient-to-br from-purple-600 to-pink-600 bg-clip-text text-transparent mb-2">50K+</div>
-                <div className="text-sm font-medium text-gray-700 dark:text-gray-300">Active Alerts</div>
+                <div className="text-sm font-medium text-gray-700 dark:text-gray-300">{t('home.activeAlerts')}</div>
               </div>
               <div className="text-center">
                 <div className="text-4xl font-bold bg-gradient-to-br from-emerald-600 to-teal-600 bg-clip-text text-transparent mb-2">24/7</div>
-                <div className="text-sm font-medium text-gray-700 dark:text-gray-300">Monitoring</div>
+                <div className="text-sm font-medium text-gray-700 dark:text-gray-300">{t('home.monitoring')}</div>
               </div>
             </div>
           </div>

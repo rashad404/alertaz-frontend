@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowRight, Sparkles, TrendingUp, Globe, Cloud, DollarSign, Plane, Building, Package, Bitcoin } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 interface ServiceCard {
   id: string;
@@ -17,6 +18,7 @@ interface ServiceCard {
 }
 
 export default function ServiceGrid() {
+  const t = useTranslations();
   const router = useRouter();
   const [hoveredCard, setHoveredCard] = useState<string | null>(null);
 
@@ -27,8 +29,8 @@ export default function ServiceGrid() {
   const services: ServiceCard[] = [
     {
       id: 'crypto',
-      name: 'Cryptocurrency',
-      description: 'Track Bitcoin, Ethereum & 50+ coins with real-time price alerts',
+      name: t('services.crypto.name'),
+      description: t('services.crypto.description'),
       icon: <Bitcoin className="w-8 h-8" />,
       gradient: 'from-orange-500 to-yellow-500',
       size: 'large',
@@ -38,8 +40,8 @@ export default function ServiceGrid() {
     },
     {
       id: 'stocks',
-      name: 'Stock Market',
-      description: 'Monitor global stocks & indices',
+      name: t('services.stocks.name'),
+      description: t('services.stocks.description'),
       icon: <TrendingUp className="w-6 h-6" />,
       gradient: 'from-blue-500 to-cyan-500',
       size: 'medium',
@@ -47,8 +49,8 @@ export default function ServiceGrid() {
     },
     {
       id: 'website',
-      name: 'Website Uptime',
-      description: 'Instant downtime alerts',
+      name: t('services.website.name'),
+      description: t('services.website.description'),
       icon: <Globe className="w-6 h-6" />,
       gradient: 'from-green-500 to-emerald-500',
       size: 'small',
@@ -56,8 +58,8 @@ export default function ServiceGrid() {
     },
     {
       id: 'weather',
-      name: 'Weather Alerts',
-      description: 'Severe weather notifications for your area',
+      name: t('services.weather.name'),
+      description: t('services.weather.description'),
       icon: <Cloud className="w-6 h-6" />,
       gradient: 'from-purple-500 to-pink-500',
       size: 'medium',
@@ -65,8 +67,8 @@ export default function ServiceGrid() {
     },
     {
       id: 'currency',
-      name: 'Exchange Rates',
-      description: 'Currency fluctuation tracking',
+      name: t('services.currency.name'),
+      description: t('services.currency.description'),
       icon: <DollarSign className="w-6 h-6" />,
       gradient: 'from-indigo-500 to-purple-500',
       size: 'small',
@@ -74,12 +76,12 @@ export default function ServiceGrid() {
     },
     {
       id: 'flight',
-      name: 'Flight Tracker',
-      description: 'Gate changes & delays',
+      name: t('services.flight.name'),
+      description: t('services.flight.description'),
       icon: <Plane className="w-6 h-6" />,
       gradient: 'from-sky-500 to-blue-500',
       size: 'small',
-      stats: 'On Time'
+      stats: t('services.flight.stats')
     }
   ];
 
@@ -169,7 +171,7 @@ export default function ServiceGrid() {
                   ) : service.highlight ? (
                     <span className="flex items-center gap-1 text-xs font-semibold text-purple-600 dark:text-purple-400">
                       <Sparkles className="w-3 h-3" />
-                      Popular
+                      {t('services.popular')}
                     </span>
                   ) : (
                     <span />

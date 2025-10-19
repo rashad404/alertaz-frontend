@@ -3,19 +3,21 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Search, Sparkles, ArrowRight } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 export default function SearchMonitor() {
+  const t = useTranslations();
   const [query, setQuery] = useState('');
   const [isFocused, setIsFocused] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
   const router = useRouter();
 
   const placeholders = [
-    'Bitcoin reaches $100,000',
-    'Website goes down',
-    'Stock price drops 5%',
-    'Weather alert in my area',
-    'Currency rate changes'
+    t('search.placeholder1'),
+    t('search.placeholder2'),
+    t('search.placeholder3'),
+    t('search.placeholder4'),
+    t('search.placeholder5')
   ];
 
   const [currentPlaceholder, setCurrentPlaceholder] = useState(0);
@@ -82,7 +84,7 @@ export default function SearchMonitor() {
                 onFocus={() => setIsFocused(true)}
                 onBlur={() => setIsFocused(false)}
                 onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                placeholder={`Monitor when ${placeholders[currentPlaceholder]}...`}
+                placeholder={`${t('search.monitorWhen')} ${placeholders[currentPlaceholder]}...`}
                 className="flex-1 px-4 py-4 bg-transparent text-lg font-light text-gray-800 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none"
                 style={{
                   background: 'transparent'
@@ -111,7 +113,7 @@ export default function SearchMonitor() {
 
                 <span className="relative flex items-center gap-2">
                   <Search className="w-4 h-4" />
-                  <span>Create Alert</span>
+                  <span>{t('search.createAlert')}</span>
                   <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </span>
               </button>
@@ -120,7 +122,7 @@ export default function SearchMonitor() {
 
           {/* Quick Suggestions */}
           <div className="mt-6 flex flex-wrap justify-center gap-2">
-            {['Bitcoin $100k', 'Website Monitor', 'Stock Alerts', 'Weather Updates'].map((suggestion, idx) => (
+            {[t('search.suggestion1'), t('search.suggestion2'), t('search.suggestion3'), t('search.suggestion4')].map((suggestion, idx) => (
               <button
                 key={idx}
                 onClick={() => {

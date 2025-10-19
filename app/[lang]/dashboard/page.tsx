@@ -4,8 +4,10 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Bell, Plus, TrendingUp, Activity, Settings, AlertCircle } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 export default function DashboardPage() {
+  const t = useTranslations();
   const router = useRouter();
   const [user, setUser] = useState<any>(null);
 
@@ -42,10 +44,10 @@ export default function DashboardPage() {
         {/* Header */}
         <div className="mb-12">
           <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-2">
-            Welcome back, {user.name}!
+            {t('dashboard.welcome', { name: user.name })}
           </h1>
           <p className="text-gray-600 dark:text-gray-400">
-            Manage your alerts and stay informed
+            {t('dashboard.subtitle')}
           </p>
         </div>
 
@@ -56,7 +58,7 @@ export default function DashboardPage() {
             className="inline-flex items-center gap-2 btn-primary group"
           >
             <Plus className="w-5 h-5" />
-            <span>Create New Alert</span>
+            <span>{t('alerts.createNew')}</span>
           </Link>
         </div>
 
@@ -71,7 +73,7 @@ export default function DashboardPage() {
               <TrendingUp className="w-5 h-5 text-green-500" />
             </div>
             <div className="text-3xl font-bold text-gray-900 dark:text-white mb-1">0</div>
-            <div className="text-sm text-gray-600 dark:text-gray-400">Active Alerts</div>
+            <div className="text-sm text-gray-600 dark:text-gray-400">{t('dashboard.activeAlerts')}</div>
           </div>
 
           {/* Notifications Sent */}
@@ -82,7 +84,7 @@ export default function DashboardPage() {
               </div>
             </div>
             <div className="text-3xl font-bold text-gray-900 dark:text-white mb-1">0</div>
-            <div className="text-sm text-gray-600 dark:text-gray-400">Notifications Sent</div>
+            <div className="text-sm text-gray-600 dark:text-gray-400">{t('dashboard.notificationsSent')}</div>
           </div>
 
           {/* Quick Setup */}
@@ -92,15 +94,15 @@ export default function DashboardPage() {
                 <Settings className="w-6 h-6 text-white" />
               </div>
             </div>
-            <div className="text-3xl font-bold text-gray-900 dark:text-white mb-1">Ready</div>
-            <div className="text-sm text-gray-600 dark:text-gray-400">System Status</div>
+            <div className="text-3xl font-bold text-gray-900 dark:text-white mb-1">{t('dashboard.ready')}</div>
+            <div className="text-sm text-gray-600 dark:text-gray-400">{t('dashboard.systemStatus')}</div>
           </div>
         </div>
 
         {/* Recent Alerts - Empty State */}
         <div className="card-glass rounded-3xl p-8">
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
-            Your Alerts
+            {t('dashboard.yourAlerts')}
           </h2>
 
           {/* Empty State */}
@@ -112,10 +114,10 @@ export default function DashboardPage() {
             </div>
 
             <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
-              No alerts yet
+              {t('dashboard.noAlertsYet')}
             </h3>
             <p className="text-gray-600 dark:text-gray-400 mb-6">
-              Create your first alert to start monitoring what matters to you
+              {t('dashboard.noAlertsDescription')}
             </p>
 
             <Link
@@ -123,7 +125,7 @@ export default function DashboardPage() {
               className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white font-medium hover:shadow-lg transition-all duration-300"
             >
               <Plus className="w-5 h-5" />
-              <span>Create Your First Alert</span>
+              <span>{t('dashboard.createFirstAlert')}</span>
             </Link>
           </div>
         </div>
@@ -140,10 +142,10 @@ export default function DashboardPage() {
               </div>
               <div>
                 <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-1">
-                  Settings
+                  {t('nav.settings')}
                 </h3>
                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Manage your account and preferences
+                  {t('settings.manageAccount')}
                 </p>
               </div>
             </div>
@@ -159,10 +161,10 @@ export default function DashboardPage() {
               </div>
               <div>
                 <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-1">
-                  All Alerts
+                  {t('dashboard.allAlerts')}
                 </h3>
                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                  View and manage all your alerts
+                  {t('dashboard.viewManageAlerts')}
                 </p>
               </div>
             </div>
