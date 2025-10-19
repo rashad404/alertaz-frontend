@@ -14,14 +14,17 @@ export default function Header() {
   const pathname = usePathname();
 
   useEffect(() => {
-    // Check authentication status
+    // Check authentication status on mount and route changes
     const token = localStorage.getItem('token');
     if (token) {
       setIsAuthenticated(true);
       // You could fetch user data here
       setUser({ name: 'User', email: 'user@example.com' });
+    } else {
+      setIsAuthenticated(false);
+      setUser(null);
     }
-  }, []);
+  }, [pathname]);
 
   const handleLogout = () => {
     localStorage.removeItem('token');
