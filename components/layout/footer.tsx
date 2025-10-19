@@ -1,269 +1,273 @@
-"use client";
+'use client';
 
-import { useDictionary } from "@/providers/dictionary-provider";
-import Link from "next/link";
-import { Facebook, Twitter, Instagram, Phone, Mail, MapPin } from "lucide-react";
-import { getLocalizedPath } from "@/lib/utils/locale";
-import { useState, useEffect } from "react";
-import axios from "axios";
+import Link from 'next/link';
+import { useState } from 'react';
+import {
+  Bell,
+  Mail,
+  MapPin,
+  Phone,
+  Facebook,
+  Twitter,
+  Instagram,
+  Linkedin,
+  Youtube,
+  Github,
+  Send
+} from 'lucide-react';
 
-interface FooterProps {
-  locale: string;
-}
-
-interface ContactInfo {
-  phone?: string;
-  email?: string;
-  address?: string | { [key: string]: string };
-}
-
-export function Footer({ locale }: FooterProps) {
-  const dictionary = useDictionary();
-  const t = dictionary.footer;
-
-  // Contact info state
-  const [contactInfo, setContactInfo] = useState<ContactInfo>({
-    phone: '+994 12 900 00 00',
-    email: 'info@kredit.az',
-    address: 'Bakı şəhəri, Fətəli Xanxoyski küçəsi, 21A'
-  });
-
-  // Newsletter subscription state
-  const [email, setEmail] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [message, setMessage] = useState<{ type: 'success' | 'error' | null; text: string }>({ type: null, text: '' });
-
-  // Handle newsletter subscription
-  // Fetch contact info on mount
-  useEffect(() => {
-    const fetchContactInfo = async () => {
-      try {
-        const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/${locale}/contact-info`);
-        if (response.data.success && response.data.data) {
-          const data = response.data.data;
-          setContactInfo({
-            phone: data.phone || '+994 12 900 00 00',
-            email: data.email || 'info@kredit.az',
-            address: typeof data.address === 'object' && data.address[locale]
-              ? data.address[locale]
-              : data.address || 'Bakı şəhəri, Fətəli Xanxoyski küçəsi, 21A'
-          });
-        }
-      } catch (error) {
-        console.error('Failed to fetch contact info:', error);
-      }
-    };
-
-    fetchContactInfo();
-  }, [locale]);
+export default function Footer() {
+  const [email, setEmail] = useState('');
+  const [isSubscribed, setIsSubscribed] = useState(false);
+  const [isSubscribing, setIsSubscribing] = useState(false);
 
   const handleSubscribe = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Clear previous message
-    setMessage({ type: null, text: '' });
-    
-    // Validate email
-    if (!email || !email.includes('@')) {
-      setMessage({ 
-        type: 'error', 
-        text: locale === 'az' ? 'Zəhmət olmasa düzgün e-poçt ünvanı daxil edin.' 
-            : locale === 'ru' ? 'Пожалуйста, введите правильный адрес электронной почты.'
-            : 'Please enter a valid email address.'
-      });
-      return;
-    }
-    
-    setIsLoading(true);
-    
-    try {
-      const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/${locale}/subscribe`,
-        { email }
-      );
-      
-      if (response.data.success) {
-        setMessage({ type: 'success', text: response.data.message });
-        setEmail(''); // Clear form
-      } else {
-        setMessage({ type: 'error', text: response.data.message });
-      }
-    } catch (error: any) {
-      const errorMessage = error.response?.data?.message || 
-        (locale === 'az' ? 'Xəta baş verdi. Zəhmət olmasa yenidən cəhd edin.'
-         : locale === 'ru' ? 'Произошла ошибка. Пожалуйста, попробуйте еще раз.'
-         : 'An error occurred. Please try again.');
-      setMessage({ type: 'error', text: errorMessage });
-    } finally {
-      setIsLoading(false);
-    }
+    if (!email) return;
+
+    setIsSubscribing(true);
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    setIsSubscribed(true);
+    setIsSubscribing(false);
+    setEmail('');
+
+    // Reset success message after 3 seconds
+    setTimeout(() => setIsSubscribed(false), 3000);
   };
 
+  const currentYear = new Date().getFullYear();
+
+  const footerLinks = {
+    services: [
+      { name: 'Crypto Monitor', href: '/alerts/create?type=crypto' },
+      { name: 'Weather Alerts', href: '/alerts/create?type=weather' },
+      { name: 'Website Monitor', href: '/alerts/create?type=website' },
+      { name: 'Stock Alerts', href: '/alerts/create?type=stock' },
+      { name: 'Currency Rates', href: '/alerts/create?type=currency' },
+    ],
+    company: [
+      { name: 'About Us', href: '/about' },
+      { name: 'Careers', href: '/careers' },
+      { name: 'Blog', href: '/blog' },
+      { name: 'Press', href: '/press' },
+      { name: 'Partners', href: '/partners' },
+    ],
+    support: [
+      { name: 'Help Center', href: '/help' },
+      { name: 'Documentation', href: '/docs' },
+      { name: 'API Reference', href: '/api' },
+      { name: 'Status', href: '/status' },
+      { name: 'Contact', href: '/contact' },
+    ],
+    legal: [
+      { name: 'Privacy Policy', href: '/privacy' },
+      { name: 'Terms of Service', href: '/terms' },
+      { name: 'Cookie Policy', href: '/cookies' },
+      { name: 'Security', href: '/security' },
+      { name: 'Compliance', href: '/compliance' },
+    ],
+  };
+
+  const socialLinks = [
+    { name: 'Facebook', icon: Facebook, href: 'https://facebook.com/alertaz' },
+    { name: 'Twitter', icon: Twitter, href: 'https://twitter.com/alertaz' },
+    { name: 'Instagram', icon: Instagram, href: 'https://instagram.com/alertaz' },
+    { name: 'LinkedIn', icon: Linkedin, href: 'https://linkedin.com/company/alertaz' },
+    { name: 'YouTube', icon: Youtube, href: 'https://youtube.com/@alertaz' },
+    { name: 'GitHub', icon: Github, href: 'https://github.com/alertaz' },
+  ];
+
   return (
-    <footer className="bg-[#F9F9F9] dark:bg-gray-900">
-      <div className="flex justify-center px-4 sm:px-8 lg:px-36">
-        <div className="w-full max-w-5xl py-12 lg:py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
-          {/* Services */}
-          <div>
-            <h3 className="text-xl font-bold text-grayscale-900 dark:text-white mb-4">
-              {t.services}
-            </h3>
-            <div className="space-y-3">
-              <Link href={getLocalizedPath(locale, '/sirketler/kredit-teskilatlari/nagd-kreditler')} className="block text-grayscale-900 dark:text-gray-300 hover:text-brand-orange transition-colors">
-                {t.services_items.cashCredits}
-              </Link>
-              <Link href={getLocalizedPath(locale, '/sirketler/banklar')} className="block text-grayscale-900 dark:text-gray-300 hover:text-brand-orange transition-colors">
-                {t.services_items.creditCards}
-              </Link>
-              <Link href={getLocalizedPath(locale, '/sirketler/kredit-teskilatlari/avtomobil-kreditler')} className="block text-grayscale-900 dark:text-gray-300 hover:text-brand-orange transition-colors">
-                {t.services_items.autoCredits}
-              </Link>
-              <Link href={getLocalizedPath(locale, '/sirketler/kredit-teskilatlari/ipoteka-kreditler')} className="block text-grayscale-900 dark:text-gray-300 hover:text-brand-orange transition-colors">
-                {t.services_items.mortgage}
-              </Link>
-              <Link href={getLocalizedPath(locale, '/sirketler/kredit-teskilatlari/biznes-kreditler')} className="block text-grayscale-900 dark:text-gray-300 hover:text-brand-orange transition-colors">
-                {t.services_items.businessCredits}
-              </Link>
-            </div>
-          </div>
-
-          {/* Company */}
-          <div>
-            <h3 className="text-xl font-bold text-grayscale-900 dark:text-white mb-4">
-              {t.company}
-            </h3>
-            <div className="space-y-3">
-              <Link href={getLocalizedPath(locale, '/haqqimizda')} className="block text-grayscale-900 dark:text-gray-300 hover:text-brand-orange transition-colors">
-                {t.company_items.about}
-              </Link>
-              <Link href={getLocalizedPath(locale, '/elaqe')} className="block text-grayscale-900 dark:text-gray-300 hover:text-brand-orange transition-colors">
-                {t.company_items.contact}
-              </Link>
-              <Link href={getLocalizedPath(locale, '/sertler')} className="block text-grayscale-900 dark:text-gray-300 hover:text-brand-orange transition-colors">
-                {t.company_items.terms}
-              </Link>
-              <Link href={getLocalizedPath(locale, '/qaydalar')} className="block text-grayscale-900 dark:text-gray-300 hover:text-brand-orange transition-colors">
-                {t.company_items.rules}
-              </Link>
-              <Link href={getLocalizedPath(locale, '/sual-cavab')} className="block text-grayscale-900 dark:text-gray-300 hover:text-brand-orange transition-colors">
-                {t.company_items.faq}
-              </Link>
-            </div>
-          </div>
-
-          {/* Resources */}
-          <div>
-            <h3 className="text-xl font-bold text-grayscale-900 dark:text-white mb-4">
-              {t.resources}
-            </h3>
-            <div className="space-y-3">
-              <Link href={getLocalizedPath(locale, '/bloq')} className="block text-grayscale-900 dark:text-gray-300 hover:text-brand-orange transition-colors">
-                {t.resources_items.blog}
-              </Link>
-              <Link href={getLocalizedPath(locale, '/kalkulyator/valyuta')} className="block text-grayscale-900 dark:text-gray-300 hover:text-brand-orange transition-colors">
-                {t.resources_items.calculator}
-              </Link>
-              <Link href={getLocalizedPath(locale, '/tehsil')} className="block text-grayscale-900 dark:text-gray-300 hover:text-brand-orange transition-colors">
-                {t.resources_items.education}
-              </Link>
-              <Link href={getLocalizedPath(locale, '/rehberler')} className="block text-grayscale-900 dark:text-gray-300 hover:text-brand-orange transition-colors">
-                {t.resources_items.guides}
-              </Link>
-            </div>
-          </div>
-
-          {/* Contact */}
-          <div>
-            <h3 className="text-xl font-bold text-grayscale-900 dark:text-white mb-6">
-              {t.contact}
-            </h3>
-            <div className="space-y-4">
-              {contactInfo.email && (
-                <div className="flex items-center space-x-3">
-                  <Mail className="w-5 h-5 text-brand-orange flex-shrink-0" />
-                  <a href={`mailto:${contactInfo.email}`} className="text-grayscale-900 dark:text-gray-300 hover:text-brand-orange transition-colors">
-                    {contactInfo.email}
-                  </a>
+    <footer className="bg-gray-50 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800">
+      {/* Main Footer Content */}
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-16">
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 lg:gap-12">
+          {/* Brand Section */}
+          <div className="lg:col-span-2">
+            <div className="flex items-center space-x-2 mb-4">
+              <div className="relative">
+                <div className="absolute inset-0 bg-gradient-to-r from-[rgb(81,91,195)] to-indigo-400 rounded-lg blur"></div>
+                <div className="relative bg-gradient-to-r from-[rgb(81,91,195)] to-indigo-400 text-white font-bold text-xl px-3 py-1 rounded-lg">
+                  <Bell className="w-5 h-5 inline-block mr-1" />
+                  Alert.az
                 </div>
-              )}
-              {contactInfo.address && (
-                <div className="flex items-start space-x-3">
-                  <MapPin className="w-5 h-5 text-brand-orange flex-shrink-0 mt-0.5" />
-                  <span className="text-grayscale-900 dark:text-gray-300">
-                    {contactInfo.address}
-                  </span>
-                </div>
-              )}
+              </div>
             </div>
-          </div>
-        </div>
 
-        {/* Newsletter */}
-        <div className="border-t border-grayscale-900-12 dark:border-gray-800 pt-8 mb-8">
-          <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
-            <div className="lg:max-w-lg">
-              <h4 className="text-sm font-semibold text-grayscale-900-40 dark:text-gray-500 mb-2">
-                {t.newsletter.title}
-              </h4>
-              <p className="text-grayscale-900 dark:text-gray-300">
-                {t.newsletter.description}
-              </p>
-            </div>
-            <form onSubmit={handleSubscribe} className="flex flex-col gap-3">
-              <div className="flex flex-col sm:flex-row gap-3">
+            <p className="text-gray-600 dark:text-gray-400 mb-6">
+              Your intelligent monitoring and notification platform. Track crypto, weather, websites, stocks, and currency rates with real-time alerts delivered to your preferred channels.
+            </p>
+
+            {/* Newsletter Subscription */}
+            <div className="mb-6">
+              <h3 className="font-semibold text-gray-900 dark:text-white mb-3">
+                Subscribe to our newsletter
+              </h3>
+              <form onSubmit={handleSubscribe} className="flex gap-2">
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder={t.newsletter.placeholder}
-                  disabled={isLoading}
-                  className="px-4 py-2 border border-text-gray-02 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-grayscale-900 dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-orange disabled:opacity-50"
+                  placeholder="Enter your email"
+                  className="flex-1 px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-[rgb(81,91,195)] focus:border-transparent"
+                  required
                 />
-                <button 
+                <button
                   type="submit"
-                  disabled={isLoading}
-                  className="bg-brand-orange hover:bg-brand-orange-dark text-white px-4 py-2 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 min-w-[120px]"
+                  disabled={isSubscribing}
+                  className="px-4 py-2 bg-gradient-to-r from-[rgb(81,91,195)] to-indigo-400 text-white rounded-lg hover:shadow-lg hover:-translate-y-0.5 transition-all disabled:opacity-50"
                 >
-                  {isLoading ? (
-                    <>
-                      <span className="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-white"></span>
-                      <span>{locale === 'az' ? 'Göndərilir...' : locale === 'ru' ? 'Отправка...' : 'Sending...'}</span>
-                    </>
+                  {isSubscribing ? (
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
                   ) : (
-                    t.newsletter.button
+                    <Send className="w-5 h-5" />
                   )}
                 </button>
-              </div>
-              {/* Message display */}
-              {message.type && (
-                <div className={`text-sm ${message.type === 'success' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
-                  {message.text}
-                </div>
+              </form>
+              {isSubscribed && (
+                <p className="text-green-600 dark:text-green-400 text-sm mt-2">
+                  Successfully subscribed to newsletter!
+                </p>
               )}
-            </form>
-          </div>
-        </div>
+            </div>
 
-        {/* Bottom Footer */}
-        <div className="border-t border-grayscale-900-12 dark:border-gray-800 pt-8">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <p className="text-grayscale-900-56 dark:text-gray-500">
-              {t.copyright?.replace('{year}', new Date().getFullYear().toString())}
-            </p>
-            <div className="flex items-center space-x-6">
-              <Link href="#" className="text-grayscale-900-56 dark:text-gray-500 hover:text-brand-orange transition-colors">
-                <Facebook className="w-6 h-6" />
-              </Link>
-              <Link href="#" className="text-grayscale-900-56 dark:text-gray-500 hover:text-brand-orange transition-colors">
-                <Twitter className="w-6 h-6" />
-              </Link>
-              <Link href="#" className="text-grayscale-900-56 dark:text-gray-500 hover:text-brand-orange transition-colors">
-                <Instagram className="w-6 h-6" />
-              </Link>
+            {/* Contact Info */}
+            <div className="space-y-3">
+              <div className="flex items-center space-x-3 text-gray-600 dark:text-gray-400">
+                <Mail className="w-5 h-5 text-[rgb(81,91,195)]" />
+                <a href="mailto:info@alert.az" className="hover:text-[rgb(81,91,195)] transition-colors">
+                  info@alert.az
+                </a>
+              </div>
+              <div className="flex items-center space-x-3 text-gray-600 dark:text-gray-400">
+                <Phone className="w-5 h-5 text-[rgb(81,91,195)]" />
+                <a href="tel:+994123456789" className="hover:text-[rgb(81,91,195)] transition-colors">
+                  +994 12 345 67 89
+                </a>
+              </div>
+              <div className="flex items-center space-x-3 text-gray-600 dark:text-gray-400">
+                <MapPin className="w-5 h-5 text-[rgb(81,91,195)]" />
+                <span>Baku, Azerbaijan</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Links Sections */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-4 gap-8 lg:col-span-3">
+            {/* Services */}
+            <div>
+              <h3 className="font-semibold text-gray-900 dark:text-white mb-4">Services</h3>
+              <ul className="space-y-2">
+                {footerLinks.services.map((link) => (
+                  <li key={link.href}>
+                    <Link
+                      href={link.href}
+                      className="text-gray-600 dark:text-gray-400 hover:text-[rgb(81,91,195)] transition-colors text-sm"
+                    >
+                      {link.name}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Company */}
+            <div>
+              <h3 className="font-semibold text-gray-900 dark:text-white mb-4">Company</h3>
+              <ul className="space-y-2">
+                {footerLinks.company.map((link) => (
+                  <li key={link.href}>
+                    <Link
+                      href={link.href}
+                      className="text-gray-600 dark:text-gray-400 hover:text-[rgb(81,91,195)] transition-colors text-sm"
+                    >
+                      {link.name}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Support */}
+            <div>
+              <h3 className="font-semibold text-gray-900 dark:text-white mb-4">Support</h3>
+              <ul className="space-y-2">
+                {footerLinks.support.map((link) => (
+                  <li key={link.href}>
+                    <Link
+                      href={link.href}
+                      className="text-gray-600 dark:text-gray-400 hover:text-[rgb(81,91,195)] transition-colors text-sm"
+                    >
+                      {link.name}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Legal */}
+            <div>
+              <h3 className="font-semibold text-gray-900 dark:text-white mb-4">Legal</h3>
+              <ul className="space-y-2">
+                {footerLinks.legal.map((link) => (
+                  <li key={link.href}>
+                    <Link
+                      href={link.href}
+                      className="text-gray-600 dark:text-gray-400 hover:text-[rgb(81,91,195)] transition-colors text-sm"
+                    >
+                      {link.name}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
             </div>
           </div>
         </div>
+
+        {/* Divider */}
+        <div className="border-t border-gray-200 dark:border-gray-800 mt-12 pt-8">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+            {/* Copyright */}
+            <div className="text-center sm:text-left">
+              <p className="text-gray-600 dark:text-gray-400 text-sm">
+                © {currentYear} Alert.az. All rights reserved.
+              </p>
+              <p className="text-gray-500 dark:text-gray-500 text-xs mt-1">
+                Made with ❤️ in Azerbaijan
+              </p>
+            </div>
+
+            {/* Social Links */}
+            <div className="flex items-center space-x-4">
+              {socialLinks.map((social) => {
+                const Icon = social.icon;
+                return (
+                  <a
+                    key={social.name}
+                    href={social.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-800 flex items-center justify-center hover:bg-[rgb(81,91,195)] hover:text-white transition-all group"
+                    aria-label={social.name}
+                  >
+                    <Icon className="w-5 h-5 text-gray-600 dark:text-gray-400 group-hover:text-white transition-colors" />
+                  </a>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+
+        {/* Tech Stack Badge */}
+        <div className="mt-8 flex flex-wrap items-center justify-center gap-4 text-xs text-gray-500 dark:text-gray-500">
+          <span className="flex items-center gap-1">
+            Built with
+          </span>
+          <span className="px-2 py-1 bg-gray-200 dark:bg-gray-800 rounded">Next.js</span>
+          <span className="px-2 py-1 bg-gray-200 dark:bg-gray-800 rounded">Laravel</span>
+          <span className="px-2 py-1 bg-gray-200 dark:bg-gray-800 rounded">TypeScript</span>
+          <span className="px-2 py-1 bg-gray-200 dark:bg-gray-800 rounded">Tailwind CSS</span>
         </div>
       </div>
     </footer>

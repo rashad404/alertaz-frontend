@@ -16,7 +16,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       defaultTheme="light"
       enableSystem={false}
       enableColorScheme={true}
-      storageKey="kredit-theme"
+      storageKey="alertaz-theme"
     >
       {children}
     </NextThemesProvider>

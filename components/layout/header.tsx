@@ -1,272 +1,380 @@
-"use client";
+'use client';
 
-import { useState, useEffect, useRef, useMemo } from "react";
-import Link from "next/link";
-import { Search, Menu, X, ChevronDown } from "lucide-react";
-import { Logo } from "@/components/ui/logo";
-import { LanguageSwitcher } from "@/components/ui/language-switcher";
-import { ThemeToggle } from "@/components/ui/theme-toggle";
-import { EntityComparisonIcon } from "@/components/ui/entity-comparison-icon";
-import { SearchOverlay } from "@/components/search/search-overlay";
-import { cn } from "@/lib/utils";
-import { getLocalizedPath } from "@/lib/utils/locale";
-import { useDictionary } from "@/providers/dictionary-provider";
-import { useQuery } from "@tanstack/react-query";
-import apiClient from "@/lib/api/client";
+import { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { useRouter, usePathname } from 'next/navigation';
+import { Menu, X, ChevronDown, Bell, Globe, User } from 'lucide-react';
+import { ThemeToggle } from '@/components/ui/theme-toggle';
 
-interface HeaderProps {
-  locale: string;
+interface Service {
+  name: string;
+  icon: string;
+  path: string;
+  description: string;
 }
 
-export function Header({ locale }: HeaderProps) {
-  const dictionary = useDictionary();
-  const t = dictionary.nav;
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [searchOpen, setSearchOpen] = useState(false);
-  const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
-  const mobileMenuRef = useRef<HTMLDivElement>(null);
+export default function Header() {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isServicesOpen, setIsServicesOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [currentLang, setCurrentLang] = useState('az');
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const router = useRouter();
+  const pathname = usePathname();
 
-  // Fetch menus from API
-  const { data: menuData } = useQuery({
-    queryKey: ["menus", locale],
-    queryFn: async () => {
-      const response = await apiClient.get(`/${locale}/menus`);
-      return response.data?.data || { header: [], footer: [] };
-    },
-  });
+  const services: Service[] = [
+    { name: 'Crypto Monitor', icon: '₿', path: '/alerts/create?type=crypto', description: 'Track cryptocurrency prices' },
+    { name: 'Weather Alerts', icon: '☁️', path: '/alerts/create?type=weather', description: 'Weather condition monitoring' },
+    { name: 'Website Monitor', icon: '🌐', path: '/alerts/create?type=website', description: 'Website uptime tracking' },
+    { name: 'Stock Market', icon: '📈', path: '/alerts/create?type=stock', description: 'Stock price alerts' },
+    { name: 'Currency Rates', icon: '💱', path: '/alerts/create?type=currency', description: 'Exchange rate monitoring' },
+  ];
 
-  // Fetch news categories for news submenu
-  const { data: newsCategories } = useQuery({
-    queryKey: ["news-categories", locale],
-    queryFn: async () => {
-      const response = await apiClient.get(`/${locale}/xeberler/kategoriler`);
-      // Ensure we always return an array
-      const data = response.data;
-      if (Array.isArray(data)) {
-        return data as Array<{ id: number; title: string; slug: string }>;
-      } else if (data && Array.isArray(data.data)) {
-        return data.data as Array<{ id: number; title: string; slug: string }>;
-      }
-      return [];
-    },
-  });
+  const languages = [
+    { code: 'az', name: 'AZ', flag: '🇦🇿' },
+    { code: 'en', name: 'EN', flag: '🇬🇧' },
+    { code: 'ru', name: 'RU', flag: '🇷🇺' },
+  ];
 
-  // Removed - we now use only menu items from the database
-  // const { data: companyTypes } = useQuery({...});
-
-  // Close mobile menu when clicking outside
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (mobileMenuRef.current && !mobileMenuRef.current.contains(event.target as Node)) {
-        setMobileMenuOpen(false);
-      }
+    // Check authentication status
+    const token = localStorage.getItem('token');
+    setIsAuthenticated(!!token);
+
+    // Handle scroll effect
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 10);
     };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
-    if (mobileMenuOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-      // Prevent body scroll when menu is open
-      document.body.style.overflow = 'hidden';
-    } else {
-      // Restore body scroll when menu is closed
-      document.body.style.overflow = 'unset';
-    }
+  const changeLang = (lang: string) => {
+    setCurrentLang(lang);
+    // Here you would typically update i18n context or cookie
+    localStorage.setItem('language', lang);
+  };
 
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-      document.body.style.overflow = 'unset';
-    };
-  }, [mobileMenuOpen]);
-
-  // Process menu items - merge news categories and company type subcategories
-  const navItems = useMemo(() => {
-    if (!menuData?.header || !Array.isArray(menuData.header)) return [];
-
-    return menuData.header.map((item: any) => {
-      // Special handling for news menu to add dynamic categories
-      if (item.slug === 'xeberler') {
-        // Build dropdown items - always include base items first
-        const baseItems = Array.isArray(item.children)
-          ? item.children.map((child: any) => ({
-              href: child.url, // URL already includes locale from backend
-              label: child.title
-            }))
-          : [];
-
-        // Add news categories if they're loaded
-        const categoryItems = Array.isArray(newsCategories)
-          ? newsCategories.map(cat => ({
-              href: getLocalizedPath(locale, `/xeberler/kat/${cat.slug}`), // News categories need locale added
-              label: cat.title
-            }))
-          : [];
-
-        return {
-          ...item,
-          href: item.url, // URL already includes locale from backend
-          label: item.title,
-          hasDropdown: item.has_dropdown || baseItems.length > 0 || categoryItems.length > 0,
-          dropdownItems: [...baseItems, ...categoryItems]
-        };
-      }
-
-      // Use menu items from database for all menus including Credits and Insurance
-      return {
-        ...item,
-        href: item.url, // URL already includes locale from backend
-        label: item.title,
-        hasDropdown: item.has_dropdown,
-        dropdownItems: Array.isArray(item.children)
-          ? item.children.map((child: any) => ({
-              href: child.url, // URL already includes locale from backend
-              label: child.title
-            }))
-          : []
-      };
-    });
-  }, [menuData, newsCategories, locale]);
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    setIsAuthenticated(false);
+    router.push('/');
+  };
 
   return (
-    <header className="border-b border-gray-100 dark:border-gray-800 sticky top-0 bg-white dark:bg-gray-900 z-50">
-      <div className="flex justify-center px-4 sm:px-8 lg:px-36">
-        <div className="w-full max-w-5xl">
-        <div className="flex items-center justify-between h-16 lg:h-20">
+    <header className={`sticky top-0 z-50 transition-all duration-300 ${
+      isScrolled
+        ? 'bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl shadow-lg'
+        : 'bg-white dark:bg-gray-900'
+    }`}>
+      <nav className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <Logo locale={locale} />
+          <div className="flex items-center">
+            <Link href="/" className="flex items-center space-x-2 group">
+              <div className="relative">
+                <div className="absolute inset-0 bg-gradient-to-r from-[rgb(81,91,195)] to-indigo-400 rounded-lg blur group-hover:blur-md transition-all"></div>
+                <div className="relative bg-gradient-to-r from-[rgb(81,91,195)] to-indigo-400 text-white font-bold text-xl px-3 py-1 rounded-lg">
+                  <Bell className="w-5 h-5 inline-block mr-1" />
+                  Alert.az
+                </div>
+              </div>
+            </Link>
+          </div>
 
           {/* Desktop Navigation */}
-          <nav className="hidden lg:flex items-center space-x-6 ml-8 flex-1 justify-center">
-            {navItems.map((item) => (
-              <div 
-                key={item.href} 
-                className="relative group"
-                onMouseEnter={() => item.hasDropdown && setActiveDropdown(item.label)}
-                onMouseLeave={() => setActiveDropdown(null)}
+          <div className="hidden md:flex items-center space-x-8">
+            <Link
+              href="/"
+              className={`font-medium transition-colors hover:text-[rgb(81,91,195)] ${
+                pathname === '/' ? 'text-[rgb(81,91,195)]' : 'text-gray-700 dark:text-gray-300'
+              }`}
+            >
+              Home
+            </Link>
+
+            {/* Services Dropdown */}
+            <div className="relative">
+              <button
+                onMouseEnter={() => setIsServicesOpen(true)}
+                onMouseLeave={() => setIsServicesOpen(false)}
+                className="flex items-center space-x-1 font-medium text-gray-700 dark:text-gray-300 hover:text-[rgb(81,91,195)] transition-colors"
               >
-                <Link
-                  href={item.href}
-                  className="flex items-center space-x-1 font-bold text-gray-900 dark:text-white hover:text-brand-orange transition-colors"
+                <span>Services</span>
+                <ChevronDown className={`w-4 h-4 transition-transform ${isServicesOpen ? 'rotate-180' : ''}`} />
+              </button>
+
+              {isServicesOpen && (
+                <div
+                  onMouseEnter={() => setIsServicesOpen(true)}
+                  onMouseLeave={() => setIsServicesOpen(false)}
+                  className="absolute top-full left-0 mt-2 w-64 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden"
                 >
-                  <span>{item.label}</span>
-                  {item.hasDropdown && (
-                    <ChevronDown className="w-4 h-4" />
-                  )}
-                </Link>
-                
-                {/* Dropdown menu */}
-                {item.hasDropdown && item.dropdownItems && Array.isArray(item.dropdownItems) && activeDropdown === item.label && (
-                  <div className="absolute top-full left-0 pt-2 z-50">
-                    <div className="w-56 max-h-96 overflow-y-auto bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-100 dark:border-gray-700 py-2">
-                      {item.dropdownItems.map((dropdownItem) => (
-                        <Link
-                          key={dropdownItem.href}
-                          href={dropdownItem.href}
-                          className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-brand-orange transition-colors"
-                          onClick={() => setActiveDropdown(null)}
-                        >
-                          {dropdownItem.label}
-                        </Link>
-                      ))}
-                    </div>
-                  </div>
-                )}
+                  {services.map((service) => (
+                    <Link
+                      key={service.path}
+                      href={service.path}
+                      className="block px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                    >
+                      <div className="flex items-center space-x-3">
+                        <span className="text-2xl">{service.icon}</span>
+                        <div>
+                          <div className="font-medium text-gray-900 dark:text-white">
+                            {service.name}
+                          </div>
+                          <div className="text-sm text-gray-500 dark:text-gray-400">
+                            {service.description}
+                          </div>
+                        </div>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <Link
+              href="/alerts"
+              className={`font-medium transition-colors hover:text-[rgb(81,91,195)] ${
+                pathname === '/alerts' ? 'text-[rgb(81,91,195)]' : 'text-gray-700 dark:text-gray-300'
+              }`}
+            >
+              My Alerts
+            </Link>
+
+            <Link
+              href="/pricing"
+              className={`font-medium transition-colors hover:text-[rgb(81,91,195)] ${
+                pathname === '/pricing' ? 'text-[rgb(81,91,195)]' : 'text-gray-700 dark:text-gray-300'
+              }`}
+            >
+              Pricing
+            </Link>
+
+            <Link
+              href="/docs"
+              className={`font-medium transition-colors hover:text-[rgb(81,91,195)] ${
+                pathname === '/docs' ? 'text-[rgb(81,91,195)]' : 'text-gray-700 dark:text-gray-300'
+              }`}
+            >
+              Docs
+            </Link>
+          </div>
+
+          {/* Right side actions */}
+          <div className="hidden md:flex items-center space-x-4">
+            {/* Language Selector */}
+            <div className="relative group">
+              <button className="flex items-center space-x-1 px-3 py-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                <Globe className="w-4 h-4" />
+                <span className="text-sm font-medium">{currentLang.toUpperCase()}</span>
+              </button>
+              <div className="absolute right-0 mt-2 w-32 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
+                {languages.map((lang) => (
+                  <button
+                    key={lang.code}
+                    onClick={() => changeLang(lang.code)}
+                    className={`w-full flex items-center space-x-2 px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors ${
+                      currentLang === lang.code ? 'bg-gray-50 dark:bg-gray-700' : ''
+                    }`}
+                  >
+                    <span>{lang.flag}</span>
+                    <span className="text-sm font-medium">{lang.name}</span>
+                  </button>
+                ))}
               </div>
-            ))}
-          </nav>
+            </div>
 
-          {/* Right side utilities */}
-          <div className="flex items-center space-x-3 lg:space-x-4">
-            {/* Language Switcher - Commented out for now */}
-            {/* <LanguageSwitcher locale={locale} /> */}
+            {/* Dark Mode Toggle */}
+            <ThemeToggle />
 
-            <div className="flex items-center space-x-2 lg:space-x-3">
-              <button
-                onClick={() => setSearchOpen(!searchOpen)}
-                className="w-9 h-9 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
-                aria-label={t.search}
+            {/* Auth Buttons / User Menu */}
+            {isAuthenticated ? (
+              <div className="relative group">
+                <button className="flex items-center space-x-2 px-3 py-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                  <User className="w-5 h-5" />
+                  <ChevronDown className="w-3 h-3" />
+                </button>
+                <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
+                  <Link
+                    href="/dashboard"
+                    className="block px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                  >
+                    Dashboard
+                  </Link>
+                  <Link
+                    href="/settings/profile"
+                    className="block px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                  >
+                    Profile Settings
+                  </Link>
+                  <Link
+                    href="/settings/notifications"
+                    className="block px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                  >
+                    Notifications
+                  </Link>
+                  <hr className="my-1 border-gray-200 dark:border-gray-700" />
+                  <button
+                    onClick={handleLogout}
+                    className="w-full text-left px-4 py-2 text-red-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                  >
+                    Logout
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="flex items-center space-x-3">
+                <Link
+                  href="/login"
+                  className="px-4 py-2 text-gray-700 dark:text-gray-300 font-medium hover:text-[rgb(81,91,195)] transition-colors"
+                >
+                  Sign In
+                </Link>
+                <Link
+                  href="/register"
+                  className="px-4 py-2 bg-gradient-to-r from-[rgb(81,91,195)] to-indigo-400 text-white font-medium rounded-lg hover:shadow-lg hover:-translate-y-0.5 transition-all"
+                >
+                  Get Started
+                </Link>
+              </div>
+            )}
+          </div>
+
+          {/* Mobile menu button */}
+          <button
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            className="md:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+          >
+            {isMenuOpen ? (
+              <X className="w-6 h-6" />
+            ) : (
+              <Menu className="w-6 h-6" />
+            )}
+          </button>
+        </div>
+
+        {/* Mobile Navigation */}
+        {isMenuOpen && (
+          <div className="md:hidden py-4 border-t border-gray-200 dark:border-gray-700">
+            <div className="flex flex-col space-y-3">
+              <Link
+                href="/"
+                className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-colors"
+                onClick={() => setIsMenuOpen(false)}
               >
-                <Search className="w-5 h-5 text-gray-700 dark:text-gray-300" />
-              </button>
-              
-              <ThemeToggle />
-              
-              <EntityComparisonIcon locale={locale} />
-
-              {/* Mobile menu button */}
-              <button
-                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="lg:hidden w-9 h-9 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
-                aria-label="Menu"
+                Home
+              </Link>
+              <Link
+                href="/alerts"
+                className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-colors"
+                onClick={() => setIsMenuOpen(false)}
               >
-                {mobileMenuOpen ? (
-                  <X className="w-5 h-5 text-gray-700 dark:text-gray-300" />
-                ) : (
-                  <Menu className="w-5 h-5 text-gray-700 dark:text-gray-300" />
-                )}
-              </button>
+                My Alerts
+              </Link>
+              <Link
+                href="/pricing"
+                className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Pricing
+              </Link>
+              <Link
+                href="/docs"
+                className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Docs
+              </Link>
+
+              <hr className="border-gray-200 dark:border-gray-700" />
+
+              <div className="px-4 py-2">
+                <div className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">Services</div>
+                {services.map((service) => (
+                  <Link
+                    key={service.path}
+                    href={service.path}
+                    className="flex items-center space-x-2 py-2 text-gray-700 dark:text-gray-300 hover:text-[rgb(81,91,195)] transition-colors"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <span>{service.icon}</span>
+                    <span>{service.name}</span>
+                  </Link>
+                ))}
+              </div>
+
+              <hr className="border-gray-200 dark:border-gray-700" />
+
+              <div className="flex items-center justify-between px-4">
+                <div className="flex items-center space-x-2">
+                  {languages.map((lang) => (
+                    <button
+                      key={lang.code}
+                      onClick={() => changeLang(lang.code)}
+                      className={`px-2 py-1 text-sm font-medium rounded ${
+                        currentLang === lang.code
+                          ? 'bg-[rgb(81,91,195)] text-white'
+                          : 'text-gray-700 dark:text-gray-300'
+                      }`}
+                    >
+                      {lang.name}
+                    </button>
+                  ))}
+                </div>
+                <ThemeToggle />
+              </div>
+
+              <hr className="border-gray-200 dark:border-gray-700" />
+
+              {isAuthenticated ? (
+                <>
+                  <Link
+                    href="/dashboard"
+                    className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-colors"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Dashboard
+                  </Link>
+                  <Link
+                    href="/settings/profile"
+                    className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-colors"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Settings
+                  </Link>
+                  <button
+                    onClick={() => {
+                      handleLogout();
+                      setIsMenuOpen(false);
+                    }}
+                    className="mx-4 py-2 text-red-600 text-center border border-red-600 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                  >
+                    Logout
+                  </button>
+                </>
+              ) : (
+                <div className="flex flex-col space-y-2 px-4">
+                  <Link
+                    href="/login"
+                    className="py-2 text-center text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Sign In
+                  </Link>
+                  <Link
+                    href="/register"
+                    className="py-2 text-center bg-gradient-to-r from-[rgb(81,91,195)] to-indigo-400 text-white font-medium rounded-lg hover:shadow-lg transition-all"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Get Started
+                  </Link>
+                </div>
+              )}
             </div>
           </div>
-        </div>
-
-        {/* Mobile menu */}
-        <div
-          ref={mobileMenuRef}
-          className={cn(
-            "lg:hidden absolute left-0 right-0 top-16 lg:top-20 bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800 transition-all duration-300 ease-in-out transform origin-top shadow-lg",
-            mobileMenuOpen 
-              ? "opacity-100 visible translate-y-0 scale-y-100" 
-              : "opacity-0 invisible -translate-y-2 scale-y-95"
-          )}
-          style={{ 
-            maxHeight: mobileMenuOpen ? '80vh' : '0',
-            transition: 'all 0.3s ease-in-out'
-          }}
-        >
-          <div className="relative">
-            <nav className="px-4 py-4 space-y-3 max-h-[70vh] overflow-y-auto overscroll-contain">
-            {navItems.map((item) => (
-              <div key={item.href}>
-                <Link
-                  href={item.href}
-                  onClick={() => !item.hasDropdown && setMobileMenuOpen(false)}
-                  className="block font-bold py-2 text-gray-900 dark:text-white hover:text-brand-orange transition-colors"
-                >
-                  {item.label}
-                </Link>
-                {item.hasDropdown && item.dropdownItems && Array.isArray(item.dropdownItems) && (
-                  <div className="ml-4 mt-2 space-y-2">
-                    {item.dropdownItems.map((dropdownItem) => (
-                      <Link
-                        key={dropdownItem.href}
-                        href={dropdownItem.href}
-                        onClick={() => setMobileMenuOpen(false)}
-                        className="block py-1 text-sm text-gray-600 dark:text-gray-400 hover:text-brand-orange transition-colors"
-                      >
-                        {dropdownItem.label}
-                      </Link>
-                    ))}
-                  </div>
-                )}
-              </div>
-            ))}
-            
-            {/* Copyright footer to indicate end of menu */}
-            <div className="px-4 py-4 mt-6 border-t border-gray-100 dark:border-gray-800">
-              <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
-                {dictionary.footer?.copyright?.replace('{year}', new Date().getFullYear().toString()) || `Bütün hüquqları qorunur © ${new Date().getFullYear()} Kredit.az`}
-              </p>
-            </div>
-            </nav>
-          </div>
-        </div>
-        </div>
-
-        {/* Search overlay */}
-        <SearchOverlay 
-          isOpen={searchOpen} 
-          onClose={() => setSearchOpen(false)} 
-          locale={locale} 
-        />
-      </div>
+        )}
+      </nav>
     </header>
   );
 }
