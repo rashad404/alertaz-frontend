@@ -70,6 +70,44 @@
       "stock": "Акции",
       "news": "Новости",
       "custom": "Пользовательский"
+    },
+    "quickSetup": {
+      "title": "Создать уведомление",
+      "subtitle": "Настройте мониторинг всего за 2 простых шага",
+      "step1": "Настройка",
+      "step2": "Каналы",
+      "alertName": "Название уведомления",
+      "alertNamePlaceholder": "например, Bitcoin достигает $100k",
+      "threshold": "Пороговое значение",
+      "thresholdPlaceholder": "например, $100,000",
+      "checkInterval": "Интервал проверки",
+      "interval": {
+        "5min": "5 минут",
+        "15min": "15 минут",
+        "30min": "30 минут",
+        "1hour": "1 час",
+        "6hours": "6 часов",
+        "24hours": "24 часа"
+      },
+      "aiTip": "Совет ИИ",
+      "aiTipDesc": "Мы можем автоматически установить лучшие параметры для вас",
+      "selectChannels": "Выберите каналы уведомлений",
+      "selectChannelsDesc": "Где вы хотите получать уведомления? Можно выбрать несколько.",
+      "channels": {
+        "email": "Email",
+        "emailDesc": "Отправлять уведомления на email",
+        "telegram": "Telegram",
+        "telegramDesc": "Мгновенные уведомления в Telegram",
+        "whatsapp": "WhatsApp",
+        "whatsappDesc": "Уведомления через WhatsApp",
+        "sms": "SMS",
+        "smsDesc": "Отправить SMS на телефон",
+        "push": "Push-уведомление",
+        "pushDesc": "Push-уведомление браузера"
+      },
+      "channelsSelected": "Выбрано каналов: {count}",
+      "createAlert": "Создать уведомление",
+      "creating": "Создание..."
     }
   },
   "settings": {

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Search, Sparkles, ArrowRight } from 'lucide-react';
+import { Bell, Sparkles, ArrowRight } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 export default function SearchMonitor() {
@@ -96,15 +96,16 @@ export default function SearchMonitor() {
                 onClick={handleSearch}
                 disabled={!query.trim()}
                 className={`
-                  relative group px-6 py-3 mr-2 rounded-2xl font-medium text-white
+                  relative group px-3 sm:px-6 py-3 mr-2 rounded-2xl font-medium text-white
                   bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500
-                  transition-all duration-300 overflow-hidden
+                  transition-all duration-300 overflow-hidden flex-shrink-0
                   ${query.trim()
                     ? 'opacity-100 hover:shadow-lg hover:scale-105'
                     : 'opacity-50 cursor-not-allowed'
                   }
                   ${isAnimating ? 'animate-pulse' : ''}
                 `}
+                title={t('search.createAlert')}
               >
                 {/* Button Shine Effect */}
                 <span className="absolute inset-0 w-full h-full">
@@ -112,9 +113,9 @@ export default function SearchMonitor() {
                 </span>
 
                 <span className="relative flex items-center gap-2">
-                  <Search className="w-4 h-4" />
-                  <span>{t('search.createAlert')}</span>
-                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                  <Bell className="w-4 h-4" />
+                  <span className="hidden sm:inline">{t('search.createAlert')}</span>
+                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform hidden sm:inline" />
                 </span>
               </button>
             </div>

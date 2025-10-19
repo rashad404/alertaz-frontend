@@ -70,6 +70,44 @@
       "stock": "Səhm",
       "news": "Xəbərlər",
       "custom": "Xüsusi"
+    },
+    "quickSetup": {
+      "title": "Bildirişinizi Yaradın",
+      "subtitle": "Cəmi 2 sadə addımda monitorinqi quraşdırın",
+      "step1": "Quraşdırma",
+      "step2": "Kanallar",
+      "alertName": "Bildiriş Adı",
+      "alertNamePlaceholder": "Məsələn: Bitcoin 100k dollarına çatır",
+      "threshold": "Hədd Dəyər",
+      "thresholdPlaceholder": "Məsələn: $100,000",
+      "checkInterval": "Yoxlama İntervalı",
+      "interval": {
+        "5min": "5 dəqiqə",
+        "15min": "15 dəqiqə",
+        "30min": "30 dəqiqə",
+        "1hour": "1 saat",
+        "6hours": "6 saat",
+        "24hours": "24 saat"
+      },
+      "aiTip": "Süni İntellekt Məsləhəti",
+      "aiTipDesc": "Avtomatik olaraq ən yaxşı parametrləri təyin edə bilərik",
+      "selectChannels": "Bildiriş Kanallarını Seçin",
+      "selectChannelsDesc": "Bildirişləri haradan almaq istəyirsiniz? Bir neçəsini seçə bilərsiniz.",
+      "channels": {
+        "email": "E-poçt",
+        "emailDesc": "Elektron poçta bildiriş göndər",
+        "telegram": "Telegram",
+        "telegramDesc": "Telegram-da ani bildiriş",
+        "whatsapp": "WhatsApp",
+        "whatsappDesc": "WhatsApp vasitəsilə bildiriş",
+        "sms": "SMS",
+        "smsDesc": "Telefon nömrənizə SMS göndər",
+        "push": "Push Bildiriş",
+        "pushDesc": "Brauzer push bildirişi"
+      },
+      "channelsSelected": "{count} kanal seçildi",
+      "createAlert": "Bildiriş Yarat",
+      "creating": "Yaradılır..."
     }
   },
   "settings": {

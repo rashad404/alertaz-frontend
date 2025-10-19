@@ -3,13 +3,84 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Bell, Plus, TrendingUp, Activity, Settings, AlertCircle } from 'lucide-react';
+import { Bell, Plus, TrendingUp, Activity, Settings, Bitcoin, Globe, BarChart3, Play, Pause } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+
+type AlertService = 'crypto' | 'stocks' | 'website' | 'weather' | 'currency' | 'flight';
+type AlertStatus = 'active' | 'paused';
+
+interface Alert {
+  id: string;
+  name: string;
+  service: AlertService;
+  threshold: string;
+  interval: string;
+  channels: string[];
+  status: AlertStatus;
+  lastTriggered?: Date;
+  createdAt: Date;
+}
+
+const serviceIcons = {
+  crypto: Bitcoin,
+  stocks: BarChart3,
+  website: Globe,
+  weather: Bell,
+  currency: TrendingUp,
+  flight: Activity,
+};
+
+const serviceGradients = {
+  crypto: 'from-orange-500 to-yellow-500',
+  stocks: 'from-blue-500 to-cyan-500',
+  website: 'from-green-500 to-emerald-500',
+  weather: 'from-purple-500 to-pink-500',
+  currency: 'from-indigo-500 to-purple-500',
+  flight: 'from-sky-500 to-blue-500',
+};
 
 export default function DashboardPage() {
   const t = useTranslations();
   const router = useRouter();
   const [user, setUser] = useState<any>(null);
+
+  // Mock alerts - same as in AlertsPageClient
+  const alerts: Alert[] = [
+    {
+      id: '1',
+      name: 'Bitcoin reaches $100k',
+      service: 'crypto',
+      threshold: '$100,000',
+      interval: '1hour',
+      channels: ['email', 'telegram'],
+      status: 'active',
+      lastTriggered: new Date('2025-01-15T10:30:00'),
+      createdAt: new Date('2025-01-10T08:00:00'),
+    },
+    {
+      id: '2',
+      name: 'Website downtime alert',
+      service: 'website',
+      threshold: 'Response time > 5s',
+      interval: '5min',
+      channels: ['sms', 'push'],
+      status: 'active',
+      createdAt: new Date('2025-01-12T14:20:00'),
+    },
+    {
+      id: '3',
+      name: 'Stock price drop warning',
+      service: 'stocks',
+      threshold: 'Price drops 5%',
+      interval: '15min',
+      channels: ['email'],
+      status: 'paused',
+      createdAt: new Date('2025-01-08T09:15:00'),
+    },
+  ];
+
+  const activeAlertsCount = alerts.filter(a => a.status === 'active').length;
+  const triggeredCount = alerts.filter(a => a.lastTriggered).length;
 
   useEffect(() => {
     // Check authentication
@@ -72,7 +143,7 @@ export default function DashboardPage() {
               </div>
               <TrendingUp className="w-5 h-5 text-green-500" />
             </div>
-            <div className="text-3xl font-bold text-gray-900 dark:text-white mb-1">0</div>
+            <div className="text-3xl font-bold text-gray-900 dark:text-white mb-1">{activeAlertsCount}</div>
             <div className="text-sm text-gray-600 dark:text-gray-400">{t('dashboard.activeAlerts')}</div>
           </div>
 
@@ -83,11 +154,11 @@ export default function DashboardPage() {
                 <Activity className="w-6 h-6 text-white" />
               </div>
             </div>
-            <div className="text-3xl font-bold text-gray-900 dark:text-white mb-1">0</div>
+            <div className="text-3xl font-bold text-gray-900 dark:text-white mb-1">{triggeredCount}</div>
             <div className="text-sm text-gray-600 dark:text-gray-400">{t('dashboard.notificationsSent')}</div>
           </div>
 
-          {/* Quick Setup */}
+          {/* System Status */}
           <div className="card-glass rounded-3xl p-6">
             <div className="flex items-center justify-between mb-4">
               <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center">
@@ -99,39 +170,65 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Recent Alerts - Empty State */}
-        <div className="card-glass rounded-3xl p-8">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
-            {t('dashboard.yourAlerts')}
-          </h2>
-
-          {/* Empty State */}
-          <div className="text-center py-12">
-            <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 p-[1px]">
-              <div className="w-full h-full rounded-2xl bg-white dark:bg-gray-900 flex items-center justify-center">
-                <AlertCircle className="w-10 h-10 text-gray-400" />
-              </div>
-            </div>
-
-            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
-              {t('dashboard.noAlertsYet')}
-            </h3>
-            <p className="text-gray-600 dark:text-gray-400 mb-6">
-              {t('dashboard.noAlertsDescription')}
-            </p>
-
+        {/* Recent Alerts */}
+        <div className="card-glass rounded-3xl p-8 mb-12">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+              {t('dashboard.yourAlerts')}
+            </h2>
             <Link
-              href="/alerts/quick-setup"
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white font-medium hover:shadow-lg transition-all duration-300"
+              href="/alerts"
+              className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 text-sm font-medium"
             >
-              <Plus className="w-5 h-5" />
-              <span>{t('dashboard.createFirstAlert')}</span>
+              {t('dashboard.allAlerts')} →
             </Link>
+          </div>
+
+          <div className="space-y-4">
+            {alerts.slice(0, 3).map((alert) => {
+              const ServiceIcon = serviceIcons[alert.service];
+              const gradient = serviceGradients[alert.service];
+
+              return (
+                <div
+                  key={alert.id}
+                  className="flex items-center gap-4 p-4 rounded-2xl bg-white/50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 hover:bg-white dark:hover:bg-gray-800 transition-all"
+                >
+                  {/* Icon */}
+                  <div className="relative flex-shrink-0">
+                    <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${gradient} p-[1px]`}>
+                      <div className="w-full h-full rounded-xl bg-white dark:bg-gray-900 flex items-center justify-center">
+                        <ServiceIcon className="w-6 h-6 text-gray-900 dark:text-white" />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Content */}
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-semibold text-gray-900 dark:text-white mb-1">
+                      {alert.name}
+                    </h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      {alert.threshold} • {t(`alerts.quickSetup.interval.${alert.interval}`)}
+                    </p>
+                  </div>
+
+                  {/* Status */}
+                  <span className={`px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap ${
+                    alert.status === 'active'
+                      ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
+                      : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
+                  }`}>
+                    {t(`alerts.${alert.status}`)}
+                  </span>
+                </div>
+              );
+            })}
           </div>
         </div>
 
         {/* Quick Links */}
-        <div className="mt-12 grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <Link
             href="/settings"
             className="card-glass rounded-3xl p-6 hover:scale-105 transition-transform duration-300"

@@ -70,6 +70,44 @@
       "stock": "Stock",
       "news": "News",
       "custom": "Custom"
+    },
+    "quickSetup": {
+      "title": "Create Your Alert",
+      "subtitle": "Set up monitoring in just 2 simple steps",
+      "step1": "Configure",
+      "step2": "Channels",
+      "alertName": "Alert Name",
+      "alertNamePlaceholder": "e.g., Bitcoin reaches $100k",
+      "threshold": "Threshold Value",
+      "thresholdPlaceholder": "e.g., $100,000",
+      "checkInterval": "Check Interval",
+      "interval": {
+        "5min": "5 minutes",
+        "15min": "15 minutes",
+        "30min": "30 minutes",
+        "1hour": "1 hour",
+        "6hours": "6 hours",
+        "24hours": "24 hours"
+      },
+      "aiTip": "AI Tip",
+      "aiTipDesc": "We can automatically set the best parameters for you",
+      "selectChannels": "Select Notification Channels",
+      "selectChannelsDesc": "Where would you like to receive notifications? You can select multiple.",
+      "channels": {
+        "email": "Email",
+        "emailDesc": "Send notifications to email",
+        "telegram": "Telegram",
+        "telegramDesc": "Instant notifications on Telegram",
+        "whatsapp": "WhatsApp",
+        "whatsappDesc": "Notifications via WhatsApp",
+        "sms": "SMS",
+        "smsDesc": "Send SMS to your phone",
+        "push": "Push Notification",
+        "pushDesc": "Browser push notification"
+      },
+      "channelsSelected": "{count} channels selected",
+      "createAlert": "Create Alert",
+      "creating": "Creating..."
     }
   },
   "settings": {
