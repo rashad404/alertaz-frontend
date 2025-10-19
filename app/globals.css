@@ -1,21 +1,26 @@
 @import "tailwindcss";
 
-/* Import Proxima Nova font */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+/* Import Modern Fonts - Inter for UI, Plus Jakarta Sans for headings */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 
 /* Define dark variant to use .dark class selector */
 @variant dark (&:is(.dark *));
 
 @theme {
-  /* Alert.az Brand Colors */
-  --color-brand-primary: rgb(81, 91, 195);
-  --color-brand-primary-dark: rgb(61, 71, 175);
-  --color-brand-primary-light: rgb(101, 111, 215);
-  --color-brand-secondary: rgb(99, 102, 241);
-  --color-brand-success: #10b981;
-  --color-brand-warning: #f59e0b;
-  --color-brand-danger: #ef4444;
-  --color-brand-info: #3b82f6;
+  /* Modern 2025 Color Palette */
+  --color-primary: #5B5FCF;
+  --color-primary-dark: #4A4DBF;
+  --color-primary-light: #7478E6;
+  --color-accent: #8B5CF6;
+  --color-gradient-start: #667EEA;
+  --color-gradient-mid: #764BA2;
+  --color-gradient-end: #F093FB;
+  --color-success: #10B981;
+  --color-warning: #F59E0B;
+  --color-danger: #EF4444;
+  --color-info: #3B82F6;
+  --color-surface: rgba(255, 255, 255, 0.02);
+  --color-glass: rgba(255, 255, 255, 0.1);
 }
 
 @layer base {
@@ -91,19 +96,29 @@
   }
 
   body {
-    background-color: hsl(var(--background));
+    @apply bg-gradient-to-br from-gray-50 via-white to-indigo-50 dark:from-gray-950 dark:via-gray-900 dark:to-indigo-950;
     color: hsl(var(--foreground));
-    font-family: "Proxima Nova", -apple-system, BlinkMacSystemFont, "Segoe UI", "Inter", sans-serif;
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     font-feature-settings: "rlig" 1, "calt" 1;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    min-height: 100vh;
+    position: relative;
   }
 
-  /* Custom font fallback */
-  @font-face {
-    font-family: 'Proxima Nova';
-    src: local('Proxima Nova'), local('ProximaNova');
-    font-display: swap;
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image:
+      radial-gradient(circle at 10% 20%, rgba(91, 95, 207, 0.1) 0%, transparent 50%),
+      radial-gradient(circle at 80% 80%, rgba(139, 92, 246, 0.1) 0%, transparent 50%),
+      radial-gradient(circle at 40% 40%, rgba(102, 126, 234, 0.05) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
   }
 
   /* Headings */
@@ -137,41 +152,117 @@
 }
 
 @layer components {
-  /* Button animations */
+  /* Modern Button Styles with 2025 Trends */
   .btn-primary {
-    @apply bg-[rgb(81,91,195)] hover:bg-[rgb(61,71,175)] text-white font-semibold px-6 py-3 rounded-xl transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5;
+    @apply relative px-8 py-4 font-medium text-white rounded-2xl overflow-hidden transition-all duration-300;
+    background: linear-gradient(135deg, #667EEA 0%, #764BA2 100%);
+    box-shadow: 0 4px 15px 0 rgba(102, 126, 234, 0.4);
+    transform-style: preserve-3d;
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px 0 rgba(102, 126, 234, 0.5);
+  }
+
+  .btn-primary::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s;
+  }
+
+  .btn-primary:hover::before {
+    left: 100%;
   }
 
   .btn-secondary {
-    @apply bg-white dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700 font-semibold px-6 py-3 rounded-xl transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5;
+    @apply relative px-8 py-4 font-medium rounded-2xl overflow-hidden transition-all duration-300;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #4A4DBF;
   }
 
-  /* Card styles */
-  .card-modern {
-    @apply bg-white dark:bg-gray-800/50 backdrop-blur-xl rounded-2xl border border-gray-200 dark:border-gray-700/50 shadow-sm hover:shadow-xl transition-all duration-300;
+  .btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.2);
   }
 
-  /* Gradient text */
+  /* Premium Glass Cards */
+  .card-glass {
+    @apply relative rounded-3xl p-8 overflow-hidden;
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+  }
+
+  .card-glass-dark {
+    background: rgba(17, 25, 40, 0.75);
+    backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.125);
+  }
+
+  /* Bento Grid Card */
+  .bento-card {
+    @apply relative rounded-3xl p-6 transition-all duration-500;
+    background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .bento-card:hover {
+    transform: translateY(-5px) scale(1.02);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    border-color: rgba(102, 126, 234, 0.3);
+  }
+
+  /* Premium Gradient Text */
   .gradient-text {
-    @apply bg-gradient-to-r from-[rgb(81,91,195)] to-indigo-400 bg-clip-text text-transparent;
+    @apply font-bold inline-block;
+    background: linear-gradient(135deg, #667EEA 0%, #764BA2 50%, #F093FB 100%);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+    background-size: 200% 200%;
+    animation: gradient-shift 3s ease infinite;
   }
 
-  /* Glass effect */
-  .glass {
-    @apply bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border border-white/20 dark:border-gray-700/20;
+  /* Fallback for browsers that don't support background-clip */
+  @supports not (background-clip: text) {
+    .gradient-text {
+      background: none;
+      color: rgb(81, 91, 195);
+    }
   }
 
-  /* Animated gradient background */
-  .animated-gradient {
-    background: linear-gradient(270deg, rgb(81, 91, 195), rgb(99, 102, 241), rgb(139, 92, 246));
-    background-size: 400% 400%;
-    animation: gradient 15s ease infinite;
-  }
-
-  @keyframes gradient {
+  @keyframes gradient-shift {
     0% { background-position: 0% 50%; }
     50% { background-position: 100% 50%; }
     100% { background-position: 0% 50%; }
+  }
+
+  /* Glow Effect */
+  .glow {
+    box-shadow: 0 0 30px rgba(102, 126, 234, 0.3);
+  }
+
+  /* Mesh Gradient Background */
+  .mesh-gradient {
+    background:
+      radial-gradient(at 40% 20%, hsla(280,100%,74%,0.3) 0px, transparent 50%),
+      radial-gradient(at 80% 0%, hsla(251,100%,77%,0.3) 0px, transparent 50%),
+      radial-gradient(at 0% 50%, hsla(355,100%,93%,0.2) 0px, transparent 50%),
+      radial-gradient(at 80% 50%, hsla(340,100%,76%,0.2) 0px, transparent 50%),
+      radial-gradient(at 0% 100%, hsla(226,100%,77%,0.2) 0px, transparent 50%),
+      radial-gradient(at 80% 100%, hsla(242,100%,70%,0.3) 0px, transparent 50%);
   }
 }
 
