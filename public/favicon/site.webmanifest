@@ -1,1 +1,25 @@
-{"name":"Kredit.az","short_name":"Kredit.az","icons":[{"src":"/favicon/android-chrome-192x192.png","sizes":"192x192","type":"image/png"},{"src":"/favicon/android-chrome-512x512.png","sizes":"512x512","type":"image/png"}],"theme_color":"#ffffff","background_color":"#ffffff","display":"standalone"}
+{
+  "name": "Alert.az - Unified Notification Platform",
+  "short_name": "Alert.az",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "/favicon/android-chrome-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/favicon/android-chrome-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "theme_color": "#667EEA",
+  "background_color": "#667EEA",
+  "display": "standalone",
+  "description": "Monitor everything that matters. Get instant alerts for crypto, stocks, weather, and more."
+}
