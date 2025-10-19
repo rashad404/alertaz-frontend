@@ -1,0 +1,16 @@
+<svg width="120" height="60" viewBox="0 0 120 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="120" height="60" rx="8" fill="#DC2626"/>
+  
+  <!-- PASHA Text -->
+  <text x="60" y="20" font-family="Arial, sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="white">PASHA</text>
+  
+  <!-- Tagline -->
+  <text x="60" y="35" font-family="Arial, sans-serif" font-size="8" text-anchor="middle" fill="#FCA5A5">BANK</text>
+  
+  <!-- Premium diamond design -->
+  <g transform="translate(50, 42)">
+    <polygon points="10,0 20,6 10,12 0,6" fill="white" opacity="0.8"/>
+    <polygon points="10,3 16,6 10,9 4,6" fill="white" opacity="0.6"/>
+  </g>
+</svg>

@@ -1,0 +1,18 @@
+<svg width="120" height="60" viewBox="0 0 120 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="120" height="60" rx="8" fill="#10B981"/>
+  
+  <!-- Kapital Text -->
+  <text x="60" y="20" font-family="Arial, sans-serif" font-size="12" font-weight="bold" text-anchor="middle" fill="white">KAPITAL</text>
+  
+  <!-- Tagline -->
+  <text x="60" y="35" font-family="Arial, sans-serif" font-size="8" text-anchor="middle" fill="#86EFAC">BANK</text>
+  
+  <!-- Modern geometric design -->
+  <g transform="translate(30, 42)">
+    <rect x="0" y="0" width="12" height="12" rx="2" fill="white" opacity="0.8"/>
+    <rect x="15" y="0" width="12" height="12" rx="2" fill="white" opacity="0.6"/>
+    <rect x="30" y="0" width="12" height="12" rx="2" fill="white" opacity="0.4"/>
+    <rect x="45" y="0" width="12" height="12" rx="2" fill="white" opacity="0.2"/>
+  </g>
+</svg>

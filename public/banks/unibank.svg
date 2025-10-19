@@ -1,0 +1,22 @@
+<svg width="120" height="60" viewBox="0 0 120 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="120" height="60" rx="8" fill="#7C3AED"/>
+  
+  <!-- Unibank Text -->
+  <text x="60" y="20" font-family="Arial, sans-serif" font-size="11" font-weight="bold" text-anchor="middle" fill="white">UNIBANK</text>
+  
+  <!-- Tagline -->
+  <text x="60" y="35" font-family="Arial, sans-serif" font-size="8" text-anchor="middle" fill="#C4B5FD">Universal Bank</text>
+  
+  <!-- Unity circles -->
+  <g transform="translate(35, 45)">
+    <circle cx="5" cy="5" r="4" fill="white" opacity="0.8"/>
+    <circle cx="15" cy="5" r="4" fill="white" opacity="0.6"/>
+    <circle cx="25" cy="5" r="4" fill="white" opacity="0.4"/>
+    <circle cx="35" cy="5" r="4" fill="white" opacity="0.2"/>
+    <!-- Connection lines -->
+    <line x1="9" y1="5" x2="11" y2="5" stroke="white" stroke-width="1" opacity="0.5"/>
+    <line x1="19" y1="5" x2="21" y2="5" stroke="white" stroke-width="1" opacity="0.5"/>
+    <line x1="29" y1="5" x2="31" y2="5" stroke="white" stroke-width="1" opacity="0.5"/>
+  </g>
+</svg>

@@ -1,0 +1,22 @@
+<svg width="120" height="60" viewBox="0 0 120 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="120" height="60" rx="8" fill="#1F2937"/>
+  
+  <!-- Bank Respublika Text -->
+  <text x="60" y="16" font-family="Arial, sans-serif" font-size="9" font-weight="bold" text-anchor="middle" fill="white">BANK</text>
+  <text x="60" y="28" font-family="Arial, sans-serif" font-size="9" font-weight="bold" text-anchor="middle" fill="white">RESPUBLIKA</text>
+  
+  <!-- Government/Republic symbol -->
+  <g transform="translate(50, 38)">
+    <!-- Building columns -->
+    <rect x="0" y="6" width="2" height="12" fill="white" opacity="0.8"/>
+    <rect x="4" y="6" width="2" height="12" fill="white" opacity="0.8"/>
+    <rect x="8" y="6" width="2" height="12" fill="white" opacity="0.8"/>
+    <rect x="12" y="6" width="2" height="12" fill="white" opacity="0.8"/>
+    <rect x="16" y="6" width="2" height="12" fill="white" opacity="0.8"/>
+    <!-- Roof -->
+    <polygon points="10,0 20,6 0,6" fill="white" opacity="0.6"/>
+    <!-- Base -->
+    <rect x="-2" y="18" width="24" height="2" fill="white" opacity="0.4"/>
+  </g>
+</svg>

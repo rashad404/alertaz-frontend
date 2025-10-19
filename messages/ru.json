@@ -1,0 +1,149 @@
+{
+  "nav": {
+    "about": "О нас",
+    "news": "Новости",
+    "banks": "Банки",
+    "credits": "Кредиты",
+    "deposits": "Депозиты",
+    "insurance": "Страхование",
+    "contact": "Контакты",
+    "search": "Поиск",
+    "darkMode": "Темный режим",
+    "comparison": "Сравнение",
+    "compareCredits": "Сравнить кредиты",
+    "creditTypes": {
+      "cash": "Наличный кредит",
+      "mortgage": "Ипотека",
+      "auto": "Автокредит",
+      "business": "Бизнес кредит"
+    },
+    "insuranceTypes": {
+      "auto": "Автострахование",
+      "health": "Медицинское страхование",
+      "property": "Страхование имущества",
+      "travel": "Туристическое страхование"
+    }
+  },
+  "home": {
+    "latestNews": "Последние новости",
+    "popularOffers": "Популярные предложения",
+    "partnerBanks": "Банки-партнеры",
+    "moreNews": "Больше",
+    "moreOffers": "Больше",
+    "moreBanks": "Больше",
+    "allNews": "Все новости",
+    "viewAll": "Все",
+    "categories": {
+      "news": "Новости дня",
+      "finance": "Финансы",
+      "insurance": "Страхование",
+      "realEstate": "Недвижимость",
+      "interviews": "Интервью"
+    },
+    "offers": {
+      "credit": "Кредит",
+      "creditCard": "Кредитная карта",
+      "debitCard": "Дебетовая карта",
+      "autoCredit": "Автокредит",
+      "mortgage": "Ипотека",
+      "deposit": "Депозит"
+    },
+    "appDownload": {
+      "title": "Скачайте приложение, чтобы быть в курсе финансовых новостей",
+      "downloadOnAppStore": "Загрузить в App Store",
+      "downloadOnGooglePlay": "Доступно в Google Play"
+    },
+    "newsletter": {
+      "title": "ПОДПИШИТЕСЬ НА НОВОСТИ",
+      "description": "Подпишитесь на ежемесячные уведомления, чтобы быть в курсе финансовых инноваций.",
+      "placeholder": "Введите email",
+      "button": "Подписаться!"
+    },
+    "banks": "Банки",
+    "insuranceOrganizations": "Страховые организации"
+  },
+  "offer": {
+    "annualRate": "Годовая ставка",
+    "duration": "Срок",
+    "monthly": "Ежемесячно",
+    "maxCreditLimit": "Максимальный кредитный лимит",
+    "month": "Месяц",
+    "currency": "AZN",
+    "apply": "Подать заявку",
+    "details": "Подробнее",
+    "advantages": {
+      "noCollateral": "Без залога",
+      "fastApproval": "Быстрое одобрение",
+      "flexiblePayment": "Гибкий график платежей"
+    }
+  },
+  "currency": {
+    "exchangeRates": "Курсы валют",
+    "buy": "Покупка",
+    "sell": "Продажа"
+  },
+  "footer": {
+    "services": "Услуги",
+    "company": "Компания",
+    "resources": "Ресурсы",
+    "contact": "Контакты",
+    "services_items": {
+      "cashCredits": "Наличные кредиты",
+      "creditCards": "Кредитные карты",
+      "autoCredits": "Автокредиты",
+      "mortgage": "Ипотека",
+      "businessCredits": "Бизнес кредиты",
+      "deposits": "Депозиты"
+    },
+    "company_items": {
+      "about": "О нас",
+      "contact": "Контакты",
+      "terms": "Пользовательское соглашение",
+      "rules": "Правила",
+      "faq": "FAQ"
+    },
+    "resources_items": {
+      "blog": "Блог",
+      "calculator": "Валютный калькулятор"
+    },
+    "copyright": "Все права защищены © {year} Kredit.az",
+    "newsletter": {
+      "title": "ПОДПИШИТЕСЬ НА НОВОСТИ",
+      "description": "Подпишитесь на ежемесячные уведомления, чтобы быть в курсе финансовых инноваций.",
+      "placeholder": "Введите email",
+      "button": "Подписаться!"
+    }
+  },
+  "contact": {
+    "form": {
+      "firstName": "Имя",
+      "lastName": "Фамилия",
+      "phone": "Телефон",
+      "email": "Email",
+      "message": "Сообщение",
+      "terms": "Я принимаю условия",
+      "submit": "Отправить",
+      "success": "Ваше сообщение успешно отправлено!",
+      "error": "Произошла ошибка. Пожалуйста, попробуйте еще раз."
+    }
+  },
+  "common": {
+    "loading": "Загрузка...",
+    "error": "Произошла ошибка",
+    "retry": "Попробовать снова",
+    "noData": "Данные не найдены",
+    "readMore": "Читать далее",
+    "showLess": "Показать меньше",
+    "page": "Страница",
+    "of": "из",
+    "results": "результатов",
+    "filter": "Фильтр",
+    "filters": "Фильтры",
+    "amount": "Сумма",
+    "duration": "Срок",
+    "months": "месяцев",
+    "bank": "Банк",
+    "allBanks": "Все банки",
+    "noCreditsFound": "Кредиты, соответствующие вашим критериям, не найдены"
+  }
+}

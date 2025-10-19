@@ -1,0 +1,149 @@
+{
+  "nav": {
+    "about": "About",
+    "news": "News",
+    "banks": "Banks",
+    "credits": "Credits",
+    "deposits": "Deposits",
+    "insurance": "Insurance",
+    "contact": "Contact",
+    "search": "Search",
+    "darkMode": "Dark mode",
+    "comparison": "Comparison",
+    "compareCredits": "Compare Credits",
+    "creditTypes": {
+      "cash": "Cash Credit",
+      "mortgage": "Mortgage",
+      "auto": "Auto Credit",
+      "business": "Business Credit"
+    },
+    "insuranceTypes": {
+      "auto": "Auto Insurance",
+      "health": "Health Insurance",
+      "property": "Property Insurance",
+      "travel": "Travel Insurance"
+    }
+  },
+  "home": {
+    "latestNews": "Latest news",
+    "popularOffers": "Popular offers",
+    "partnerBanks": "Partner banks",
+    "moreNews": "More",
+    "moreOffers": "More",
+    "moreBanks": "More",
+    "allNews": "All news",
+    "viewAll": "View all",
+    "categories": {
+      "news": "Agenda",
+      "finance": "Finance",
+      "insurance": "Insurance",
+      "realEstate": "Real Estate",
+      "interviews": "Interviews"
+    },
+    "offers": {
+      "credit": "Credit",
+      "creditCard": "Credit card",
+      "debitCard": "Debit card",
+      "autoCredit": "Auto credit",
+      "mortgage": "Mortgage",
+      "deposit": "Deposit"
+    },
+    "appDownload": {
+      "title": "Download the app to stay updated with financial news",
+      "downloadOnAppStore": "Download on App Store",
+      "downloadOnGooglePlay": "Get it on Google Play"
+    },
+    "newsletter": {
+      "title": "SUBSCRIBE TO UPDATES",
+      "description": "Subscribe to monthly notifications to stay informed about financial innovations.",
+      "placeholder": "Enter email",
+      "button": "Subscribe!"
+    },
+    "banks": "Banks",
+    "insuranceOrganizations": "Insurance Organizations"
+  },
+  "offer": {
+    "annualRate": "Annual rate",
+    "duration": "Duration",
+    "monthly": "Monthly",
+    "maxCreditLimit": "Maximum credit limit",
+    "month": "Month",
+    "currency": "AZN",
+    "apply": "Apply",
+    "details": "Details",
+    "advantages": {
+      "noCollateral": "No collateral required",
+      "fastApproval": "Fast approval",
+      "flexiblePayment": "Flexible payment"
+    }
+  },
+  "currency": {
+    "exchangeRates": "Exchange rates",
+    "buy": "Buy",
+    "sell": "Sell"
+  },
+  "footer": {
+    "services": "Services",
+    "company": "Company",
+    "resources": "Resources",
+    "contact": "Contact us",
+    "services_items": {
+      "cashCredits": "Cash credits",
+      "creditCards": "Credit cards",
+      "autoCredits": "Auto credits",
+      "mortgage": "Mortgage",
+      "businessCredits": "Business credits",
+      "deposits": "Deposits"
+    },
+    "company_items": {
+      "about": "About us",
+      "contact": "Contact",
+      "terms": "Terms of use",
+      "rules": "Rules",
+      "faq": "FAQ"
+    },
+    "resources_items": {
+      "blog": "Blog",
+      "calculator": "Currency calculator"
+    },
+    "copyright": "All rights reserved © {year} Kredit.az",
+    "newsletter": {
+      "title": "SUBSCRIBE TO UPDATES",
+      "description": "Subscribe to monthly notifications to stay informed about financial innovations.",
+      "placeholder": "Enter email",
+      "button": "Subscribe!"
+    }
+  },
+  "contact": {
+    "form": {
+      "firstName": "First name",
+      "lastName": "Last name",
+      "phone": "Phone",
+      "email": "Email",
+      "message": "Message",
+      "terms": "I accept the terms",
+      "submit": "Send",
+      "success": "Your message has been sent successfully!",
+      "error": "An error occurred. Please try again."
+    }
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "retry": "Try again",
+    "noData": "No data found",
+    "readMore": "Read more",
+    "showLess": "Show less",
+    "page": "Page",
+    "of": "of",
+    "results": "results",
+    "filter": "Filter",
+    "filters": "Filters",
+    "amount": "Amount",
+    "duration": "Duration",
+    "months": "months",
+    "bank": "Bank",
+    "allBanks": "All Banks",
+    "noCreditsFound": "No credits found matching your criteria"
+  }
+}
