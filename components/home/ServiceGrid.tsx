@@ -101,7 +101,7 @@ export default function ServiceGrid() {
             <div className={`
               absolute inset-0 rounded-3xl
               bg-gradient-to-br ${service.gradient}
-              opacity-10 group-hover:opacity-20
+              opacity-10 group-hover:opacity-15
               transition-all duration-500
               ${service.pulse ? 'animate-pulse' : ''}
             `} />
@@ -118,7 +118,7 @@ export default function ServiceGrid() {
             `}>
               {/* Hover Gradient Effect */}
               <div className={`
-                absolute inset-0 opacity-0 group-hover:opacity-100
+                absolute inset-0 opacity-0 group-hover:opacity-50
                 bg-gradient-to-br ${service.gradient}
                 transition-opacity duration-500
                 blur-3xl

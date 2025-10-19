@@ -10,8 +10,8 @@ const dmSans = DM_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "Alertaz",
-  description: "Alertaz Application",
+  title: "Alert.az",
+  description: "Alert.az Application",
   icons: {
     icon: [
       { url: '/favicon/favicon.ico' },

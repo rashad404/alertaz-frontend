@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import SearchMonitor from '@/components/home/SearchMonitor';
 import ServiceGrid from '@/components/home/ServiceGrid';
-import { Bell, Sparkles, Zap, Shield, Globe, TrendingUp } from 'lucide-react';
+import { Bell, Sparkles, Zap, Shield } from 'lucide-react';
 
 interface HomePageProps {
   params: Promise<{ lang: string }>;
@@ -99,43 +99,6 @@ export default function HomePage({ params }: HomePageProps) {
             </h2>
           </div>
           <ServiceGrid />
-        </div>
-      </section>
-
-      {/* Modern How It Works */}
-      <section className="relative px-6 py-20">
-        <div className="max-w-6xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="card-glass rounded-3xl p-8 hover:scale-105 transition-transform duration-500">
-              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center mb-6">
-                <Globe className="w-7 h-7 text-white" />
-              </div>
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3">Choose Your Target</h3>
-              <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
-                Select from dozens of monitoring services - crypto, stocks, weather, websites and more
-              </p>
-            </div>
-
-            <div className="card-glass rounded-3xl p-8 hover:scale-105 transition-transform duration-500">
-              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center mb-6">
-                <TrendingUp className="w-7 h-7 text-white" />
-              </div>
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3">Set Smart Conditions</h3>
-              <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
-                Define precise triggers with our intelligent condition builder and AI suggestions
-              </p>
-            </div>
-
-            <div className="card-glass rounded-3xl p-8 hover:scale-105 transition-transform duration-500">
-              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center mb-6">
-                <Bell className="w-7 h-7 text-white" />
-              </div>
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3">Instant Notifications</h3>
-              <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
-                Get alerts through SMS, Email, Telegram, WhatsApp, Push, or Slack instantly
-              </p>
-            </div>
-          </div>
         </div>
       </section>
 
