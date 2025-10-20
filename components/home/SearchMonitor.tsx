@@ -35,18 +35,42 @@ export default function SearchMonitor() {
     setIsAnimating(true);
     setTimeout(() => {
       const lowerQuery = query.toLowerCase();
-      let service = 'crypto';
+      let service = 'crypto'; // default
 
-      if (lowerQuery.includes('bitcoin') || lowerQuery.includes('btc') || lowerQuery.includes('crypto')) {
+      // Crypto keywords (EN, AZ, RU)
+      if (lowerQuery.includes('bitcoin') || lowerQuery.includes('btc') ||
+          lowerQuery.includes('crypto') || lowerQuery.includes('kripto') ||
+          lowerQuery.includes('ethereum') || lowerQuery.includes('eth')) {
         service = 'crypto';
-      } else if (lowerQuery.includes('stock') || lowerQuery.includes('apple')) {
-        service = 'stock';
-      } else if (lowerQuery.includes('usd') || lowerQuery.includes('eur')) {
-        service = 'currency';
-      } else if (lowerQuery.includes('weather')) {
-        service = 'weather';
-      } else if (lowerQuery.includes('website')) {
+      }
+      // Stock keywords (EN, AZ, RU)
+      else if (lowerQuery.includes('stock') || lowerQuery.includes('səhm') ||
+               lowerQuery.includes('акци') || lowerQuery.includes('apple') ||
+               lowerQuery.includes('tesla')) {
+        service = 'stocks';
+      }
+      // Website keywords (EN, AZ, RU)
+      else if (lowerQuery.includes('website') || lowerQuery.includes('veb-sayt') ||
+               lowerQuery.includes('веб-сайт') || lowerQuery.includes('sayt') ||
+               lowerQuery.includes('site') || lowerQuery.includes('monitor') ||
+               lowerQuery.includes('uptime') || lowerQuery.includes('downtime')) {
         service = 'website';
+      }
+      // Weather keywords (EN, AZ, RU)
+      else if (lowerQuery.includes('weather') || lowerQuery.includes('hava') ||
+               lowerQuery.includes('погод')) {
+        service = 'weather';
+      }
+      // Currency keywords (EN, AZ, RU)
+      else if (lowerQuery.includes('currency') || lowerQuery.includes('valyuta') ||
+               lowerQuery.includes('валют') || lowerQuery.includes('usd') ||
+               lowerQuery.includes('eur') || lowerQuery.includes('dollar')) {
+        service = 'currency';
+      }
+      // Flight keywords (EN, AZ, RU)
+      else if (lowerQuery.includes('flight') || lowerQuery.includes('uçuş') ||
+               lowerQuery.includes('полет') || lowerQuery.includes('plane')) {
+        service = 'flight';
       }
 
       router.push(`/alerts/quick-setup?service=${service}&description=${encodeURIComponent(query)}`);

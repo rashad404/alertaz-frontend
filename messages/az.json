@@ -130,7 +130,8 @@
     "next": "Növbəti",
     "finish": "Bitir",
     "close": "Bağla",
-    "search": "Axtar"
+    "search": "Axtar",
+    "confirmDelete": "Bu bildirişi silmək istədiyinizə əminsiniz?"
   },
   "search": {
     "placeholder1": "Bitcoin 100,000 dollara çatır",

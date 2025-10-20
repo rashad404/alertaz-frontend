@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Bell, Plus, TrendingUp, Bitcoin, Globe, Cloud, DollarSign, Plane, Play, Pause, Trash2, Settings, Search, Filter } from 'lucide-react';
 import { useTranslations } from 'next-intl';
@@ -46,40 +46,38 @@ const AlertsPageClient: React.FC<AlertsPageClientProps> = ({ lang }) => {
   const t = useTranslations();
   const router = useRouter();
 
-  // Mock data - replace with API call later
-  const [alerts] = useState<Alert[]>([
-    {
-      id: '1',
-      name: 'Bitcoin reaches $100k',
-      service: 'crypto',
-      threshold: '$100,000',
-      interval: '1hour',
-      channels: ['email', 'telegram'],
-      status: 'active',
-      lastTriggered: new Date('2025-01-15T10:30:00'),
-      createdAt: new Date('2025-01-10T08:00:00'),
-    },
-    {
-      id: '2',
-      name: 'Website downtime alert',
-      service: 'website',
-      threshold: 'Response time > 5s',
-      interval: '5min',
-      channels: ['sms', 'push'],
-      status: 'active',
-      createdAt: new Date('2025-01-12T14:20:00'),
-    },
-    {
-      id: '3',
-      name: 'Stock price drop warning',
-      service: 'stocks',
-      threshold: 'Price drops 5%',
-      interval: '15min',
-      channels: ['email'],
-      status: 'paused',
-      createdAt: new Date('2025-01-08T09:15:00'),
-    },
-  ]);
+  // Start with empty array - alerts will be loaded from API or localStorage
+  const [alerts, setAlerts] = useState<Alert[]>([]);
+  const [isHydrated, setIsHydrated] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Load from localStorage after hydration (client-side only)
+  useEffect(() => {
+    const stored = localStorage.getItem('mockAlerts');
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored);
+        // Convert date strings back to Date objects
+        const loadedAlerts = parsed.map((alert: any) => ({
+          ...alert,
+          lastTriggered: alert.lastTriggered ? new Date(alert.lastTriggered) : undefined,
+          createdAt: new Date(alert.createdAt),
+        }));
+        setAlerts(loadedAlerts);
+      } catch (e) {
+        console.error('Failed to load alerts from localStorage:', e);
+      }
+    }
+    setIsHydrated(true);
+    setIsLoading(false);
+  }, []);
+
+  // Save alerts to localStorage whenever they change (but only after hydration)
+  useEffect(() => {
+    if (isHydrated) {
+      localStorage.setItem('mockAlerts', JSON.stringify(alerts));
+    }
+  }, [alerts, isHydrated]);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState<'all' | AlertStatus>('all');
@@ -90,18 +88,30 @@ const AlertsPageClient: React.FC<AlertsPageClientProps> = ({ lang }) => {
   };
 
   const handleToggleStatus = (id: string) => {
-    // TODO: API call to toggle alert status
-    console.log('Toggle alert:', id);
+    // Update local state - later connect to API: POST /api/alerts/{id}/toggle
+    setAlerts(prevAlerts =>
+      prevAlerts.map(alert =>
+        alert.id === id
+          ? { ...alert, status: alert.status === 'active' ? 'paused' : 'active' }
+          : alert
+      )
+    );
   };
 
   const handleDelete = (id: string) => {
-    // TODO: API call to delete alert
-    console.log('Delete alert:', id);
+    // Confirm before deleting
+    if (!confirm(t('common.confirmDelete') || 'Are you sure you want to delete this alert?')) {
+      return;
+    }
+
+    // Update local state - later connect to API: DELETE /api/alerts/{id}
+    setAlerts(prevAlerts => prevAlerts.filter(alert => alert.id !== id));
   };
 
   const handleEdit = (id: string) => {
-    // TODO: Navigate to edit page
-    console.log('Edit alert:', id);
+    // Navigate to edit page - for now just show alert
+    alert(`Edit alert ${id} - This will be implemented soon!`);
+    // TODO: router.push(`/${lang}/alerts/${id}/edit`);
   };
 
   const filteredAlerts = alerts.filter(alert => {
@@ -241,7 +251,21 @@ const AlertsPageClient: React.FC<AlertsPageClientProps> = ({ lang }) => {
 
         {/* Alerts List */}
         <div className="space-y-4">
-          {filteredAlerts.length === 0 ? (
+          {isLoading ? (
+            <div className="card-glass rounded-3xl p-16 text-center">
+              <div className="inline-flex items-center justify-center w-20 h-20 mb-6 relative">
+                <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-indigo-500 to-purple-500 opacity-20 blur-xl animate-pulse" />
+                <div className="relative w-20 h-20 rounded-3xl bg-gradient-to-br from-indigo-500 to-purple-500 p-[1px]">
+                  <div className="w-full h-full rounded-3xl bg-white dark:bg-gray-900 flex items-center justify-center">
+                    <Bell className="w-10 h-10 text-gray-900 dark:text-white animate-pulse" />
+                  </div>
+                </div>
+              </div>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                {t('common.loading')}
+              </h2>
+            </div>
+          ) : filteredAlerts.length === 0 ? (
             <div className="card-glass rounded-3xl p-16 text-center">
               <div className="inline-flex items-center justify-center w-20 h-20 mb-6 relative">
                 <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-indigo-500 to-purple-500 opacity-20 blur-xl" />

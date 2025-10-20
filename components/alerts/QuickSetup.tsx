@@ -196,6 +196,7 @@ export default function QuickSetup() {
                 />
               </div>
 
+              {/* Crypto, Stocks, Currency: Price Threshold */}
               {(config.service === 'crypto' || config.service === 'stocks' || config.service === 'currency') && (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -206,6 +207,54 @@ export default function QuickSetup() {
                     value={config.threshold}
                     onChange={(e) => setConfig({ ...config, threshold: e.target.value })}
                     placeholder={t('alerts.quickSetup.thresholdPlaceholder')}
+                    className="w-full px-4 py-3 rounded-2xl bg-white/50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                  />
+                </div>
+              )}
+
+              {/* Website Monitoring: URL */}
+              {config.service === 'website' && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Website URL
+                  </label>
+                  <input
+                    type="url"
+                    value={config.threshold}
+                    onChange={(e) => setConfig({ ...config, threshold: e.target.value })}
+                    placeholder="https://example.com"
+                    className="w-full px-4 py-3 rounded-2xl bg-white/50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                  />
+                </div>
+              )}
+
+              {/* Weather: Location */}
+              {config.service === 'weather' && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Location
+                  </label>
+                  <input
+                    type="text"
+                    value={config.threshold}
+                    onChange={(e) => setConfig({ ...config, threshold: e.target.value })}
+                    placeholder="Baku, Azerbaijan"
+                    className="w-full px-4 py-3 rounded-2xl bg-white/50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                  />
+                </div>
+              )}
+
+              {/* Flight: Flight Number */}
+              {config.service === 'flight' && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Flight Number
+                  </label>
+                  <input
+                    type="text"
+                    value={config.threshold}
+                    onChange={(e) => setConfig({ ...config, threshold: e.target.value })}
+                    placeholder="J2 123 or GYD-IST"
                     className="w-full px-4 py-3 rounded-2xl bg-white/50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
                   />
                 </div>
