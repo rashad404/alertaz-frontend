@@ -64,6 +64,7 @@
     "paused": "Dayandırılıb",
     "edit": "Redaktə et",
     "delete": "Sil",
+    "notificationChannels": "Bildiriş Kanalları",
     "types": {
       "crypto": "Kripto",
       "weather": "Hava",
@@ -74,10 +75,20 @@
     "quickSetup": {
       "title": "Bildirişinizi Yaradın",
       "subtitle": "Cəmi 2 sadə addımda monitorinqi quraşdırın",
+      "selectService": "Xidmət Növünü Seçin",
+      "selectServiceDesc": "Hansı növ bildiriş yaratmaq istəyirsiniz?",
       "step1": "Quraşdırma",
       "step2": "Kanallar",
       "alertName": "Bildiriş Adı",
-      "alertNamePlaceholder": "Məsələn: Bitcoin 100k dollarına çatır",
+      "alertNamePlaceholder": {
+        "crypto": "Məsələn: Bitcoin 100k dollarına çatır",
+        "stocks": "Məsələn: Apple səhmi 200$ olur",
+        "website": "Məsələn: Saytım işləmir",
+        "weather": "Məsələn: Bakıda hava qəfil dəyişir",
+        "currency": "Məsələn: USD/AZN 1.70 olur",
+        "flight": "Məsələn: J2 123 uçuşu gecikirr"
+      },
+      "selectCrypto": "Kriptovalyuta seçin",
       "threshold": "Hədd Dəyər",
       "thresholdPlaceholder": "Məsələn: $100,000",
       "checkInterval": "Yoxlama İntervalı",
@@ -131,6 +142,7 @@
     "finish": "Bitir",
     "close": "Bağla",
     "search": "Axtar",
+    "all": "Hamısı",
     "confirmDelete": "Bu bildirişi silmək istədiyinizə əminsiniz?"
   },
   "search": {
@@ -199,7 +211,7 @@
     "noAccount": "Hesabınız yoxdur?",
     "signUp": "Qeydiyyat",
     "invalidCredentials": "Yanlış e-poçt və ya şifrə",
-    "emailPlaceholder": "siz@misal.az",
+    "emailPlaceholder": "siz@sayt.az",
     "passwordPlaceholder": "••••••••"
   },
   "register": {
@@ -224,7 +236,7 @@
     "passwordMin8": "Şifrə ən azı 8 simvol olmalıdır",
     "registrationFailed": "Qeydiyyat uğursuz oldu. Yenidən cəhd edin.",
     "namePlaceholder": "Əli Əliyev",
-    "emailPlaceholder": "siz@misal.az",
+    "emailPlaceholder": "siz@sayt.az",
     "passwordPlaceholder": "••••••••"
   }
 }

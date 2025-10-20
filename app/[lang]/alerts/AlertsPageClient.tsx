@@ -42,6 +42,19 @@ const serviceGradients = {
   flight: 'from-sky-500 to-blue-500',
 };
 
+// Helper function to normalize old interval formats to new ones
+const normalizeInterval = (interval: string): string => {
+  const intervalMap: { [key: string]: string } = {
+    '5m': '5min',
+    '15m': '15min',
+    '30m': '30min',
+    '1h': '1hour',
+    '6h': '6hours',
+    '24h': '24hours',
+  };
+  return intervalMap[interval] || interval;
+};
+
 const AlertsPageClient: React.FC<AlertsPageClientProps> = ({ lang }) => {
   const t = useTranslations();
   const router = useRouter();
@@ -53,7 +66,7 @@ const AlertsPageClient: React.FC<AlertsPageClientProps> = ({ lang }) => {
 
   // Load from localStorage after hydration (client-side only)
   useEffect(() => {
-    const stored = localStorage.getItem('mockAlerts');
+    const stored = localStorage.getItem('alerts');
     if (stored) {
       try {
         const parsed = JSON.parse(stored);
@@ -75,7 +88,7 @@ const AlertsPageClient: React.FC<AlertsPageClientProps> = ({ lang }) => {
   // Save alerts to localStorage whenever they change (but only after hydration)
   useEffect(() => {
     if (isHydrated) {
-      localStorage.setItem('mockAlerts', JSON.stringify(alerts));
+      localStorage.setItem('alerts', JSON.stringify(alerts));
     }
   }, [alerts, isHydrated]);
 
@@ -109,9 +122,8 @@ const AlertsPageClient: React.FC<AlertsPageClientProps> = ({ lang }) => {
   };
 
   const handleEdit = (id: string) => {
-    // Navigate to edit page - for now just show alert
-    alert(`Edit alert ${id} - This will be implemented soon!`);
-    // TODO: router.push(`/${lang}/alerts/${id}/edit`);
+    // Navigate to edit page
+    router.push(`/${lang}/alerts/${id}/edit`);
   };
 
   const filteredAlerts = alerts.filter(alert => {
@@ -172,7 +184,7 @@ const AlertsPageClient: React.FC<AlertsPageClientProps> = ({ lang }) => {
                 onChange={(e) => setFilterStatus(e.target.value as 'all' | AlertStatus)}
                 className="w-full pl-12 pr-4 py-3 rounded-2xl bg-white/50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all appearance-none"
               >
-                <option value="all">{t('alerts.status')} - All</option>
+                <option value="all">{t('alerts.status')} - {t('common.all')}</option>
                 <option value="active">{t('alerts.active')}</option>
                 <option value="paused">{t('alerts.paused')}</option>
               </select>
@@ -186,7 +198,7 @@ const AlertsPageClient: React.FC<AlertsPageClientProps> = ({ lang }) => {
                 onChange={(e) => setFilterService(e.target.value as 'all' | AlertService)}
                 className="w-full pl-12 pr-4 py-3 rounded-2xl bg-white/50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all appearance-none"
               >
-                <option value="all">{t('alerts.type')} - All</option>
+                <option value="all">{t('alerts.type')} - {t('common.all')}</option>
                 <option value="crypto">{t('services.crypto.name')}</option>
                 <option value="stocks">{t('services.stocks.name')}</option>
                 <option value="website">{t('services.website.name')}</option>
@@ -317,7 +329,7 @@ const AlertsPageClient: React.FC<AlertsPageClientProps> = ({ lang }) => {
                             {alert.name}
                           </h3>
                           <p className="text-sm text-gray-600 dark:text-gray-400">
-                            {alert.threshold} • {t(`alerts.quickSetup.interval.${alert.interval}`)}
+                            {alert.threshold} • {t(`alerts.quickSetup.interval.${normalizeInterval(alert.interval)}`)}
                           </p>
                         </div>
                         <span className={`px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap ${
@@ -331,7 +343,7 @@ const AlertsPageClient: React.FC<AlertsPageClientProps> = ({ lang }) => {
 
                       <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
                         <div className="flex items-center gap-2">
-                          <span className="font-medium">{t('alerts.quickSetup.selectChannels')}:</span>
+                          <span className="font-medium">{t('alerts.notificationChannels')}:</span>
                           <div className="flex gap-1">
                             {alert.channels.map(channel => (
                               <span key={channel} className="px-2 py-1 rounded-lg bg-gray-100 dark:bg-gray-800 text-xs">

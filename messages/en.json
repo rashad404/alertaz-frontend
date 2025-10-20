@@ -64,6 +64,7 @@
     "paused": "Paused",
     "edit": "Edit",
     "delete": "Delete",
+    "notificationChannels": "Notification Channels",
     "types": {
       "crypto": "Crypto",
       "weather": "Weather",
@@ -74,10 +75,20 @@
     "quickSetup": {
       "title": "Create Your Alert",
       "subtitle": "Set up monitoring in just 2 simple steps",
+      "selectService": "Select Service Type",
+      "selectServiceDesc": "What kind of alert would you like to create?",
       "step1": "Configure",
       "step2": "Channels",
       "alertName": "Alert Name",
-      "alertNamePlaceholder": "e.g., Bitcoin reaches $100k",
+      "alertNamePlaceholder": {
+        "crypto": "e.g., Bitcoin reaches $100k",
+        "stocks": "e.g., Apple stock hits $200",
+        "website": "e.g., My website goes down",
+        "weather": "e.g., Severe weather in Baku",
+        "currency": "e.g., USD/AZN reaches 1.70",
+        "flight": "e.g., J2 123 flight delayed"
+      },
+      "selectCrypto": "Select Cryptocurrency",
       "threshold": "Threshold Value",
       "thresholdPlaceholder": "e.g., $100,000",
       "checkInterval": "Check Interval",
@@ -131,6 +142,7 @@
     "finish": "Finish",
     "close": "Close",
     "search": "Search",
+    "all": "All",
     "confirmDelete": "Are you sure you want to delete this alert?"
   },
   "search": {

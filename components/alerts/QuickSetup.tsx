@@ -7,10 +7,18 @@ import { useTranslations } from 'next-intl';
 
 type AlertService = 'crypto' | 'stocks' | 'website' | 'weather' | 'currency' | 'flight';
 
+interface Cryptocurrency {
+  id: string;
+  symbol: string;
+  name: string;
+  image: string | null;
+}
+
 interface AlertConfig {
   service: AlertService;
   description: string;
   name: string;
+  crypto?: string;
   threshold?: string;
   interval?: string;
   channels: string[];
@@ -38,15 +46,18 @@ export default function QuickSetup() {
   const t = useTranslations();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [step, setStep] = useState(1);
+  // Start at step 0 if no service is provided, otherwise start at step 1
+  const [step, setStep] = useState(searchParams.get('service') ? 1 : 0);
   const [isLoading, setIsLoading] = useState(false);
+  const [cryptocurrencies, setCryptocurrencies] = useState<Cryptocurrency[]>([]);
 
   const [config, setConfig] = useState<AlertConfig>({
     service: (searchParams.get('service') as AlertService) || 'crypto',
     description: searchParams.get('description') || '',
     name: '',
+    crypto: 'BTC',
     threshold: '',
-    interval: '1h',
+    interval: '1hour',
     channels: [],
   });
 
@@ -59,13 +70,42 @@ export default function QuickSetup() {
     }
   }, [searchParams]);
 
+  // Fetch cryptocurrency list from API
+  useEffect(() => {
+    const fetchCryptos = async () => {
+      try {
+        const response = await fetch('http://100.89.150.50:8007/api/cryptos');
+        const data = await response.json();
+        if (data.success && data.data) {
+          setCryptocurrencies(data.data);
+        }
+      } catch (error) {
+        console.error('Error fetching cryptocurrencies:', error);
+      }
+    };
+
+    fetchCryptos();
+  }, []);
+
   const handleNext = () => {
-    if (step === 1 && config.name.trim()) {
+    if (step === 0 && config.service) {
+      setStep(1);
+    } else if (step === 1 && config.name.trim()) {
       setStep(2);
     }
   };
 
   const handleBack = () => {
+    if (step > 0) {
+      setStep(step - 1);
+    }
+  };
+
+  const handleServiceSelect = (service: AlertService) => {
+    setConfig(prev => ({
+      ...prev,
+      service,
+    }));
     setStep(1);
   };
 
@@ -83,23 +123,52 @@ export default function QuickSetup() {
 
     setIsLoading(true);
 
-    // TODO: API call to create alert
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    try {
+      // Create new alert object
+      const newAlert = {
+        id: Date.now().toString(),
+        name: config.name,
+        service: config.service,
+        crypto: config.service === 'crypto' ? config.crypto : undefined,
+        threshold: config.threshold || 'N/A',
+        interval: config.interval,
+        channels: config.channels,
+        status: 'active',
+        createdAt: new Date().toISOString(),
+      };
 
-    // Redirect to dashboard or alerts list
-    router.push('/dashboard');
+      // Load existing alerts from localStorage
+      const stored = localStorage.getItem('alerts');
+      const existingAlerts = stored ? JSON.parse(stored) : [];
+
+      // Add new alert
+      existingAlerts.push(newAlert);
+
+      // Save back to localStorage
+      localStorage.setItem('alerts', JSON.stringify(existingAlerts));
+
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+      // Redirect to alerts list
+      router.push('/alerts');
+    } catch (error) {
+      console.error('Failed to create alert:', error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const ServiceIcon = serviceIcons[config.service];
   const gradient = serviceGradients[config.service];
 
   const intervals = [
-    { value: '5m', label: t('alerts.quickSetup.interval.5min') },
-    { value: '15m', label: t('alerts.quickSetup.interval.15min') },
-    { value: '30m', label: t('alerts.quickSetup.interval.30min') },
-    { value: '1h', label: t('alerts.quickSetup.interval.1hour') },
-    { value: '6h', label: t('alerts.quickSetup.interval.6hours') },
-    { value: '24h', label: t('alerts.quickSetup.interval.24hours') },
+    { value: '5min', label: t('alerts.quickSetup.interval.5min') },
+    { value: '15min', label: t('alerts.quickSetup.interval.15min') },
+    { value: '30min', label: t('alerts.quickSetup.interval.30min') },
+    { value: '1hour', label: t('alerts.quickSetup.interval.1hour') },
+    { value: '6hours', label: t('alerts.quickSetup.interval.6hours') },
+    { value: '24hours', label: t('alerts.quickSetup.interval.24hours') },
   ];
 
   const channels = [
@@ -180,7 +249,111 @@ export default function QuickSetup() {
 
         {/* Form Container */}
         <div className="card-glass rounded-3xl p-8">
-          {step === 1 ? (
+          {step === 0 ? (
+            // Step 0: Select Service
+            <div className="space-y-6">
+              <div className="text-center mb-6">
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                  {t('alerts.quickSetup.selectService')}
+                </h2>
+                <p className="text-gray-600 dark:text-gray-400">
+                  {t('alerts.quickSetup.selectServiceDesc')}
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {/* Crypto */}
+                <button
+                  onClick={() => handleServiceSelect('crypto')}
+                  className="group relative p-6 rounded-2xl border-2 border-gray-200 dark:border-gray-700 hover:border-orange-500 dark:hover:border-orange-500 transition-all duration-300 hover:scale-105 hover:shadow-lg"
+                >
+                  <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-orange-500 to-yellow-500 opacity-0 group-hover:opacity-10 transition-opacity" />
+                  <Bitcoin className="w-12 h-12 text-orange-500 mb-3" />
+                  <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">
+                    {t('services.crypto.name')}
+                  </h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    {t('services.crypto.description')}
+                  </p>
+                </button>
+
+                {/* Stocks */}
+                <button
+                  onClick={() => handleServiceSelect('stocks')}
+                  className="group relative p-6 rounded-2xl border-2 border-gray-200 dark:border-gray-700 hover:border-blue-500 dark:hover:border-blue-500 transition-all duration-300 hover:scale-105 hover:shadow-lg"
+                >
+                  <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-500 opacity-0 group-hover:opacity-10 transition-opacity" />
+                  <TrendingUp className="w-12 h-12 text-blue-500 mb-3" />
+                  <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">
+                    {t('services.stocks.name')}
+                  </h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    {t('services.stocks.description')}
+                  </p>
+                </button>
+
+                {/* Website */}
+                <button
+                  onClick={() => handleServiceSelect('website')}
+                  className="group relative p-6 rounded-2xl border-2 border-gray-200 dark:border-gray-700 hover:border-green-500 dark:hover:border-green-500 transition-all duration-300 hover:scale-105 hover:shadow-lg"
+                >
+                  <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-green-500 to-emerald-500 opacity-0 group-hover:opacity-10 transition-opacity" />
+                  <Globe className="w-12 h-12 text-green-500 mb-3" />
+                  <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">
+                    {t('services.website.name')}
+                  </h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    {t('services.website.description')}
+                  </p>
+                </button>
+
+                {/* Weather */}
+                <button
+                  onClick={() => handleServiceSelect('weather')}
+                  className="group relative p-6 rounded-2xl border-2 border-gray-200 dark:border-gray-700 hover:border-purple-500 dark:hover:border-purple-500 transition-all duration-300 hover:scale-105 hover:shadow-lg"
+                >
+                  <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-500 opacity-0 group-hover:opacity-10 transition-opacity" />
+                  <Cloud className="w-12 h-12 text-purple-500 mb-3" />
+                  <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">
+                    {t('services.weather.name')}
+                  </h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    {t('services.weather.description')}
+                  </p>
+                </button>
+
+                {/* Currency */}
+                <button
+                  onClick={() => handleServiceSelect('currency')}
+                  className="group relative p-6 rounded-2xl border-2 border-gray-200 dark:border-gray-700 hover:border-indigo-500 dark:hover:border-indigo-500 transition-all duration-300 hover:scale-105 hover:shadow-lg"
+                >
+                  <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-500 opacity-0 group-hover:opacity-10 transition-opacity" />
+                  <DollarSign className="w-12 h-12 text-indigo-500 mb-3" />
+                  <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">
+                    {t('services.currency.name')}
+                  </h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    {t('services.currency.description')}
+                  </p>
+                </button>
+
+                {/* Flight */}
+                <button
+                  onClick={() => handleServiceSelect('flight')}
+                  className="group relative p-6 rounded-2xl border-2 border-gray-200 dark:border-gray-700 hover:border-sky-500 dark:hover:border-sky-500 transition-all duration-300 hover:scale-105 hover:shadow-lg"
+                >
+                  <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-sky-500 to-blue-500 opacity-0 group-hover:opacity-10 transition-opacity" />
+                  <Plane className="w-12 h-12 text-sky-500 mb-3" />
+                  <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">
+                    {t('services.flight.name')}
+                  </h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    {t('services.flight.description')}
+                  </p>
+                </button>
+              </div>
+            </div>
+          ) : step === 1 ? (
             // Step 1: Configure Alert
             <div className="space-y-6">
               <div>
@@ -191,10 +364,39 @@ export default function QuickSetup() {
                   type="text"
                   value={config.name}
                   onChange={(e) => setConfig({ ...config, name: e.target.value })}
-                  placeholder={t('alerts.quickSetup.alertNamePlaceholder')}
+                  placeholder={t(`alerts.quickSetup.alertNamePlaceholder.${config.service}`)}
                   className="w-full px-4 py-3 rounded-2xl bg-white/50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
                 />
               </div>
+
+              {/* Crypto: Select Cryptocurrency */}
+              {config.service === 'crypto' && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    {t('alerts.quickSetup.selectCrypto')}
+                  </label>
+                  <select
+                    value={config.crypto}
+                    onChange={(e) => setConfig({ ...config, crypto: e.target.value })}
+                    className="w-full px-4 py-3 rounded-2xl bg-white/50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                  >
+                    {cryptocurrencies.length > 0 ? (
+                      cryptocurrencies.map((crypto) => (
+                        <option key={crypto.id} value={crypto.symbol}>
+                          {crypto.name} ({crypto.symbol})
+                        </option>
+                      ))
+                    ) : (
+                      <>
+                        <option value="BTC">Bitcoin (BTC)</option>
+                        <option value="ETH">Ethereum (ETH)</option>
+                        <option value="BNB">BNB (BNB)</option>
+                        <option value="XRP">XRP (XRP)</option>
+                      </>
+                    )}
+                  </select>
+                </div>
+              )}
 
               {/* Crypto, Stocks, Currency: Price Threshold */}
               {(config.service === 'crypto' || config.service === 'stocks' || config.service === 'currency') && (
@@ -354,9 +556,9 @@ export default function QuickSetup() {
 
           {/* Action Buttons */}
           <div className="flex items-center justify-between mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
-            {step === 1 ? (
+            {step === 0 ? (
               <button
-                onClick={() => router.back()}
+                onClick={() => router.push('/alerts')}
                 className="px-6 py-3 rounded-2xl font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-300"
               >
                 {t('common.cancel')}
