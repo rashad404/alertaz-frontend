@@ -12,6 +12,7 @@ export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState<any>(null);
+  const [isMounted, setIsMounted] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
 
@@ -26,6 +27,7 @@ export default function Header() {
       setIsAuthenticated(false);
       setUser(null);
     }
+    setIsMounted(true);
   }, [pathname]);
 
   const handleLogout = () => {
@@ -57,7 +59,7 @@ export default function Header() {
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center gap-6">
+          <div className={`hidden md:flex items-center gap-6 transition-opacity duration-300 ${isMounted ? 'opacity-100' : 'opacity-0'}`}>
             {isAuthenticated && (
               <>
                 <Link
@@ -145,7 +147,7 @@ export default function Header() {
         </div>
 
         {/* Mobile Navigation */}
-        {isMenuOpen && (
+        {isMenuOpen && isMounted && (
           <div className="md:hidden py-3 border-t border-gray-200 dark:border-gray-800">
             {isAuthenticated ? (
               <div className="space-y-1">
