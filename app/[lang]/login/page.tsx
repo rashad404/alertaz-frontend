@@ -20,18 +20,34 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      // TODO: Implement actual login API call
-      // const response = await fetch('/api/auth/login', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({ email, password })
-      // });
+      const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://100.89.150.50:8007/api';
 
-      // For now, just simulate a login
-      localStorage.setItem('token', 'demo-token');
-      router.push('/dashboard');
-    } catch (err) {
-      setError(t('login.invalidCredentials'));
+      const response = await fetch(`${API_BASE_URL}/auth/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({ email, password })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || data.status === 'error') {
+        throw new Error(data.message || 'Login failed');
+      }
+
+      // Store the real authentication token
+      if (data.data?.token) {
+        localStorage.setItem('token', data.data.token);
+        console.log('[Login] Successfully logged in with token:', data.data.token.substring(0, 20) + '...');
+        router.push('/dashboard');
+      } else {
+        throw new Error('No token received from server');
+      }
+    } catch (err: any) {
+      console.error('[Login] Error:', err);
+      setError(err.message || t('login.invalidCredentials'));
     } finally {
       setIsLoading(false);
     }

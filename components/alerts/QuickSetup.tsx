@@ -1,9 +1,12 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { Bell, TrendingUp, Bitcoin, Globe, Cloud, DollarSign, Plane, Check, ArrowRight, ArrowLeft, Sparkles } from 'lucide-react';
+import { Bell, TrendingUp, Bitcoin, Globe, Cloud, DollarSign, Plane, Check, ArrowRight, ArrowLeft, Sparkles, Edit3, Mail, Send, MessageCircle, Smartphone } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import alertsService from '@/lib/api/alerts';
+import authService from '@/lib/api/auth';
+import AuthModal from '@/components/auth/AuthModal';
 
 type AlertService = 'crypto' | 'stocks' | 'website' | 'weather' | 'currency' | 'flight';
 
@@ -19,7 +22,9 @@ interface AlertConfig {
   description: string;
   name: string;
   crypto?: string;
+  cryptoId?: string;
   threshold?: string;
+  operator?: string;
   interval?: string;
   channels: string[];
 }
@@ -50,23 +55,61 @@ export default function QuickSetup() {
   const [step, setStep] = useState(searchParams.get('service') ? 1 : 0);
   const [isLoading, setIsLoading] = useState(false);
   const [cryptocurrencies, setCryptocurrencies] = useState<Cryptocurrency[]>([]);
+  const [isParsing, setIsParsing] = useState(false);
+  const [parseError, setParseError] = useState<string | null>(null);
+  const [parsedData, setParsedData] = useState<any>(null);
+
+  const [mode, setMode] = useState<'ai' | 'manual'>('ai'); // AI mode is default
+  const [fieldsEnabled, setFieldsEnabled] = useState(false); // Fields start disabled in AI mode
+  const [hideAiInput, setHideAiInput] = useState(false); // Hide AI input when pre-filled
+  const [showAuthModal, setShowAuthModal] = useState(false);
 
   const [config, setConfig] = useState<AlertConfig>({
     service: (searchParams.get('service') as AlertService) || 'crypto',
     description: searchParams.get('description') || '',
     name: '',
     crypto: 'BTC',
+    cryptoId: 'bitcoin',
     threshold: '',
+    operator: 'above',
     interval: '1hour',
     channels: [],
   });
 
   useEffect(() => {
+    // Check if AI parsing failed - go back to step 0
+    if (searchParams.get('ai_failed') === 'true') {
+      setStep(0);
+      setParseError(t('alerts.quickSetup.aiParseFailed'));
+      return;
+    }
+
     if (searchParams.get('description')) {
       setConfig(prev => ({
         ...prev,
         name: searchParams.get('description') || '',
       }));
+    }
+
+    // Auto-fill from AI parse (from index page)
+    if (searchParams.get('from_ai') === 'true') {
+      const cryptoId = searchParams.get('crypto_id');
+      const cryptoSymbol = searchParams.get('crypto_symbol');
+      const operator = searchParams.get('operator');
+      const value = searchParams.get('value');
+
+      if (cryptoId && cryptoSymbol) {
+        setConfig(prev => ({
+          ...prev,
+          crypto: cryptoSymbol,
+          cryptoId: cryptoId,
+          operator: operator || 'above',
+          threshold: value || '',
+        }));
+        setFieldsEnabled(true);
+        setHideAiInput(true); // Hide AI input when data is pre-filled
+        setParsedData({ success: true }); // Mark as parsed
+      }
     }
   }, [searchParams]);
 
@@ -86,6 +129,73 @@ export default function QuickSetup() {
 
     fetchCryptos();
   }, []);
+
+  // Verify selected crypto exists in the list after cryptocurrencies load
+  useEffect(() => {
+    if (cryptocurrencies.length > 0 && config.crypto && config.service === 'crypto') {
+      const exists = cryptocurrencies.some(c => c.symbol === config.crypto);
+
+      if (!exists && config.cryptoId) {
+        // Try to find by cryptoId if symbol doesn't match
+        const byCryptoId = cryptocurrencies.find(c => c.id === config.cryptoId);
+        if (byCryptoId) {
+          console.log(`[QuickSetup] Correcting crypto symbol from ${config.crypto} to ${byCryptoId.symbol}`);
+          setConfig(prev => ({ ...prev, crypto: byCryptoId.symbol }));
+        }
+      }
+    }
+  }, [cryptocurrencies, config.crypto, config.cryptoId, config.service]);
+
+  // Parse alert input with LLM
+  const handleParse = useCallback(async () => {
+    if (!config.name.trim() || config.name.trim().length < 3) {
+      return;
+    }
+
+    setIsParsing(true);
+    setParseError(null);
+
+    try {
+      const result = await alertsService.parseAlert(config.name);
+      setParsedData(result);
+
+      // Auto-fill fields based on parsed result
+      if (result.service === 'crypto' && result.crypto_id) {
+        // Find matching crypto in the list
+        const matchedCrypto = cryptocurrencies.find(c =>
+          c.symbol.toUpperCase() === result.crypto_symbol?.toUpperCase() ||
+          c.id === result.crypto_id
+        );
+
+        setConfig(prev => ({
+          ...prev,
+          service: 'crypto',
+          crypto: matchedCrypto?.symbol || result.crypto_symbol || prev.crypto,
+          cryptoId: matchedCrypto?.id || result.crypto_id || prev.cryptoId,
+          operator: result.operator || prev.operator,
+          threshold: result.value?.toString() || prev.threshold,
+        }));
+
+        // Enable fields after successful parse
+        setFieldsEnabled(true);
+      }
+    } catch (error: any) {
+      console.error('Parse error:', error);
+      // If AI fails, offer to switch to manual mode
+      setParseError('Could not understand your request. Try switching to Manual mode or be more specific.');
+    } finally {
+      setIsParsing(false);
+    }
+  }, [config.name, cryptocurrencies]);
+
+  const handleModeToggle = (newMode: 'ai' | 'manual') => {
+    setMode(newMode);
+    if (newMode === 'manual') {
+      setFieldsEnabled(true); // Enable fields in manual mode
+    } else {
+      setFieldsEnabled(false); // Disable fields in AI mode until parsed
+    }
+  };
 
   const handleNext = () => {
     if (step === 0 && config.service) {
@@ -118,42 +228,82 @@ export default function QuickSetup() {
     }));
   };
 
+  const handleAuthSuccess = () => {
+    // Close modal
+    setShowAuthModal(false);
+    // User is now logged in, they can try to create alert again
+    // Config data is already in state so it persists
+  };
+
   const handleCreate = async () => {
     if (config.channels.length === 0) return;
+
+    // Check if user is authenticated before making API call
+    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+    if (!token) {
+      // Show auth modal - config is already in state so it persists
+      setShowAuthModal(true);
+      return;
+    }
 
     setIsLoading(true);
 
     try {
-      // Create new alert object
-      const newAlert = {
-        id: Date.now().toString(),
-        name: config.name,
-        service: config.service,
-        crypto: config.service === 'crypto' ? config.crypto : undefined,
-        threshold: config.threshold || 'N/A',
-        interval: config.interval,
-        channels: config.channels,
-        status: 'active',
-        createdAt: new Date().toISOString(),
+      // Map service type to alert_type_id
+      const serviceToTypeId: Record<AlertService, number> = {
+        crypto: 1,
+        weather: 2,
+        website: 3,
+        stocks: 4,  // Frontend uses "stocks" but maps to "stock" type id 4
+        currency: 5,
+        flight: 6,  // Assuming flight would be id 6 if it exists
       };
 
-      // Load existing alerts from localStorage
-      const stored = localStorage.getItem('alerts');
-      const existingAlerts = stored ? JSON.parse(stored) : [];
+      // Map operator to backend format
+      const operatorMap: Record<string, string> = {
+        above: 'greater',
+        below: 'less',
+        equals: 'equals',
+      };
 
-      // Add new alert
-      existingAlerts.push(newAlert);
+      // Prepare alert data for API
+      const alertData = {
+        alert_type_id: serviceToTypeId[config.service],
+        name: config.name,
+        asset: config.service === 'crypto' ? config.crypto : undefined,
+        conditions: {
+          field: 'price',  // For crypto/stocks/currency, we're checking price
+          operator: operatorMap[config.operator || 'above'] || 'greater',
+          value: parseFloat(config.threshold) || 0,
+        },
+        notification_channels: config.channels,
+        check_frequency: 300,  // 5 minutes default
+        is_recurring: false, // One-time alert by default
+      };
 
-      // Save back to localStorage
-      localStorage.setItem('alerts', JSON.stringify(existingAlerts));
+      // Create alert via API
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/alerts`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify(alertData),
+      });
 
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 500));
+      const data = await response.json();
 
-      // Redirect to alerts list
-      router.push('/alerts');
+      if (response.ok && data.status === 'success') {
+        // Redirect to alerts list - it will fetch from API
+        router.push('/alerts');
+      } else {
+        console.error('Failed to create alert:', data.message);
+        alert(data.message || 'Failed to create alert. Please try again.');
+      }
     } catch (error) {
       console.error('Failed to create alert:', error);
+      alert('Failed to create alert. Please check your connection and try again.');
     } finally {
       setIsLoading(false);
     }
@@ -162,21 +312,42 @@ export default function QuickSetup() {
   const ServiceIcon = serviceIcons[config.service];
   const gradient = serviceGradients[config.service];
 
-  const intervals = [
-    { value: '5min', label: t('alerts.quickSetup.interval.5min') },
-    { value: '15min', label: t('alerts.quickSetup.interval.15min') },
-    { value: '30min', label: t('alerts.quickSetup.interval.30min') },
-    { value: '1hour', label: t('alerts.quickSetup.interval.1hour') },
-    { value: '6hours', label: t('alerts.quickSetup.interval.6hours') },
-    { value: '24hours', label: t('alerts.quickSetup.interval.24hours') },
-  ];
-
   const channels = [
-    { id: 'email', name: t('alerts.quickSetup.channels.email'), icon: '📧', description: t('alerts.quickSetup.channels.emailDesc') },
-    { id: 'telegram', name: t('alerts.quickSetup.channels.telegram'), icon: '✈️', description: t('alerts.quickSetup.channels.telegramDesc') },
-    { id: 'whatsapp', name: t('alerts.quickSetup.channels.whatsapp'), icon: '💬', description: t('alerts.quickSetup.channels.whatsappDesc') },
-    { id: 'sms', name: t('alerts.quickSetup.channels.sms'), icon: '📱', description: t('alerts.quickSetup.channels.smsDesc') },
-    { id: 'push', name: t('alerts.quickSetup.channels.push'), icon: '🔔', description: t('alerts.quickSetup.channels.pushDesc') },
+    {
+      id: 'email',
+      name: t('alerts.quickSetup.channels.email'),
+      icon: Mail,
+      description: t('alerts.quickSetup.channels.emailDesc'),
+      color: 'from-blue-500 to-blue-600'
+    },
+    {
+      id: 'telegram',
+      name: t('alerts.quickSetup.channels.telegram'),
+      icon: Send,
+      description: t('alerts.quickSetup.channels.telegramDesc'),
+      color: 'from-sky-400 to-cyan-500'
+    },
+    {
+      id: 'whatsapp',
+      name: t('alerts.quickSetup.channels.whatsapp'),
+      icon: MessageCircle,
+      description: t('alerts.quickSetup.channels.whatsappDesc'),
+      color: 'from-green-500 to-emerald-600'
+    },
+    {
+      id: 'sms',
+      name: t('alerts.quickSetup.channels.sms'),
+      icon: Smartphone,
+      description: t('alerts.quickSetup.channels.smsDesc'),
+      color: 'from-orange-500 to-amber-600'
+    },
+    {
+      id: 'push',
+      name: t('alerts.quickSetup.channels.push'),
+      icon: Bell,
+      description: t('alerts.quickSetup.channels.pushDesc'),
+      color: 'from-purple-500 to-indigo-600'
+    },
   ];
 
   return (
@@ -259,6 +430,12 @@ export default function QuickSetup() {
                 <p className="text-gray-600 dark:text-gray-400">
                   {t('alerts.quickSetup.selectServiceDesc')}
                 </p>
+                {/* Error Message from AI failure */}
+                {parseError && (
+                  <div className="mt-4 p-3 rounded-xl bg-orange-500/10 border border-orange-500/20">
+                    <p className="text-sm text-orange-600 dark:text-orange-400">{parseError}</p>
+                  </div>
+                )}
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -356,29 +533,132 @@ export default function QuickSetup() {
           ) : step === 1 ? (
             // Step 1: Configure Alert
             <div className="space-y-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  {t('alerts.quickSetup.alertName')}
-                </label>
-                <input
-                  type="text"
-                  value={config.name}
-                  onChange={(e) => setConfig({ ...config, name: e.target.value })}
-                  placeholder={t(`alerts.quickSetup.alertNamePlaceholder.${config.service}`)}
-                  className="w-full px-4 py-3 rounded-2xl bg-white/50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
-                />
+              {/* Mode Toggle */}
+              <div className="flex items-center justify-center gap-2 mb-6">
+                <button
+                  onClick={() => handleModeToggle('ai')}
+                  className={`px-4 py-2 rounded-xl font-medium text-sm transition-all ${
+                    mode === 'ai'
+                      ? `bg-gradient-to-r ${gradient} text-white shadow-lg`
+                      : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
+                  }`}
+                >
+                  <span className="flex items-center gap-2">
+                    <Sparkles className="w-4 h-4" />
+                    {t('alerts.quickSetup.smartFill')}
+                  </span>
+                </button>
+                <button
+                  onClick={() => handleModeToggle('manual')}
+                  className={`px-4 py-2 rounded-xl font-medium text-sm transition-all ${
+                    mode === 'manual'
+                      ? `bg-gradient-to-r ${gradient} text-white shadow-lg`
+                      : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
+                  }`}
+                >
+                  <span className="flex items-center gap-2">
+                    <Edit3 className="w-4 h-4" />
+                    {t('alerts.quickSetup.manual')}
+                  </span>
+                </button>
               </div>
+
+              {/* AI Mode Input - Only show if not pre-filled from index */}
+              {mode === 'ai' && !hideAiInput && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Describe your alert
+                  </label>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={config.name}
+                      onChange={(e) => {
+                        setConfig({ ...config, name: e.target.value });
+                        setParsedData(null);
+                        setParseError(null);
+                      }}
+                      placeholder="e.g., Bitcoin above $100k, ETH drops below 3000"
+                      className="flex-1 px-4 py-3 rounded-2xl bg-white/50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                    />
+                    <button
+                      onClick={handleParse}
+                      disabled={isParsing || !config.name.trim() || config.name.trim().length < 3}
+                      className={`px-6 py-3 rounded-2xl font-medium flex items-center gap-2 transition-all duration-300 ${
+                        isParsing || !config.name.trim() || config.name.trim().length < 3
+                          ? 'bg-gray-300 dark:bg-gray-700 text-gray-500 cursor-not-allowed'
+                          : `bg-gradient-to-r ${gradient} text-white hover:shadow-lg hover:scale-105`
+                      }`}
+                    >
+                      {isParsing ? (
+                        <>
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
+                          <span>Analyzing...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Sparkles className="w-4 h-4" />
+                          <span>Generate</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+
+                  {/* Success Message */}
+                  {fieldsEnabled && parsedData && (
+                    <div className="mt-3 p-3 rounded-xl bg-green-500/10 border border-green-500/20">
+                      <p className="text-sm text-green-600 dark:text-green-400">
+                        ✓ {t('alerts.quickSetup.alertConfigured')}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Error Message */}
+                  {parseError && (
+                    <p className="mt-2 text-sm text-red-600 dark:text-red-400">{parseError}</p>
+                  )}
+                </div>
+              )}
+
+              {/* Success banner when pre-filled from index */}
+              {mode === 'ai' && hideAiInput && fieldsEnabled && (
+                <div className="mb-4 p-4 rounded-xl bg-gradient-to-r from-green-500/10 to-emerald-500/10 border border-green-500/20">
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="w-5 h-5 text-green-600 dark:text-green-400" />
+                    <div>
+                      <p className="text-sm font-medium text-green-600 dark:text-green-400">
+                        {t('alerts.quickSetup.aiConfigured')}
+                      </p>
+                      <p className="text-xs text-green-600/80 dark:text-green-400/80 mt-1">
+                        {t('alerts.quickSetup.reviewSettings')}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* Crypto: Select Cryptocurrency */}
               {config.service === 'crypto' && (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    {t('alerts.quickSetup.selectCrypto')}
+                    {t('alerts.quickSetup.selectCrypto') || 'Cryptocurrency'}
                   </label>
                   <select
+                    key={`crypto-select-${cryptocurrencies.length}-${config.crypto}`}
                     value={config.crypto}
-                    onChange={(e) => setConfig({ ...config, crypto: e.target.value })}
-                    className="w-full px-4 py-3 rounded-2xl bg-white/50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                    onChange={(e) => {
+                      const selectedSymbol = e.target.value;
+                      const selectedCrypto = cryptocurrencies.find(c => c.symbol === selectedSymbol);
+                      setConfig(prev => ({
+                        ...prev,
+                        crypto: selectedSymbol,
+                        cryptoId: selectedCrypto?.id || prev.cryptoId,
+                      }));
+                    }}
+                    disabled={mode === 'ai' && !fieldsEnabled}
+                    className={`w-full px-4 py-3 rounded-2xl bg-white/50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all ${
+                      mode === 'ai' && !fieldsEnabled ? 'opacity-50 cursor-not-allowed' : ''
+                    }`}
                   >
                     {cryptocurrencies.length > 0 ? (
                       cryptocurrencies.map((crypto) => (
@@ -390,28 +670,52 @@ export default function QuickSetup() {
                       <>
                         <option value="BTC">Bitcoin (BTC)</option>
                         <option value="ETH">Ethereum (ETH)</option>
+                        <option value="ETC">Ethereum Classic (ETC)</option>
                         <option value="BNB">BNB (BNB)</option>
                         <option value="XRP">XRP (XRP)</option>
+                        <option value="SOL">Solana (SOL)</option>
                       </>
                     )}
                   </select>
                 </div>
               )}
 
-              {/* Crypto, Stocks, Currency: Price Threshold */}
+              {/* Crypto, Stocks, Currency: Operator and Price Threshold */}
               {(config.service === 'crypto' || config.service === 'stocks' || config.service === 'currency') && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    {t('alerts.quickSetup.threshold')}
-                  </label>
-                  <input
-                    type="text"
-                    value={config.threshold}
-                    onChange={(e) => setConfig({ ...config, threshold: e.target.value })}
-                    placeholder={t('alerts.quickSetup.thresholdPlaceholder')}
-                    className="w-full px-4 py-3 rounded-2xl bg-white/50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
-                  />
-                </div>
+                <>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      {t('alerts.quickSetup.alertCondition')}
+                    </label>
+                    <select
+                      value={config.operator}
+                      onChange={(e) => setConfig({ ...config, operator: e.target.value })}
+                      disabled={mode === 'ai' && !fieldsEnabled}
+                      className={`w-full px-4 py-3 rounded-2xl bg-white/50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all ${
+                        mode === 'ai' && !fieldsEnabled ? 'opacity-50 cursor-not-allowed' : ''
+                      }`}
+                    >
+                      <option value="above">{t('alerts.quickSetup.priceGoesAbove')}</option>
+                      <option value="below">{t('alerts.quickSetup.priceGoesBelow')}</option>
+                      <option value="equals">{t('alerts.quickSetup.priceEquals')}</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      {t('alerts.quickSetup.threshold') || 'Price Threshold'}
+                    </label>
+                    <input
+                      type="text"
+                      value={config.threshold}
+                      onChange={(e) => setConfig({ ...config, threshold: e.target.value })}
+                      disabled={mode === 'ai' && !fieldsEnabled}
+                      placeholder={t('alerts.quickSetup.thresholdPlaceholder') || 'e.g., 100000'}
+                      className={`w-full px-4 py-3 rounded-2xl bg-white/50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all ${
+                        mode === 'ai' && !fieldsEnabled ? 'opacity-50 cursor-not-allowed' : ''
+                      }`}
+                    />
+                  </div>
+                </>
               )}
 
               {/* Website Monitoring: URL */}
@@ -461,39 +765,6 @@ export default function QuickSetup() {
                   />
                 </div>
               )}
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  {t('alerts.quickSetup.checkInterval')}
-                </label>
-                <div className="grid grid-cols-3 gap-3">
-                  {intervals.map((interval) => (
-                    <button
-                      key={interval.value}
-                      onClick={() => setConfig({ ...config, interval: interval.value })}
-                      className={`px-4 py-3 rounded-2xl font-medium transition-all duration-300 ${
-                        config.interval === interval.value
-                          ? `bg-gradient-to-br ${gradient} text-white shadow-lg`
-                          : 'bg-white/50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-800'
-                      }`}
-                    >
-                      {interval.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div className="flex items-start p-4 rounded-2xl bg-blue-500/10 border border-blue-500/20">
-                <Sparkles className="w-5 h-5 text-blue-500 mr-3 mt-0.5" />
-                <div>
-                  <p className="text-sm font-medium text-blue-900 dark:text-blue-300">
-                    {t('alerts.quickSetup.aiTip')}
-                  </p>
-                  <p className="text-xs text-blue-700 dark:text-blue-400 mt-1">
-                    {t('alerts.quickSetup.aiTipDesc')}
-                  </p>
-                </div>
-              </div>
             </div>
           ) : (
             // Step 2: Choose Channels
@@ -507,28 +778,32 @@ export default function QuickSetup() {
                 </p>
 
                 <div className="space-y-3">
-                  {channels.map((channel) => (
-                    <button
-                      key={channel.id}
-                      onClick={() => handleChannelToggle(channel.id)}
-                      className={`w-full p-4 rounded-2xl border-2 transition-all duration-300 text-left ${
-                        config.channels.includes(channel.id)
-                          ? `border-indigo-500 bg-indigo-500/10`
-                          : 'border-gray-200 dark:border-gray-700 bg-white/50 dark:bg-gray-900/50 hover:bg-white dark:hover:bg-gray-800'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <span className="text-2xl">{channel.icon}</span>
-                          <div>
-                            <p className="font-medium text-gray-900 dark:text-white">
-                              {channel.name}
-                            </p>
-                            <p className="text-xs text-gray-600 dark:text-gray-400">
-                              {channel.description}
-                            </p>
+                  {channels.map((channel) => {
+                    const ChannelIcon = channel.icon;
+                    return (
+                      <button
+                        key={channel.id}
+                        onClick={() => handleChannelToggle(channel.id)}
+                        className={`w-full p-4 rounded-2xl border-2 transition-all duration-300 text-left ${
+                          config.channels.includes(channel.id)
+                            ? `border-indigo-500 bg-indigo-500/10`
+                            : 'border-gray-200 dark:border-gray-700 bg-white/50 dark:bg-gray-900/50 hover:bg-white dark:hover:bg-gray-800'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${channel.color} flex items-center justify-center flex-shrink-0`}>
+                              <ChannelIcon className="w-5 h-5 text-white" />
+                            </div>
+                            <div>
+                              <p className="font-medium text-gray-900 dark:text-white">
+                                {channel.name}
+                              </p>
+                              <p className="text-xs text-gray-600 dark:text-gray-400">
+                                {channel.description}
+                              </p>
+                            </div>
                           </div>
-                        </div>
                         <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all duration-300 ${
                           config.channels.includes(channel.id)
                             ? 'border-indigo-500 bg-indigo-500'
@@ -540,7 +815,8 @@ export default function QuickSetup() {
                         </div>
                       </div>
                     </button>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
 
@@ -558,7 +834,7 @@ export default function QuickSetup() {
           <div className="flex items-center justify-between mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
             {step === 0 ? (
               <button
-                onClick={() => router.push('/alerts')}
+                onClick={() => router.push('/')}
                 className="px-6 py-3 rounded-2xl font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-300"
               >
                 {t('common.cancel')}
@@ -576,9 +852,9 @@ export default function QuickSetup() {
             {step === 1 ? (
               <button
                 onClick={handleNext}
-                disabled={!config.name.trim()}
+                disabled={mode === 'ai' ? !fieldsEnabled : !config.name.trim()}
                 className={`flex items-center gap-2 px-6 py-3 rounded-2xl font-medium text-white transition-all duration-300 ${
-                  config.name.trim()
+                  (mode === 'ai' ? fieldsEnabled : config.name.trim())
                     ? `bg-gradient-to-r ${gradient} hover:shadow-lg hover:scale-105`
                     : 'bg-gray-300 dark:bg-gray-700 cursor-not-allowed'
                 }`}
@@ -612,6 +888,13 @@ export default function QuickSetup() {
           </div>
         </div>
       </div>
+
+      {/* Auth Modal */}
+      <AuthModal
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+        onSuccess={handleAuthSuccess}
+      />
     </div>
   );
 }

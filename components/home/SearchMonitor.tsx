@@ -4,12 +4,14 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Bell, Sparkles, ArrowRight } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import alertsService from '@/lib/api/alerts';
 
 export default function SearchMonitor() {
   const t = useTranslations();
   const [query, setQuery] = useState('');
   const [isFocused, setIsFocused] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
   const placeholders = [
@@ -29,52 +31,46 @@ export default function SearchMonitor() {
     return () => clearInterval(interval);
   }, []);
 
-  const handleSearch = () => {
+  const handleSearch = async () => {
     if (!query.trim()) return;
 
     setIsAnimating(true);
-    setTimeout(() => {
-      const lowerQuery = query.toLowerCase();
-      let service = 'crypto'; // default
+    setError(null);
 
-      // Crypto keywords (EN, AZ, RU)
-      if (lowerQuery.includes('bitcoin') || lowerQuery.includes('btc') ||
-          lowerQuery.includes('crypto') || lowerQuery.includes('kripto') ||
-          lowerQuery.includes('ethereum') || lowerQuery.includes('eth')) {
-        service = 'crypto';
-      }
-      // Stock keywords (EN, AZ, RU)
-      else if (lowerQuery.includes('stock') || lowerQuery.includes('səhm') ||
-               lowerQuery.includes('акци') || lowerQuery.includes('apple') ||
-               lowerQuery.includes('tesla')) {
-        service = 'stocks';
-      }
-      // Website keywords (EN, AZ, RU)
-      else if (lowerQuery.includes('website') || lowerQuery.includes('veb-sayt') ||
-               lowerQuery.includes('веб-сайт') || lowerQuery.includes('sayt') ||
-               lowerQuery.includes('site') || lowerQuery.includes('monitor') ||
-               lowerQuery.includes('uptime') || lowerQuery.includes('downtime')) {
-        service = 'website';
-      }
-      // Weather keywords (EN, AZ, RU)
-      else if (lowerQuery.includes('weather') || lowerQuery.includes('hava') ||
-               lowerQuery.includes('погод')) {
-        service = 'weather';
-      }
-      // Currency keywords (EN, AZ, RU)
-      else if (lowerQuery.includes('currency') || lowerQuery.includes('valyuta') ||
-               lowerQuery.includes('валют') || lowerQuery.includes('usd') ||
-               lowerQuery.includes('eur') || lowerQuery.includes('dollar')) {
-        service = 'currency';
-      }
-      // Flight keywords (EN, AZ, RU)
-      else if (lowerQuery.includes('flight') || lowerQuery.includes('uçuş') ||
-               lowerQuery.includes('полет') || lowerQuery.includes('plane')) {
-        service = 'flight';
+    try {
+      // Call AI to parse the alert
+      const result = await alertsService.parseAlert(query);
+
+      // Check if service is available
+      const availableServices = ['crypto']; // Only crypto for now
+      if (!availableServices.includes(result.service)) {
+        setError(`${result.service.charAt(0).toUpperCase() + result.service.slice(1)} alerts coming soon!`);
+        setIsAnimating(false);
+        return;
       }
 
-      router.push(`/alerts/quick-setup?service=${service}&description=${encodeURIComponent(query)}`);
-    }, 300);
+      // Redirect with parsed data
+      const params = new URLSearchParams({
+        service: result.service,
+        from_ai: 'true',
+        description: query, // Pass the original query as description
+      });
+
+      // Add parsed data for crypto
+      if (result.service === 'crypto' && result.crypto_id) {
+        params.append('crypto_id', result.crypto_id);
+        params.append('crypto_symbol', result.crypto_symbol || '');
+        params.append('operator', result.operator || 'above');
+        params.append('value', result.value?.toString() || '');
+      }
+
+      router.push(`/alerts/quick-setup?${params.toString()}`);
+    } catch (err: any) {
+      console.error('Parse error:', err);
+      // If AI fails, redirect to manual setup
+      router.push(`/alerts/quick-setup?ai_failed=true`);
+      setIsAnimating(false);
+    }
   };
 
   return (
@@ -118,18 +114,18 @@ export default function SearchMonitor() {
               {/* Search Button */}
               <button
                 onClick={handleSearch}
-                disabled={!query.trim()}
+                disabled={!query.trim() || isAnimating}
                 className={`
                   relative group px-3 sm:px-6 py-3 mr-2 rounded-2xl font-medium text-white
                   bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500
                   transition-all duration-300 overflow-hidden flex-shrink-0
-                  ${query.trim()
+                  ${query.trim() && !isAnimating
                     ? 'opacity-100 hover:shadow-lg hover:scale-105'
                     : 'opacity-50 cursor-not-allowed'
                   }
                   ${isAnimating ? 'animate-pulse' : ''}
                 `}
-                title={t('search.createAlert')}
+                title="Create Smart Alert"
               >
                 {/* Button Shine Effect */}
                 <span className="absolute inset-0 w-full h-full">
@@ -137,13 +133,26 @@ export default function SearchMonitor() {
                 </span>
 
                 <span className="relative flex items-center gap-2">
-                  <Bell className="w-4 h-4" />
-                  <span className="hidden sm:inline">{t('search.createAlert')}</span>
-                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform hidden sm:inline" />
+                  {isAnimating ? (
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
+                  ) : (
+                    <Sparkles className="w-4 h-4" />
+                  )}
+                  <span className="hidden sm:inline">
+                    {isAnimating ? 'Creating...' : t('search.createSmartAlert')}
+                  </span>
+                  {!isAnimating && <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform hidden sm:inline" />}
                 </span>
               </button>
             </div>
           </div>
+
+          {/* Error Message */}
+          {error && (
+            <div className="mt-3 text-center">
+              <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+            </div>
+          )}
 
           {/* Quick Suggestions */}
           <div className="mt-6 flex flex-wrap justify-center gap-2">

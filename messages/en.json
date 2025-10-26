@@ -79,6 +79,14 @@
       "selectServiceDesc": "What kind of alert would you like to create?",
       "step1": "Configure",
       "step2": "Channels",
+      "smartFill": "Smart Fill",
+      "manual": "Manual",
+      "aiConfigured": "Alert auto-configured via AI",
+      "reviewSettings": "Review the settings below and click Next to choose notification channels",
+      "alertCondition": "Alert Condition",
+      "priceGoesAbove": "If price goes above",
+      "priceGoesBelow": "If price goes below",
+      "priceEquals": "If price equals",
       "alertName": "Alert Name",
       "alertNamePlaceholder": {
         "crypto": "e.g., Bitcoin reaches $100k",
@@ -118,7 +126,9 @@
       },
       "channelsSelected": "{count} channels selected",
       "createAlert": "Create Alert",
-      "creating": "Creating..."
+      "creating": "Creating...",
+      "alertConfigured": "Alert configured! Review the fields below or click Next to continue.",
+      "aiParseFailed": "Could not auto-fill via AI. Please select service and fill manually."
     }
   },
   "settings": {
@@ -153,6 +163,7 @@
     "placeholder5": "Currency rate changes",
     "monitorWhen": "Monitor when",
     "createAlert": "Create Alert",
+    "createSmartAlert": "Create Smart Alert",
     "suggestion1": "Bitcoin $100k",
     "suggestion2": "Website Monitor",
     "suggestion3": "Stock Alerts",

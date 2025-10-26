@@ -43,22 +43,39 @@ export default function RegisterPage() {
     setIsLoading(true);
 
     try {
-      // TODO: Implement actual register API call
-      // const response = await fetch('/api/auth/register', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({
-      //     name: formData.name,
-      //     email: formData.email,
-      //     password: formData.password
-      //   })
-      // });
+      const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://100.89.150.50:8007/api';
 
-      // For now, just simulate a registration
-      localStorage.setItem('token', 'demo-token');
-      router.push('/alerts/quick-setup');
-    } catch (err) {
-      setError(t('register.registrationFailed'));
+      const response = await fetch(`${API_BASE_URL}/auth/register`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          password: formData.password,
+          password_confirmation: formData.confirmPassword
+        })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || data.status === 'error') {
+        throw new Error(data.message || 'Registration failed');
+      }
+
+      // Store the real authentication token
+      if (data.data?.token) {
+        localStorage.setItem('token', data.data.token);
+        console.log('[Register] Successfully registered with token:', data.data.token.substring(0, 20) + '...');
+        router.push('/alerts/quick-setup');
+      } else {
+        throw new Error('No token received from server');
+      }
+    } catch (err: any) {
+      console.error('[Register] Error:', err);
+      setError(err.message || t('register.registrationFailed'));
     } finally {
       setIsLoading(false);
     }

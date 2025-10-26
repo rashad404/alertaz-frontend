@@ -111,6 +111,12 @@ class AlertsService {
     await apiClient.delete(`/alerts/${id}`);
   }
 
+  // Parse natural language alert input
+  async parseAlert(input: string): Promise<any> {
+    const response = await apiClient.post('/alerts/parse', { input });
+    return response.data.data;
+  }
+
   // Helper function to get notification channel icon
   getChannelIcon(channel: string): string {
     const icons: Record<string, string> = {

@@ -54,6 +54,19 @@ self.addEventListener('push', (event) => {
 
     event.waitUntil(
         self.registration.showNotification(data.title || 'Alert.az', options)
+            .then(() => {
+                // Notify all open tabs/windows to refresh their notification count
+                return self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+            })
+            .then((clients) => {
+                console.log('[ServiceWorker] Notifying', clients.length, 'client(s) of new notification');
+                clients.forEach((client) => {
+                    client.postMessage({
+                        type: 'NEW_NOTIFICATION',
+                        data: data,
+                    });
+                });
+            })
     );
 });
 
@@ -142,55 +155,5 @@ async function checkForNewAlerts() {
     }
 }
 
-// Cache management for offline support
-const CACHE_NAME = 'alert-az-v1';
-const urlsToCache = [
-    '/',
-    '/icon-192.png',
-    '/icon-512.png',
-    '/badge-72.png',
-];
-
-self.addEventListener('install', (event) => {
-    event.waitUntil(
-        caches.open(CACHE_NAME)
-            .then((cache) => cache.addAll(urlsToCache))
-    );
-});
-
-self.addEventListener('fetch', (event) => {
-    // Only cache GET requests
-    if (event.request.method !== 'GET') {
-        return;
-    }
-
-    event.respondWith(
-        caches.match(event.request)
-            .then((response) => {
-                // Cache hit - return response
-                if (response) {
-                    return response;
-                }
-
-                return fetch(event.request).then((response) => {
-                    // Don't cache non-successful responses
-                    if (!response || response.status !== 200 || response.type !== 'basic') {
-                        return response;
-                    }
-
-                    // Clone the response
-                    const responseToCache = response.clone();
-
-                    caches.open(CACHE_NAME)
-                        .then((cache) => {
-                            // Only cache assets and images
-                            if (event.request.url.match(/\.(js|css|png|jpg|jpeg|gif|svg|ico)$/)) {
-                                cache.put(event.request, responseToCache);
-                            }
-                        });
-
-                    return response;
-                });
-            })
-    );
-});
+// Note: Caching is disabled for now to avoid installation issues
+// Can be re-enabled later with proper icon files

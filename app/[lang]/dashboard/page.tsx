@@ -70,25 +70,59 @@ export default function DashboardPage() {
       return;
     }
 
-    // Mock user data - replace with actual API call
-    setUser({ name: 'User', email: 'user@example.com' });
-
-    // Load alerts from localStorage
-    const stored = localStorage.getItem('alerts');
-    if (stored) {
+    // Fetch user data and alerts from API
+    const fetchData = async () => {
       try {
-        const parsed = JSON.parse(stored);
-        const loadedAlerts = parsed.map((alert: any) => ({
-          ...alert,
-          lastTriggered: alert.lastTriggered ? new Date(alert.lastTriggered) : undefined,
-          createdAt: new Date(alert.createdAt),
-        }));
-        setAlerts(loadedAlerts);
-      } catch (e) {
-        console.error('Failed to load alerts:', e);
+        // Fetch user data
+        const userResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/user`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/json',
+          },
+        });
+
+        if (userResponse.ok) {
+          const userData = await userResponse.json();
+          if (userData.status === 'success') {
+            setUser(userData.data);
+          }
+        }
+
+        // Fetch alerts
+        const alertsResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/alerts`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/json',
+          },
+        });
+
+        if (alertsResponse.ok) {
+          const alertsData = await alertsResponse.json();
+          if (alertsData.status === 'success') {
+            // Laravel paginate returns data.data
+            const alertsArray = Array.isArray(alertsData.data) ? alertsData.data : (alertsData.data?.data || []);
+
+            const loadedAlerts = alertsArray.map((alert: any) => ({
+              id: alert.id.toString(),
+              name: alert.name,
+              service: alert.service_type,
+              threshold: alert.config?.threshold?.toString() || 'N/A',
+              channels: alert.notification_channels || [],
+              status: alert.is_active ? 'active' : 'paused',
+              lastTriggered: alert.last_triggered_at ? new Date(alert.last_triggered_at) : undefined,
+              createdAt: new Date(alert.created_at),
+            }));
+            setAlerts(loadedAlerts);
+          }
+        }
+      } catch (error) {
+        console.error('Failed to load data:', error);
+      } finally {
+        setIsLoading(false);
       }
-    }
-    setIsLoading(false);
+    };
+
+    fetchData();
   }, [router]);
 
   if (!user) {

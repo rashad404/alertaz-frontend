@@ -59,38 +59,57 @@ const AlertsPageClient: React.FC<AlertsPageClientProps> = ({ lang }) => {
   const t = useTranslations();
   const router = useRouter();
 
-  // Start with empty array - alerts will be loaded from API or localStorage
   const [alerts, setAlerts] = useState<Alert[]>([]);
-  const [isHydrated, setIsHydrated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Load from localStorage after hydration (client-side only)
+  // Load alerts from API
   useEffect(() => {
-    const stored = localStorage.getItem('alerts');
-    if (stored) {
-      try {
-        const parsed = JSON.parse(stored);
-        // Convert date strings back to Date objects
-        const loadedAlerts = parsed.map((alert: any) => ({
-          ...alert,
-          lastTriggered: alert.lastTriggered ? new Date(alert.lastTriggered) : undefined,
-          createdAt: new Date(alert.createdAt),
-        }));
-        setAlerts(loadedAlerts);
-      } catch (e) {
-        console.error('Failed to load alerts from localStorage:', e);
+    const fetchAlerts = async () => {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        setIsLoading(false);
+        return;
       }
-    }
-    setIsHydrated(true);
-    setIsLoading(false);
-  }, []);
 
-  // Save alerts to localStorage whenever they change (but only after hydration)
-  useEffect(() => {
-    if (isHydrated) {
-      localStorage.setItem('alerts', JSON.stringify(alerts));
-    }
-  }, [alerts, isHydrated]);
+      try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/alerts`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/json',
+          },
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.status === 'success') {
+          // Laravel paginate returns data.data
+          const alertsArray = Array.isArray(data.data) ? data.data : (data.data?.data || []);
+
+          // Map API response to frontend format
+          const loadedAlerts = alertsArray.map((alert: any) => ({
+            id: alert.id.toString(),
+            name: alert.name,
+            service: alert.service_type,
+            crypto: alert.config?.crypto,
+            condition: alert.config?.condition,
+            threshold: alert.config?.threshold?.toString() || 'N/A',
+            interval: '1hour', // Not used anymore but kept for compatibility
+            channels: alert.notification_channels || [],
+            status: alert.is_active ? 'active' : 'paused',
+            lastTriggered: alert.last_triggered_at ? new Date(alert.last_triggered_at) : undefined,
+            createdAt: new Date(alert.created_at),
+          }));
+          setAlerts(loadedAlerts);
+        }
+      } catch (error) {
+        console.error('Failed to load alerts from API:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchAlerts();
+  }, []);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState<'all' | AlertStatus>('all');
@@ -100,25 +119,71 @@ const AlertsPageClient: React.FC<AlertsPageClientProps> = ({ lang }) => {
     router.push(`/${lang}/alerts/quick-setup`);
   };
 
-  const handleToggleStatus = (id: string) => {
-    // Update local state - later connect to API: POST /api/alerts/{id}/toggle
-    setAlerts(prevAlerts =>
-      prevAlerts.map(alert =>
-        alert.id === id
-          ? { ...alert, status: alert.status === 'active' ? 'paused' : 'active' }
-          : alert
-      )
-    );
+  const handleToggleStatus = async (id: string) => {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/alerts/${id}/toggle`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json',
+        },
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.status === 'success') {
+        // Update local state
+        setAlerts(prevAlerts =>
+          prevAlerts.map(alert =>
+            alert.id === id
+              ? { ...alert, status: alert.status === 'active' ? 'paused' : 'active' }
+              : alert
+          )
+        );
+      } else {
+        console.error('Failed to toggle alert:', data.message);
+        alert(data.message || 'Failed to toggle alert');
+      }
+    } catch (error) {
+      console.error('Failed to toggle alert:', error);
+      alert('Failed to toggle alert. Please try again.');
+    }
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     // Confirm before deleting
     if (!confirm(t('common.confirmDelete') || 'Are you sure you want to delete this alert?')) {
       return;
     }
 
-    // Update local state - later connect to API: DELETE /api/alerts/{id}
-    setAlerts(prevAlerts => prevAlerts.filter(alert => alert.id !== id));
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/alerts/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json',
+        },
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.status === 'success') {
+        // Update local state
+        setAlerts(prevAlerts => prevAlerts.filter(alert => alert.id !== id));
+      } else {
+        console.error('Failed to delete alert:', data.message);
+        alert(data.message || 'Failed to delete alert');
+      }
+    } catch (error) {
+      console.error('Failed to delete alert:', error);
+      alert('Failed to delete alert. Please try again.');
+    }
   };
 
   const handleEdit = (id: string) => {
@@ -329,7 +394,7 @@ const AlertsPageClient: React.FC<AlertsPageClientProps> = ({ lang }) => {
                             {alert.name}
                           </h3>
                           <p className="text-sm text-gray-600 dark:text-gray-400">
-                            {alert.threshold} • {t(`alerts.quickSetup.interval.${normalizeInterval(alert.interval)}`)}
+                            {alert.threshold}
                           </p>
                         </div>
                         <span className={`px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap ${

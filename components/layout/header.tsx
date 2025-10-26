@@ -6,6 +6,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import { Menu, X, Bell, User, Activity, Plus, LogOut } from 'lucide-react';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
 import { useTranslations } from 'next-intl';
+import NotificationCenter from '@/components/notifications/NotificationCenter';
 
 export default function Header() {
   const t = useTranslations();
@@ -17,23 +18,36 @@ export default function Header() {
   const pathname = usePathname();
 
   useEffect(() => {
-    // Check authentication status on mount and route changes
-    const token = localStorage.getItem('token');
-    if (token) {
-      setIsAuthenticated(true);
-      // You could fetch user data here
-      setUser({ name: 'User', email: 'user@example.com' });
-    } else {
-      setIsAuthenticated(false);
-      setUser(null);
-    }
+    // Check authentication status
+    const checkAuth = () => {
+      const token = localStorage.getItem('token');
+      if (token) {
+        setIsAuthenticated(true);
+        // You could fetch user data here
+        setUser({ name: 'User', email: 'user@example.com' });
+      } else {
+        setIsAuthenticated(false);
+        setUser(null);
+      }
+    };
+
+    // Check on mount and route changes
+    checkAuth();
     setIsMounted(true);
+
+    // Listen for auth state changes from AuthModal
+    window.addEventListener('authStateChanged', checkAuth);
+
+    return () => {
+      window.removeEventListener('authStateChanged', checkAuth);
+    };
   }, [pathname]);
 
   const handleLogout = () => {
     localStorage.removeItem('token');
     setIsAuthenticated(false);
     setUser(null);
+    window.dispatchEvent(new Event('authStateChanged'));
     router.push('/');
   };
 
@@ -95,6 +109,8 @@ export default function Header() {
             )}
 
             <ThemeToggle />
+
+            {isAuthenticated && <NotificationCenter />}
 
             {isAuthenticated ? (
               <div className="flex items-center gap-3">

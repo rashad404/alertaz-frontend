@@ -79,6 +79,14 @@
       "selectServiceDesc": "Hansı növ bildiriş yaratmaq istəyirsiniz?",
       "step1": "Quraşdırma",
       "step2": "Kanallar",
+      "smartFill": "AI rejim",
+      "manual": "Manual",
+      "aiConfigured": "Bildiriş süni intellekt tərəfindən avtomatik quraşdırıldı",
+      "reviewSettings": "Aşağıdakı parametrləri nəzərdən keçirin və bildiriş kanallarını seçmək üçün Növbəti düyməsini basın",
+      "alertCondition": "Bildiriş Şərti",
+      "priceGoesAbove": "Qiymət yuxarı olarsa",
+      "priceGoesBelow": "Qiymət aşağı olarsa",
+      "priceEquals": "Qiymət bərabər olarsa",
       "alertName": "Bildiriş Adı",
       "alertNamePlaceholder": {
         "crypto": "Məsələn: Bitcoin 100k dollarına çatır",
@@ -118,7 +126,9 @@
       },
       "channelsSelected": "{count} kanal seçildi",
       "createAlert": "Bildiriş Yarat",
-      "creating": "Yaradılır..."
+      "creating": "Yaradılır...",
+      "alertConfigured": "Bildiriş konfiqurasiya edildi! Aşağıdakı sahələri nəzərdən keçirin və ya Növbəti düyməsini basın.",
+      "aiParseFailed": "AI avtomatik doldurmağı bacarmadı. Xahiş edirik xidmət seçin və əl ilə doldurun."
     }
   },
   "settings": {
@@ -153,6 +163,7 @@
     "placeholder5": "Valyuta məzənnəsi dəyişir",
     "monitorWhen": "İzləyin nə zaman",
     "createAlert": "Bildiriş Yarat",
+    "createSmartAlert": "Ağıllı Bildiriş Yarat",
     "suggestion1": "Bitcoin $100k",
     "suggestion2": "Veb-sayt Monitoru",
     "suggestion3": "Səhm Bildirişləri",
