@@ -62,6 +62,7 @@
     "status": "Status",
     "active": "Active",
     "paused": "Paused",
+    "lastTriggered": "Last triggered",
     "statusUp": "UP",
     "statusDown": "DOWN",
     "edit": "Edit",
@@ -107,6 +108,7 @@
         "flight": "Notify me when J2 123 flight is delayed"
       },
       "selectCrypto": "Select Cryptocurrency",
+      "selectStock": "Select Stock",
       "threshold": "Threshold Value",
       "thresholdPlaceholder": "e.g., $100,000",
       "checkInterval": "Check Interval",
@@ -187,6 +189,10 @@
     "crypto_target_reached": {
       "title": "Crypto Alert",
       "body": "{asset} price is ${price}"
+    },
+    "stock_target_reached": {
+      "title": "Stock Alert",
+      "body": "{asset} price target reached"
     }
   },
   "common": {

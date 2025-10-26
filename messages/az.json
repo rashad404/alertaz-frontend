@@ -62,6 +62,7 @@
     "status": "Status",
     "active": "Aktiv",
     "paused": "Dayandırılıb",
+    "lastTriggered": "Son işləmə",
     "statusUp": "İşləyir",
     "statusDown": "İşləmir",
     "edit": "Redaktə et",
@@ -107,6 +108,7 @@
         "flight": "J2 123 uçuşu geckəndə bildiriş göndər"
       },
       "selectCrypto": "Kriptovalyuta seçin",
+      "selectStock": "Səhm seçin",
       "threshold": "Hədd Dəyər",
       "thresholdPlaceholder": "Məsələn: $100,000",
       "checkInterval": "Yoxlama İntervalı",
@@ -187,6 +189,10 @@
     "crypto_target_reached": {
       "title": "Kripto bildirişi",
       "body": "{asset} qiyməti ${price}"
+    },
+    "stock_target_reached": {
+      "title": "Səhm bildirişi",
+      "body": "{asset} qiymət hədəfinə çatdı"
     }
   },
   "common": {

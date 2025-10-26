@@ -28,7 +28,8 @@ interface Alert {
 
 const serviceIcons = {
   crypto: Bitcoin,
-  stocks: TrendingUp,
+  stock: TrendingUp,  // Backend uses 'stock' (singular)
+  stocks: TrendingUp, // Keep plural for compatibility
   website: Globe,
   weather: Cloud,
   currency: DollarSign,
@@ -37,7 +38,8 @@ const serviceIcons = {
 
 const serviceGradients = {
   crypto: 'from-orange-500 to-yellow-500',
-  stocks: 'from-blue-500 to-cyan-500',
+  stock: 'from-blue-500 to-cyan-500',  // Backend uses 'stock' (singular)
+  stocks: 'from-blue-500 to-cyan-500', // Keep plural for compatibility
   website: 'from-green-500 to-emerald-500',
   weather: 'from-purple-500 to-pink-500',
   currency: 'from-indigo-500 to-purple-500',
@@ -422,7 +424,7 @@ const AlertsPageClient: React.FC<AlertsPageClientProps> = ({ lang }) => {
                         </div>
                         {alert.lastTriggered && (
                           <div>
-                            <span className="font-medium">Last triggered:</span>{' '}
+                            <span className="font-medium">{t('alerts.lastTriggered')}:</span>{' '}
                             {new Date(alert.lastTriggered).toLocaleDateString()}
                           </div>
                         )}

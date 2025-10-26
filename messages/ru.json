@@ -62,6 +62,7 @@
     "status": "Статус",
     "active": "Активно",
     "paused": "Приостановлено",
+    "lastTriggered": "Последний раз сработал",
     "statusUp": "Работает",
     "statusDown": "Не работает",
     "edit": "Редактировать",
@@ -107,6 +108,7 @@
         "flight": "Уведомить меня, когда рейс J2 123 задержится"
       },
       "selectCrypto": "Выберите криптовалюту",
+      "selectStock": "Выберите акцию",
       "threshold": "Пороговое значение",
       "thresholdPlaceholder": "например, $100,000",
       "checkInterval": "Интервал проверки",
@@ -187,6 +189,10 @@
     "crypto_target_reached": {
       "title": "Крипто уведомление",
       "body": "Цена {asset} ${price}"
+    },
+    "stock_target_reached": {
+      "title": "Уведомление об акциях",
+      "body": "Целевая цена {asset} достигнута"
     }
   },
   "common": {

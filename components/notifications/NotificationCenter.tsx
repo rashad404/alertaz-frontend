@@ -224,7 +224,7 @@ export default function NotificationCenter() {
     const notifType = notification.title; // Backend now sends type key as title (e.g., "website_up", "crypto_target_reached")
 
     // If notification title matches our translation keys, it's new format
-    if (notifType && (notifType === 'website_up' || notifType === 'website_down' || notifType === 'crypto_target_reached')) {
+    if (notifType && (notifType === 'website_up' || notifType === 'website_down' || notifType === 'crypto_target_reached' || notifType === 'stock_target_reached')) {
       try {
         // Format based on type
         if (notifType === 'website_up' || notifType === 'website_down') {
@@ -239,6 +239,13 @@ export default function NotificationCenter() {
             body: tNotif(`${notifType}.body`, {
               asset: data?.symbol || data?.asset || 'crypto',
               price: price
+            })
+          };
+        } else if (notifType === 'stock_target_reached') {
+          return {
+            title: tNotif(`${notifType}.title`),
+            body: tNotif(`${notifType}.body`, {
+              asset: data?.symbol || data?.asset || 'stock'
             })
           };
         }

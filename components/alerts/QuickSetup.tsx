@@ -18,12 +18,19 @@ interface Cryptocurrency {
   image: string | null;
 }
 
+interface Stock {
+  symbol: string;
+  name: string;
+  exchange: string;
+}
+
 interface AlertConfig {
   service: AlertService;
   description: string;
   name: string;
   crypto?: string;
   cryptoId?: string;
+  stock?: string;
   threshold?: string;
   operator?: string;
   interval?: string;
@@ -56,6 +63,7 @@ export default function QuickSetup() {
   const [step, setStep] = useState(searchParams.get('service') ? 1 : 0);
   const [isLoading, setIsLoading] = useState(false);
   const [cryptocurrencies, setCryptocurrencies] = useState<Cryptocurrency[]>([]);
+  const [stocks, setStocks] = useState<Stock[]>([]);
   const [isParsing, setIsParsing] = useState(false);
   const [parseError, setParseError] = useState<string | null>(null);
   const [parsedData, setParsedData] = useState<any>(null);
@@ -73,6 +81,7 @@ export default function QuickSetup() {
     name: '',
     crypto: 'BTC',
     cryptoId: 'bitcoin',
+    stock: 'AAPL',
     threshold: '',
     operator: 'above',
     interval: '1hour',
@@ -138,7 +147,7 @@ export default function QuickSetup() {
     }
   }, [searchParams]);
 
-  // Fetch cryptocurrency list and available channels from API
+  // Fetch cryptocurrency list, stocks list and available channels from API
   useEffect(() => {
     const fetchCryptos = async () => {
       try {
@@ -150,6 +159,113 @@ export default function QuickSetup() {
       } catch (error) {
         console.error('Error fetching cryptocurrencies:', error);
       }
+    };
+
+    const fetchStocks = async () => {
+      // Use the complete list of top 100 US stocks (same as backend AlertType)
+      const top100Stocks: Stock[] = [
+        { symbol: 'AAPL', name: 'Apple Inc.', exchange: 'NASDAQ' },
+        { symbol: 'MSFT', name: 'Microsoft Corporation', exchange: 'NASDAQ' },
+        { symbol: 'GOOGL', name: 'Alphabet Inc. (Class A)', exchange: 'NASDAQ' },
+        { symbol: 'AMZN', name: 'Amazon.com Inc.', exchange: 'NASDAQ' },
+        { symbol: 'NVDA', name: 'NVIDIA Corporation', exchange: 'NASDAQ' },
+        { symbol: 'META', name: 'Meta Platforms Inc.', exchange: 'NASDAQ' },
+        { symbol: 'TSLA', name: 'Tesla Inc.', exchange: 'NASDAQ' },
+        { symbol: 'BRK.B', name: 'Berkshire Hathaway Inc.', exchange: 'NYSE' },
+        { symbol: 'V', name: 'Visa Inc.', exchange: 'NYSE' },
+        { symbol: 'UNH', name: 'UnitedHealth Group Inc.', exchange: 'NYSE' },
+        { symbol: 'XOM', name: 'Exxon Mobil Corporation', exchange: 'NYSE' },
+        { symbol: 'JNJ', name: 'Johnson & Johnson', exchange: 'NYSE' },
+        { symbol: 'WMT', name: 'Walmart Inc.', exchange: 'NYSE' },
+        { symbol: 'JPM', name: 'JPMorgan Chase & Co.', exchange: 'NYSE' },
+        { symbol: 'MA', name: 'Mastercard Inc.', exchange: 'NYSE' },
+        { symbol: 'PG', name: 'Procter & Gamble Co.', exchange: 'NYSE' },
+        { symbol: 'AVGO', name: 'Broadcom Inc.', exchange: 'NASDAQ' },
+        { symbol: 'HD', name: 'The Home Depot Inc.', exchange: 'NYSE' },
+        { symbol: 'CVX', name: 'Chevron Corporation', exchange: 'NYSE' },
+        { symbol: 'MRK', name: 'Merck & Co. Inc.', exchange: 'NYSE' },
+        { symbol: 'ABBV', name: 'AbbVie Inc.', exchange: 'NYSE' },
+        { symbol: 'KO', name: 'The Coca-Cola Company', exchange: 'NYSE' },
+        { symbol: 'PEP', name: 'PepsiCo Inc.', exchange: 'NASDAQ' },
+        { symbol: 'COST', name: 'Costco Wholesale Corporation', exchange: 'NASDAQ' },
+        { symbol: 'ADBE', name: 'Adobe Inc.', exchange: 'NASDAQ' },
+        { symbol: 'MCD', name: 'McDonald\'s Corporation', exchange: 'NYSE' },
+        { symbol: 'CSCO', name: 'Cisco Systems Inc.', exchange: 'NASDAQ' },
+        { symbol: 'TMO', name: 'Thermo Fisher Scientific Inc.', exchange: 'NYSE' },
+        { symbol: 'ACN', name: 'Accenture plc', exchange: 'NYSE' },
+        { symbol: 'LLY', name: 'Eli Lilly and Company', exchange: 'NYSE' },
+        { symbol: 'NFLX', name: 'Netflix Inc.', exchange: 'NASDAQ' },
+        { symbol: 'NKE', name: 'Nike Inc.', exchange: 'NYSE' },
+        { symbol: 'ABT', name: 'Abbott Laboratories', exchange: 'NYSE' },
+        { symbol: 'ORCL', name: 'Oracle Corporation', exchange: 'NYSE' },
+        { symbol: 'CRM', name: 'Salesforce Inc.', exchange: 'NYSE' },
+        { symbol: 'DHR', name: 'Danaher Corporation', exchange: 'NYSE' },
+        { symbol: 'VZ', name: 'Verizon Communications Inc.', exchange: 'NYSE' },
+        { symbol: 'INTC', name: 'Intel Corporation', exchange: 'NASDAQ' },
+        { symbol: 'TXN', name: 'Texas Instruments Inc.', exchange: 'NASDAQ' },
+        { symbol: 'WFC', name: 'Wells Fargo & Company', exchange: 'NYSE' },
+        { symbol: 'PM', name: 'Philip Morris International Inc.', exchange: 'NYSE' },
+        { symbol: 'DIS', name: 'The Walt Disney Company', exchange: 'NYSE' },
+        { symbol: 'NEE', name: 'NextEra Energy Inc.', exchange: 'NYSE' },
+        { symbol: 'CMCSA', name: 'Comcast Corporation', exchange: 'NASDAQ' },
+        { symbol: 'UPS', name: 'United Parcel Service Inc.', exchange: 'NYSE' },
+        { symbol: 'BMY', name: 'Bristol-Myers Squibb Company', exchange: 'NYSE' },
+        { symbol: 'HON', name: 'Honeywell International Inc.', exchange: 'NASDAQ' },
+        { symbol: 'UNP', name: 'Union Pacific Corporation', exchange: 'NYSE' },
+        { symbol: 'T', name: 'AT&T Inc.', exchange: 'NYSE' },
+        { symbol: 'LOW', name: 'Lowe\'s Companies Inc.', exchange: 'NYSE' },
+        { symbol: 'IBM', name: 'International Business Machines', exchange: 'NYSE' },
+        { symbol: 'QCOM', name: 'Qualcomm Inc.', exchange: 'NASDAQ' },
+        { symbol: 'BA', name: 'The Boeing Company', exchange: 'NYSE' },
+        { symbol: 'AMD', name: 'Advanced Micro Devices Inc.', exchange: 'NASDAQ' },
+        { symbol: 'AMGN', name: 'Amgen Inc.', exchange: 'NASDAQ' },
+        { symbol: 'SPGI', name: 'S&P Global Inc.', exchange: 'NYSE' },
+        { symbol: 'ELV', name: 'Elevance Health Inc.', exchange: 'NYSE' },
+        { symbol: 'INTU', name: 'Intuit Inc.', exchange: 'NASDAQ' },
+        { symbol: 'RTX', name: 'Raytheon Technologies Corp.', exchange: 'NYSE' },
+        { symbol: 'BLK', name: 'BlackRock Inc.', exchange: 'NYSE' },
+        { symbol: 'CAT', name: 'Caterpillar Inc.', exchange: 'NYSE' },
+        { symbol: 'GE', name: 'General Electric Company', exchange: 'NYSE' },
+        { symbol: 'PLD', name: 'Prologis Inc.', exchange: 'NYSE' },
+        { symbol: 'DE', name: 'Deere & Company', exchange: 'NYSE' },
+        { symbol: 'AXP', name: 'American Express Company', exchange: 'NYSE' },
+        { symbol: 'SBUX', name: 'Starbucks Corporation', exchange: 'NASDAQ' },
+        { symbol: 'GILD', name: 'Gilead Sciences Inc.', exchange: 'NASDAQ' },
+        { symbol: 'NOW', name: 'ServiceNow Inc.', exchange: 'NYSE' },
+        { symbol: 'MDLZ', name: 'Mondelez International Inc.', exchange: 'NASDAQ' },
+        { symbol: 'ISRG', name: 'Intuitive Surgical Inc.', exchange: 'NASDAQ' },
+        { symbol: 'TJX', name: 'The TJX Companies Inc.', exchange: 'NYSE' },
+        { symbol: 'SYK', name: 'Stryker Corporation', exchange: 'NYSE' },
+        { symbol: 'ADP', name: 'Automatic Data Processing Inc.', exchange: 'NASDAQ' },
+        { symbol: 'BKNG', name: 'Booking Holdings Inc.', exchange: 'NASDAQ' },
+        { symbol: 'ADI', name: 'Analog Devices Inc.', exchange: 'NASDAQ' },
+        { symbol: 'MMC', name: 'Marsh & McLennan Companies', exchange: 'NYSE' },
+        { symbol: 'REGN', name: 'Regeneron Pharmaceuticals Inc.', exchange: 'NASDAQ' },
+        { symbol: 'CI', name: 'Cigna Corporation', exchange: 'NYSE' },
+        { symbol: 'ZTS', name: 'Zoetis Inc.', exchange: 'NYSE' },
+        { symbol: 'MO', name: 'Altria Group Inc.', exchange: 'NYSE' },
+        { symbol: 'CVS', name: 'CVS Health Corporation', exchange: 'NYSE' },
+        { symbol: 'C', name: 'Citigroup Inc.', exchange: 'NYSE' },
+        { symbol: 'PGR', name: 'The Progressive Corporation', exchange: 'NYSE' },
+        { symbol: 'VRTX', name: 'Vertex Pharmaceuticals Inc.', exchange: 'NASDAQ' },
+        { symbol: 'DUK', name: 'Duke Energy Corporation', exchange: 'NYSE' },
+        { symbol: 'SO', name: 'The Southern Company', exchange: 'NYSE' },
+        { symbol: 'CB', name: 'Chubb Limited', exchange: 'NYSE' },
+        { symbol: 'BDX', name: 'Becton Dickinson and Company', exchange: 'NYSE' },
+        { symbol: 'SCHW', name: 'The Charles Schwab Corporation', exchange: 'NYSE' },
+        { symbol: 'ETN', name: 'Eaton Corporation plc', exchange: 'NYSE' },
+        { symbol: 'BSX', name: 'Boston Scientific Corporation', exchange: 'NYSE' },
+        { symbol: 'AON', name: 'Aon plc', exchange: 'NYSE' },
+        { symbol: 'ITW', name: 'Illinois Tool Works Inc.', exchange: 'NYSE' },
+        { symbol: 'MMM', name: '3M Company', exchange: 'NYSE' },
+        { symbol: 'HUM', name: 'Humana Inc.', exchange: 'NYSE' },
+        { symbol: 'TGT', name: 'Target Corporation', exchange: 'NYSE' },
+        { symbol: 'LRCX', name: 'Lam Research Corporation', exchange: 'NASDAQ' },
+        { symbol: 'MU', name: 'Micron Technology Inc.', exchange: 'NASDAQ' },
+        { symbol: 'PANW', name: 'Palo Alto Networks Inc.', exchange: 'NASDAQ' },
+        { symbol: 'EQIX', name: 'Equinix Inc.', exchange: 'NASDAQ' },
+      ];
+      setStocks(top100Stocks);
     };
 
     const fetchAvailableChannels = async () => {
@@ -191,6 +307,7 @@ export default function QuickSetup() {
     };
 
     fetchCryptos();
+    fetchStocks();
     fetchAvailableChannels();
   }, []);
 
@@ -386,6 +503,7 @@ export default function QuickSetup() {
         alert_type_id: serviceToTypeId[config.service],
         name: config.name,
         asset: config.service === 'crypto' ? config.crypto :
+               config.service === 'stocks' ? config.stock :
                config.service === 'website' ? config.threshold : undefined,
         conditions: config.service === 'website' ? {
           field: config.operator === 'up' ? 'is_up' : 'is_down',
@@ -834,6 +952,35 @@ export default function QuickSetup() {
                         <option value="SOL">Solana (SOL)</option>
                       </>
                     )}
+                  </select>
+                </div>
+              )}
+
+              {/* Stocks: Select Stock */}
+              {config.service === 'stocks' && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    {t('alerts.quickSetup.selectStock') || 'Stock'}
+                  </label>
+                  <select
+                    key={`stock-select-${stocks.length}-${config.stock}`}
+                    value={config.stock}
+                    onChange={(e) => {
+                      setConfig(prev => ({
+                        ...prev,
+                        stock: e.target.value,
+                      }));
+                    }}
+                    disabled={mode === 'ai' && !fieldsEnabled}
+                    className={`w-full px-4 py-3 rounded-2xl bg-white/50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all ${
+                      mode === 'ai' && !fieldsEnabled ? 'opacity-50 cursor-not-allowed' : ''
+                    }`}
+                  >
+                    {stocks.map((stock) => (
+                      <option key={stock.symbol} value={stock.symbol}>
+                        {stock.name} ({stock.symbol})
+                      </option>
+                    ))}
                   </select>
                 </div>
               )}
