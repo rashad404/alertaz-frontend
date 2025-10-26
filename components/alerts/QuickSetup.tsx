@@ -252,8 +252,29 @@ export default function QuickSetup() {
   const handleNext = () => {
     if (step === 0 && config.service) {
       setStep(1);
-    } else if (step === 1 && config.name.trim()) {
-      setStep(2);
+    } else if (step === 1) {
+      // In manual mode, generate a name if not provided
+      if (mode === 'manual' && !config.name.trim() && config.threshold?.trim()) {
+        // Auto-generate name based on service and threshold
+        let generatedName = '';
+        if (config.service === 'crypto') {
+          generatedName = `${config.crypto} ${config.operator === 'above' ? '>' : config.operator === 'below' ? '<' : '='} $${config.threshold}`;
+        } else if (config.service === 'website') {
+          generatedName = `Monitor ${config.threshold}`;
+        } else if (config.service === 'weather') {
+          generatedName = `Weather alert for ${config.threshold}`;
+        } else if (config.service === 'flight') {
+          generatedName = `Flight ${config.threshold}`;
+        } else if (config.service === 'stocks' || config.service === 'currency') {
+          generatedName = `${config.service} ${config.operator === 'above' ? '>' : config.operator === 'below' ? '<' : '='} $${config.threshold}`;
+        }
+        setConfig(prev => ({ ...prev, name: generatedName }));
+      }
+
+      // Proceed to next step if we have required data
+      if ((mode === 'ai' && fieldsEnabled) || (mode === 'manual' && config.threshold?.trim())) {
+        setStep(2);
+      }
     }
   };
 
@@ -618,7 +639,7 @@ export default function QuickSetup() {
               {mode === 'ai' && !hideAiInput && (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Describe your alert
+                    {t('alerts.quickSetup.describeYourAlert')}
                   </label>
                   <div className="flex gap-2">
                     <input
@@ -629,7 +650,7 @@ export default function QuickSetup() {
                         setParsedData(null);
                         setParseError(null);
                       }}
-                      placeholder="e.g., Bitcoin above $100k, ETH drops below 3000"
+                      placeholder={t(`alerts.quickSetup.aiDescriptionPlaceholder.${config.service}`) || 'e.g., Bitcoin above $100k'}
                       className="flex-1 px-4 py-3 rounded-2xl bg-white/50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
                     />
                     <button
@@ -644,12 +665,12 @@ export default function QuickSetup() {
                       {isParsing ? (
                         <>
                           <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
-                          <span>Analyzing...</span>
+                          <span>{t('alerts.quickSetup.analyzing')}</span>
                         </>
                       ) : (
                         <>
                           <Sparkles className="w-4 h-4" />
-                          <span>Generate</span>
+                          <span>{t('alerts.quickSetup.generate')}</span>
                         </>
                       )}
                     </button>
@@ -685,6 +706,25 @@ export default function QuickSetup() {
                       </p>
                     </div>
                   </div>
+                </div>
+              )}
+
+              {/* Manual Mode: Alert Name (Optional) */}
+              {mode === 'manual' && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    {t('alerts.quickSetup.alertName')} <span className="text-gray-400 text-xs">({t('alerts.quickSetup.optional')})</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={config.name}
+                    onChange={(e) => setConfig({ ...config, name: e.target.value })}
+                    placeholder={t(`alerts.quickSetup.alertNamePlaceholder.${config.service}`) || 'e.g., Bitcoin hits $100k'}
+                    className="w-full px-4 py-3 rounded-2xl bg-white/50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                  />
+                  <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                    {t('alerts.quickSetup.leaveEmptyToAutoGenerate')}
+                  </p>
                 </div>
               )}
 
@@ -773,7 +813,7 @@ export default function QuickSetup() {
               {config.service === 'website' && (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Website URL
+                    {t('alerts.quickSetup.websiteUrl')}
                   </label>
                   <input
                     type="url"
@@ -789,7 +829,7 @@ export default function QuickSetup() {
               {config.service === 'weather' && (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Location
+                    {t('alerts.quickSetup.location')}
                   </label>
                   <input
                     type="text"
@@ -805,7 +845,7 @@ export default function QuickSetup() {
               {config.service === 'flight' && (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Flight Number
+                    {t('alerts.quickSetup.flightNumber')}
                   </label>
                   <input
                     type="text"
@@ -863,7 +903,7 @@ export default function QuickSetup() {
                                   </p>
                                   {!isAvailable && (
                                     <span className="px-2 py-0.5 text-xs font-medium rounded-full bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400">
-                                      Setup Required
+                                      {t('alerts.quickSetup.setupRequired')}
                                     </span>
                                   )}
                                 </div>
@@ -890,7 +930,7 @@ export default function QuickSetup() {
                             href="/settings/notifications"
                             className="absolute top-4 right-4 text-xs text-orange-600 dark:text-orange-400 hover:text-orange-700 dark:hover:text-orange-300 font-medium hover:underline"
                           >
-                            Set up →
+                            {t('alerts.quickSetup.setUp')}
                           </Link>
                         )}
                       </div>
@@ -903,16 +943,16 @@ export default function QuickSetup() {
               {!isLoadingChannels && availableChannels.length === 0 && (
                 <div className="p-4 rounded-2xl bg-orange-50 dark:bg-orange-900/10 border border-orange-200 dark:border-orange-800">
                   <p className="text-sm font-medium text-orange-900 dark:text-orange-300 mb-2">
-                    No notification channels configured
+                    {t('alerts.quickSetup.noChannelsConfigured')}
                   </p>
                   <p className="text-xs text-orange-700 dark:text-orange-400 mb-3">
-                    You need to set up at least one notification channel before creating an alert.
+                    {t('alerts.quickSetup.noChannelsConfiguredDesc')}
                   </p>
                   <Link
                     href="/settings/notifications"
                     className="inline-flex items-center gap-1 text-sm font-medium text-orange-600 dark:text-orange-400 hover:text-orange-700 dark:hover:text-orange-300"
                   >
-                    Go to Settings → Notifications
+                    {t('alerts.quickSetup.goToSettings')}
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                     </svg>
@@ -953,9 +993,9 @@ export default function QuickSetup() {
             {step === 1 ? (
               <button
                 onClick={handleNext}
-                disabled={mode === 'ai' ? !fieldsEnabled : !config.name.trim()}
+                disabled={mode === 'ai' ? !fieldsEnabled : !config.threshold?.trim()}
                 className={`flex items-center gap-2 px-6 py-3 rounded-2xl font-medium text-white transition-all duration-300 ${
-                  (mode === 'ai' ? fieldsEnabled : config.name.trim())
+                  (mode === 'ai' ? fieldsEnabled : config.threshold?.trim())
                     ? `bg-gradient-to-r ${gradient} hover:shadow-lg hover:scale-105`
                     : 'bg-gray-300 dark:bg-gray-700 cursor-not-allowed'
                 }`}

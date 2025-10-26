@@ -156,17 +156,21 @@ export default function SearchMonitor() {
 
           {/* Quick Suggestions */}
           <div className="mt-6 flex flex-wrap justify-center gap-2">
-            {[t('search.suggestion1'), t('search.suggestion2'), t('search.suggestion3'), t('search.suggestion4')].map((suggestion, idx) => (
+            {[
+              { label: t('search.suggestion1'), service: 'crypto' },
+              { label: t('search.suggestion2'), service: 'website' },
+              { label: t('search.suggestion3'), service: 'stocks' },
+              { label: t('search.suggestion4'), service: 'weather' }
+            ].map((suggestion, idx) => (
               <button
                 key={idx}
                 onClick={() => {
-                  setQuery(suggestion);
-                  setTimeout(handleSearch, 100);
+                  router.push(`/alerts/quick-setup?service=${suggestion.service}`);
                 }}
                 className="group px-4 py-2 rounded-full bg-white/5 backdrop-blur-sm border border-white/10 hover:bg-white/10 hover:border-purple-500/30 transition-all duration-300"
               >
                 <span className="text-sm text-gray-600 dark:text-gray-400 group-hover:text-purple-500 transition-colors">
-                  {suggestion}
+                  {suggestion.label}
                 </span>
               </button>
             ))}

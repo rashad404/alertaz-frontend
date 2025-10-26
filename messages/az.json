@@ -96,6 +96,14 @@
         "currency": "Məsələn: USD/AZN 1.70 olur",
         "flight": "Məsələn: J2 123 uçuşu gecikirr"
       },
+      "aiDescriptionPlaceholder": {
+        "crypto": "Bitcoin 100k dolları keçəndə xəbər ver",
+        "stocks": "Apple səhmi 200 dollardan aşağı düşəndə bildiriş göndər",
+        "website": "Saytım işləməyəndə mənə xəbər ver",
+        "weather": "Bakıda hava 35 dərəcədən yuxarı olanda bildiriş göndər",
+        "currency": "USD/AZN 1.70 olanda mənə xəbər ver",
+        "flight": "J2 123 uçuşu geckəndə bildiriş göndər"
+      },
       "selectCrypto": "Kriptovalyuta seçin",
       "threshold": "Hədd Dəyər",
       "thresholdPlaceholder": "Məsələn: $100,000",
@@ -128,7 +136,20 @@
       "createAlert": "Bildiriş Yarat",
       "creating": "Yaradılır...",
       "alertConfigured": "Bildiriş konfiqurasiya edildi! Aşağıdakı sahələri nəzərdən keçirin və ya Növbəti düyməsini basın.",
-      "aiParseFailed": "AI avtomatik doldurmağı bacarmadı. Xahiş edirik xidmət seçin və əl ilə doldurun."
+      "aiParseFailed": "AI avtomatik doldurmağı bacarmadı. Xahiş edirik xidmət seçin və əl ilə doldurun.",
+      "describeYourAlert": "Bildirişinizi təsvir edin",
+      "generate": "Yarat",
+      "analyzing": "Təhlil edilir...",
+      "optional": "İstəyə bağlı",
+      "leaveEmptyToAutoGenerate": "Parametrlərinizə əsasən avtomatik yaratmaq üçün boş buraxın",
+      "websiteUrl": "Veb-sayt URL",
+      "location": "Yer",
+      "flightNumber": "Uçuş nömrəsi",
+      "noChannelsConfigured": "Bildiriş kanalları quraşdırılmayıb",
+      "noChannelsConfiguredDesc": "Bildiriş yaratmadan əvvəl ən azı bir bildiriş kanalını quraşdırmalısınız.",
+      "goToSettings": "Parametrlərə keçin → Bildirişlər",
+      "setupRequired": "Quraşdırma tələb olunur",
+      "setUp": "Quraşdır →"
     }
   },
   "settings": {
@@ -164,7 +185,7 @@
     "monitorWhen": "İzləyin nə zaman",
     "createAlert": "Bildiriş Yarat",
     "createSmartAlert": "Ağıllı Bildiriş Yarat",
-    "suggestion1": "Bitcoin $100k",
+    "suggestion1": "Kripto qiymətləri",
     "suggestion2": "Veb-sayt Monitoru",
     "suggestion3": "Səhm Bildirişləri",
     "suggestion4": "Hava Yenilikləri"

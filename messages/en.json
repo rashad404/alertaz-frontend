@@ -96,6 +96,14 @@
         "currency": "e.g., USD/AZN reaches 1.70",
         "flight": "e.g., J2 123 flight delayed"
       },
+      "aiDescriptionPlaceholder": {
+        "crypto": "Notify me when Bitcoin exceeds $100k",
+        "stocks": "Send alert when Apple stock drops below $200",
+        "website": "Alert me when my website is down",
+        "weather": "Notify me when temperature in Baku goes above 35°C",
+        "currency": "Alert me when USD/AZN reaches 1.70",
+        "flight": "Notify me when J2 123 flight is delayed"
+      },
       "selectCrypto": "Select Cryptocurrency",
       "threshold": "Threshold Value",
       "thresholdPlaceholder": "e.g., $100,000",
@@ -128,7 +136,20 @@
       "createAlert": "Create Alert",
       "creating": "Creating...",
       "alertConfigured": "Alert configured! Review the fields below or click Next to continue.",
-      "aiParseFailed": "Could not auto-fill via AI. Please select service and fill manually."
+      "aiParseFailed": "Could not auto-fill via AI. Please select service and fill manually.",
+      "describeYourAlert": "Describe your alert",
+      "generate": "Generate",
+      "analyzing": "Analyzing...",
+      "optional": "Optional",
+      "leaveEmptyToAutoGenerate": "Leave empty to auto-generate based on your settings",
+      "websiteUrl": "Website URL",
+      "location": "Location",
+      "flightNumber": "Flight Number",
+      "noChannelsConfigured": "No notification channels configured",
+      "noChannelsConfiguredDesc": "You need to set up at least one notification channel before creating an alert.",
+      "goToSettings": "Go to Settings → Notifications",
+      "setupRequired": "Setup Required",
+      "setUp": "Set up →"
     }
   },
   "settings": {
@@ -164,7 +185,7 @@
     "monitorWhen": "Monitor when",
     "createAlert": "Create Alert",
     "createSmartAlert": "Create Smart Alert",
-    "suggestion1": "Bitcoin $100k",
+    "suggestion1": "Crypto Prices",
     "suggestion2": "Website Monitor",
     "suggestion3": "Stock Alerts",
     "suggestion4": "Weather Updates"
