@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Bell, X, Check, CheckCheck } from 'lucide-react';
 import axios from 'axios';
+import { useTranslations } from 'next-intl';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://100.89.150.50:8007/api';
 
@@ -18,6 +19,8 @@ interface Notification {
 }
 
 export default function NotificationCenter() {
+  const t = useTranslations('notificationCenter');
+  const tNotif = useTranslations('notifications');
   const [isOpen, setIsOpen] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -191,10 +194,10 @@ export default function NotificationCenter() {
     const hours = Math.floor(diff / 3600000);
     const days = Math.floor(diff / 86400000);
 
-    if (minutes < 1) return 'Just now';
-    if (minutes < 60) return `${minutes}m ago`;
-    if (hours < 24) return `${hours}h ago`;
-    if (days < 7) return `${days}d ago`;
+    if (minutes < 1) return t('justNow');
+    if (minutes < 60) return t('minutesAgo', { count: minutes });
+    if (hours < 24) return t('hoursAgo', { count: hours });
+    if (days < 7) return t('daysAgo', { count: days });
     return date.toLocaleDateString();
   };
 
@@ -213,6 +216,38 @@ export default function NotificationCenter() {
       default:
         return '📬';
     }
+  };
+
+  const formatNotification = (notification: Notification): { title: string; body: string } => {
+    // Check if this is a new-format notification with structured data
+    const data = notification.data;
+    const notifType = notification.title; // Backend now sends type key as title (e.g., "website_up", "crypto_target_reached")
+
+    // If notification title matches our translation keys, it's new format
+    if (notifType && (notifType === 'website_up' || notifType === 'website_down' || notifType === 'crypto_target_reached')) {
+      try {
+        // Format based on type
+        if (notifType === 'website_up' || notifType === 'website_down') {
+          return {
+            title: tNotif(`${notifType}.title`),
+            body: tNotif(`${notifType}.body`, { url: data?.url || data?.asset || notification.body })
+          };
+        } else if (notifType === 'crypto_target_reached') {
+          return {
+            title: tNotif(`${notifType}.title`),
+            body: tNotif(`${notifType}.body`, { asset: data?.symbol || data?.asset || 'crypto' })
+          };
+        }
+      } catch (e) {
+        // Fall back to original if translation fails
+      }
+    }
+
+    // Old format or fallback: use stored title/body
+    return {
+      title: notification.title,
+      body: notification.body
+    };
   };
 
   return (
@@ -245,7 +280,7 @@ export default function NotificationCenter() {
             {/* Header */}
             <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-800">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                Notifications
+                {t('title')}
               </h3>
               <div className="flex items-center gap-2">
                 {unreadCount > 0 && (
@@ -254,7 +289,7 @@ export default function NotificationCenter() {
                     className="text-sm text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"
                   >
                     <CheckCheck className="w-4 h-4" />
-                    Mark all read
+                    {t('markAllRead')}
                   </button>
                 )}
                 <button
@@ -276,12 +311,14 @@ export default function NotificationCenter() {
                 <div className="flex flex-col items-center justify-center p-8 text-center">
                   <Bell className="w-12 h-12 text-gray-300 dark:text-gray-700 mb-3" />
                   <p className="text-gray-500 dark:text-gray-400">
-                    No notifications yet
+                    {t('noNotifications')}
                   </p>
                 </div>
               ) : (
                 <div className="divide-y divide-gray-100 dark:divide-gray-800">
-                  {notifications.map((notification) => (
+                  {notifications.map((notification) => {
+                    const formatted = formatNotification(notification);
+                    return (
                     <div
                       key={notification.id}
                       className={`p-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors cursor-pointer ${
@@ -300,14 +337,14 @@ export default function NotificationCenter() {
                         <div className="flex-1 min-w-0">
                           <div className="flex items-start justify-between gap-2">
                             <p className="text-sm font-medium text-gray-900 dark:text-white">
-                              {notification.title}
+                              {formatted.title}
                             </p>
                             {!notification.is_read && (
                               <div className="w-2 h-2 bg-blue-600 rounded-full flex-shrink-0 mt-1"></div>
                             )}
                           </div>
                           <p className="text-sm text-gray-600 dark:text-gray-400 mt-1 line-clamp-2">
-                            {notification.body}
+                            {formatted.body}
                           </p>
                           <div className="flex items-center gap-2 mt-2">
                             <span className="text-xs text-gray-500 dark:text-gray-500">
@@ -325,7 +362,8 @@ export default function NotificationCenter() {
                         </div>
                       </div>
                     </div>
-                  ))}
+                  );
+                  })}
                 </div>
               )}
             </div>

@@ -113,8 +113,13 @@ class AlertsService {
 
   // Parse natural language alert input
   async parseAlert(input: string): Promise<any> {
-    const response = await apiClient.post('/alerts/parse', { input });
-    return response.data.data;
+    try {
+      const response = await apiClient.post('/alerts/parse', { input });
+      return response.data.data;
+    } catch (error: any) {
+      // Throw a clean error without axios details
+      throw new Error(error.response?.data?.message || 'Parse failed');
+    }
   }
 
   // Helper function to get notification channel icon

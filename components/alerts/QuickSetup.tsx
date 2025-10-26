@@ -96,22 +96,44 @@ export default function QuickSetup() {
 
     // Auto-fill from AI parse (from index page)
     if (searchParams.get('from_ai') === 'true') {
-      const cryptoId = searchParams.get('crypto_id');
-      const cryptoSymbol = searchParams.get('crypto_symbol');
-      const operator = searchParams.get('operator');
-      const value = searchParams.get('value');
+      const service = searchParams.get('service');
 
-      if (cryptoId && cryptoSymbol) {
-        setConfig(prev => ({
-          ...prev,
-          crypto: cryptoSymbol,
-          cryptoId: cryptoId,
-          operator: operator || 'above',
-          threshold: value || '',
-        }));
-        setFieldsEnabled(true);
-        setHideAiInput(true); // Hide AI input when data is pre-filled
-        setParsedData({ success: true }); // Mark as parsed
+      // Handle crypto
+      if (service === 'crypto') {
+        const cryptoId = searchParams.get('crypto_id');
+        const cryptoSymbol = searchParams.get('crypto_symbol');
+        const operator = searchParams.get('operator');
+        const value = searchParams.get('value');
+
+        if (cryptoId && cryptoSymbol) {
+          setConfig(prev => ({
+            ...prev,
+            crypto: cryptoSymbol,
+            cryptoId: cryptoId,
+            operator: operator || 'above',
+            threshold: value || '',
+          }));
+          setFieldsEnabled(true);
+          setHideAiInput(true);
+          setParsedData({ success: true });
+        }
+      }
+
+      // Handle website
+      if (service === 'website') {
+        const url = searchParams.get('url');
+        const condition = searchParams.get('condition');
+
+        if (url) {
+          setConfig(prev => ({
+            ...prev,
+            threshold: url, // Store URL in threshold field
+            operator: condition || 'down', // Store condition (up/down)
+          }));
+          setFieldsEnabled(true);
+          setHideAiInput(true);
+          setParsedData({ success: true });
+        }
       }
     }
   }, [searchParams]);
@@ -230,11 +252,21 @@ export default function QuickSetup() {
 
         // Enable fields after successful parse
         setFieldsEnabled(true);
+      } else if (result.service === 'website' && result.url) {
+        // Handle website monitoring
+        setConfig(prev => ({
+          ...prev,
+          service: 'website',
+          threshold: result.url || prev.threshold, // Store URL in threshold field
+          operator: result.condition === 'up' ? 'up' : 'down', // Store condition (down or up)
+        }));
+
+        // Enable fields after successful parse
+        setFieldsEnabled(true);
       }
     } catch (error: any) {
-      console.error('Parse error:', error);
-      // If AI fails, offer to switch to manual mode
-      setParseError('Could not understand your request. Try switching to Manual mode or be more specific.');
+      // If AI fails, show translated error message
+      setParseError(t('alerts.quickSetup.aiParseFailed'));
     } finally {
       setIsParsing(false);
     }
@@ -260,7 +292,17 @@ export default function QuickSetup() {
         if (config.service === 'crypto') {
           generatedName = `${config.crypto} ${config.operator === 'above' ? '>' : config.operator === 'below' ? '<' : '='} $${config.threshold}`;
         } else if (config.service === 'website') {
-          generatedName = `Monitor ${config.threshold}`;
+          try {
+            // Extract domain from URL
+            const url = config.threshold.startsWith('http') ? config.threshold : 'https://' + config.threshold;
+            const domain = new URL(url).hostname.replace('www.', '');
+            const statusText = config.operator === 'up' ? t('alerts.statusUp') : t('alerts.statusDown');
+            generatedName = `${domain} - ${statusText}`;
+          } catch {
+            // If URL parsing fails, use the raw input
+            const statusText = config.operator === 'up' ? t('alerts.statusUp') : t('alerts.statusDown');
+            generatedName = `${config.threshold} - ${statusText}`;
+          }
         } else if (config.service === 'weather') {
           generatedName = `Weather alert for ${config.threshold}`;
         } else if (config.service === 'flight') {
@@ -343,8 +385,13 @@ export default function QuickSetup() {
       const alertData = {
         alert_type_id: serviceToTypeId[config.service],
         name: config.name,
-        asset: config.service === 'crypto' ? config.crypto : undefined,
-        conditions: {
+        asset: config.service === 'crypto' ? config.crypto :
+               config.service === 'website' ? config.threshold : undefined,
+        conditions: config.service === 'website' ? {
+          field: config.operator === 'up' ? 'is_up' : 'is_down',
+          operator: 'equals',
+          value: 1,
+        } : {
           field: 'price',  // For crypto/stocks/currency, we're checking price
           operator: operatorMap[config.operator || 'above'] || 'greater',
           value: parseFloat(config.threshold) || 0,
@@ -725,6 +772,26 @@ export default function QuickSetup() {
                   <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                     {t('alerts.quickSetup.leaveEmptyToAutoGenerate')}
                   </p>
+                </div>
+              )}
+
+              {/* Website: Condition Selector (Down/Up) */}
+              {config.service === 'website' && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    {t('alerts.quickSetup.websiteCondition')}
+                  </label>
+                  <select
+                    value={config.operator}
+                    onChange={(e) => setConfig({ ...config, operator: e.target.value })}
+                    disabled={mode === 'ai' && !fieldsEnabled}
+                    className={`w-full px-4 py-3 rounded-2xl bg-white/50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all ${
+                      mode === 'ai' && !fieldsEnabled ? 'opacity-50 cursor-not-allowed' : ''
+                    }`}
+                  >
+                    <option value="down">{t('alerts.quickSetup.websiteDown')}</option>
+                    <option value="up">{t('alerts.quickSetup.websiteUp')}</option>
+                  </select>
                 </div>
               )}
 

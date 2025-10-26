@@ -62,6 +62,8 @@
     "status": "Статус",
     "active": "Активно",
     "paused": "Приостановлено",
+    "statusUp": "Работает",
+    "statusDown": "Не работает",
     "edit": "Редактировать",
     "delete": "Удалить",
     "notificationChannels": "Каналы уведомлений",
@@ -149,7 +151,12 @@
       "noChannelsConfiguredDesc": "Вам нужно настроить хотя бы один канал уведомлений перед созданием уведомления.",
       "goToSettings": "Перейти в Настройки → Уведомления",
       "setupRequired": "Требуется настройка",
-      "setUp": "Настроить →"
+      "setUp": "Настроить →",
+      "websiteDown": "Сайт не работает (DOWN)",
+      "websiteUp": "Сайт работает (UP)",
+      "alertWhenDown": "Уведомить когда сайт упадёт",
+      "alertWhenUp": "Уведомить когда сайт заработает",
+      "websiteCondition": "Состояние сайта"
     }
   },
   "settings": {
@@ -158,6 +165,29 @@
     "notifications": "Уведомления",
     "privacy": "Конфиденциальность",
     "manageAccount": "Управление учетной записью и настройками"
+  },
+  "notificationCenter": {
+    "title": "Уведомления",
+    "markAllRead": "Отметить все прочитанными",
+    "noNotifications": "Пока нет уведомлений",
+    "justNow": "Только что",
+    "minutesAgo": "{count}м назад",
+    "hoursAgo": "{count}ч назад",
+    "daysAgo": "{count} дн. назад"
+  },
+  "notifications": {
+    "website_up": {
+      "title": "Сайт работает",
+      "body": "{url} онлайн"
+    },
+    "website_down": {
+      "title": "Сайт не работает",
+      "body": "{url} офлайн"
+    },
+    "crypto_target_reached": {
+      "title": "Крипто уведомление",
+      "body": "{asset} достиг вашей цели"
+    }
   },
   "common": {
     "loading": "Загрузка...",

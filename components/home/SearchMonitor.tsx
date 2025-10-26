@@ -42,7 +42,7 @@ export default function SearchMonitor() {
       const result = await alertsService.parseAlert(query);
 
       // Check if service is available
-      const availableServices = ['crypto']; // Only crypto for now
+      const availableServices = ['crypto', 'website'];
       if (!availableServices.includes(result.service)) {
         setError(`${result.service.charAt(0).toUpperCase() + result.service.slice(1)} alerts coming soon!`);
         setIsAnimating(false);
@@ -62,6 +62,12 @@ export default function SearchMonitor() {
         params.append('crypto_symbol', result.crypto_symbol || '');
         params.append('operator', result.operator || 'above');
         params.append('value', result.value?.toString() || '');
+      }
+
+      // Add parsed data for website
+      if (result.service === 'website' && result.url) {
+        params.append('url', result.url);
+        params.append('condition', result.condition || 'down');
       }
 
       router.push(`/alerts/quick-setup?${params.toString()}`);

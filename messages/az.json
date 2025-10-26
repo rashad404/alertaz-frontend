@@ -62,6 +62,8 @@
     "status": "Status",
     "active": "Aktiv",
     "paused": "Dayandırılıb",
+    "statusUp": "İşləyir",
+    "statusDown": "İşləmir",
     "edit": "Redaktə et",
     "delete": "Sil",
     "notificationChannels": "Bildiriş Kanalları",
@@ -149,7 +151,12 @@
       "noChannelsConfiguredDesc": "Bildiriş yaratmadan əvvəl ən azı bir bildiriş kanalını quraşdırmalısınız.",
       "goToSettings": "Parametrlərə keçin → Bildirişlər",
       "setupRequired": "Quraşdırma tələb olunur",
-      "setUp": "Quraşdır →"
+      "setUp": "Quraşdır →",
+      "websiteDown": "Veb-sayt işləmir (DOWN)",
+      "websiteUp": "Veb-sayt işləyir (UP)",
+      "alertWhenDown": "Veb-sayt işləməyəndə xəbər ver",
+      "alertWhenUp": "Veb-sayt işləyəndə xəbər ver",
+      "websiteCondition": "Veb-sayt vəziyyəti"
     }
   },
   "settings": {
@@ -158,6 +165,29 @@
     "notifications": "Bildirişlər",
     "privacy": "Məxfilik",
     "manageAccount": "Hesabınızı və parametrlərinizi idarə edin"
+  },
+  "notificationCenter": {
+    "title": "Bildirişlər",
+    "markAllRead": "Hamısını oxunmuş say",
+    "noNotifications": "Hələ bildiriş yoxdur",
+    "justNow": "İndicə",
+    "minutesAgo": "{count}d əvvəl",
+    "hoursAgo": "{count}s əvvəl",
+    "daysAgo": "{count} gün əvvəl"
+  },
+  "notifications": {
+    "website_up": {
+      "title": "Veb-sayt işləyir",
+      "body": "{url} işləyir"
+    },
+    "website_down": {
+      "title": "Veb-sayt işləmir",
+      "body": "{url} işləmir"
+    },
+    "crypto_target_reached": {
+      "title": "Kripto bildirişi",
+      "body": "{asset} hədəfə çatdı"
+    }
   },
   "common": {
     "loading": "Yüklənir...",

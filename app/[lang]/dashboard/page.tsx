@@ -111,6 +111,7 @@ export default function DashboardPage() {
               asset: alert.asset || '',
               threshold: alert.conditions?.value?.toString() || 'N/A',
               operator: alert.conditions?.operator || '',
+              field: alert.conditions?.field || '',
               interval: alert.check_frequency ? `${alert.check_frequency}s` : '5min',
               channels: alert.notification_channels || [],
               status: alert.is_active ? 'active' : 'paused',
@@ -259,13 +260,23 @@ export default function DashboardPage() {
                         {alert.name}
                       </h3>
                       <p className="text-sm text-gray-600 dark:text-gray-400">
-                        {alert.asset && `${alert.asset} `}
-                        {alert.operator === 'greater' && '>'}
-                        {alert.operator === 'less' && '<'}
-                        {alert.operator === 'equals' && '='}
-                        {alert.operator === 'greater_equal' && '≥'}
-                        {alert.operator === 'less_equal' && '≤'}
-                        {' $'}{Number(alert.threshold).toLocaleString()}
+                        {alert.service === 'website' ? (
+                          // Website: show URL - UP/DOWN
+                          <>
+                            {alert.asset} - {alert.field === 'is_up' ? t('alerts.statusUp') : t('alerts.statusDown')}
+                          </>
+                        ) : (
+                          // Crypto/Stocks/Currency: show price with operator
+                          <>
+                            {alert.asset && `${alert.asset} `}
+                            {alert.operator === 'greater' && '>'}
+                            {alert.operator === 'less' && '<'}
+                            {alert.operator === 'equals' && '='}
+                            {alert.operator === 'greater_equal' && '≥'}
+                            {alert.operator === 'less_equal' && '≤'}
+                            {' $'}{Number(alert.threshold).toLocaleString()}
+                          </>
+                        )}
                       </p>
                     </div>
 

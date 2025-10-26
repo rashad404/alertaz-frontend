@@ -62,6 +62,8 @@
     "status": "Status",
     "active": "Active",
     "paused": "Paused",
+    "statusUp": "UP",
+    "statusDown": "DOWN",
     "edit": "Edit",
     "delete": "Delete",
     "notificationChannels": "Notification Channels",
@@ -149,7 +151,12 @@
       "noChannelsConfiguredDesc": "You need to set up at least one notification channel before creating an alert.",
       "goToSettings": "Go to Settings → Notifications",
       "setupRequired": "Setup Required",
-      "setUp": "Set up →"
+      "setUp": "Set up →",
+      "websiteDown": "Website is DOWN",
+      "websiteUp": "Website is UP",
+      "alertWhenDown": "Alert when website goes down",
+      "alertWhenUp": "Alert when website comes up",
+      "websiteCondition": "Website Condition"
     }
   },
   "settings": {
@@ -158,6 +165,29 @@
     "notifications": "Notifications",
     "privacy": "Privacy",
     "manageAccount": "Manage your account and preferences"
+  },
+  "notificationCenter": {
+    "title": "Notifications",
+    "markAllRead": "Mark all read",
+    "noNotifications": "No notifications yet",
+    "justNow": "Just now",
+    "minutesAgo": "{count}m ago",
+    "hoursAgo": "{count}h ago",
+    "daysAgo": "{count}d ago"
+  },
+  "notifications": {
+    "website_up": {
+      "title": "Website is UP",
+      "body": "{url} is online"
+    },
+    "website_down": {
+      "title": "Website is DOWN",
+      "body": "{url} is offline"
+    },
+    "crypto_target_reached": {
+      "title": "Crypto Alert",
+      "body": "{asset} reached your target"
+    }
   },
   "common": {
     "loading": "Loading...",
