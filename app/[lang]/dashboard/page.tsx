@@ -13,7 +13,9 @@ interface Alert {
   id: string;
   name: string;
   service: AlertService;
+  asset: string;
   threshold: string;
+  operator: string;
   interval: string;
   channels: string[];
   status: AlertStatus;
@@ -105,8 +107,11 @@ export default function DashboardPage() {
             const loadedAlerts = alertsArray.map((alert: any) => ({
               id: alert.id.toString(),
               name: alert.name,
-              service: alert.service_type,
-              threshold: alert.config?.threshold?.toString() || 'N/A',
+              service: alert.service_type || 'crypto',
+              asset: alert.asset || '',
+              threshold: alert.conditions?.value?.toString() || 'N/A',
+              operator: alert.conditions?.operator || '',
+              interval: alert.check_frequency ? `${alert.check_frequency}s` : '5min',
               channels: alert.notification_channels || [],
               status: alert.is_active ? 'active' : 'paused',
               lastTriggered: alert.last_triggered_at ? new Date(alert.last_triggered_at) : undefined,
@@ -165,7 +170,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
           {/* Active Alerts */}
           <div className="card-glass rounded-3xl p-6">
             <div className="flex items-center justify-between mb-4">
@@ -187,17 +192,6 @@ export default function DashboardPage() {
             </div>
             <div className="text-3xl font-bold text-gray-900 dark:text-white mb-1">{triggeredCount}</div>
             <div className="text-sm text-gray-600 dark:text-gray-400">{t('dashboard.notificationsSent')}</div>
-          </div>
-
-          {/* System Status */}
-          <div className="card-glass rounded-3xl p-6">
-            <div className="flex items-center justify-between mb-4">
-              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center">
-                <Settings className="w-6 h-6 text-white" />
-              </div>
-            </div>
-            <div className="text-3xl font-bold text-gray-900 dark:text-white mb-1">{t('dashboard.ready')}</div>
-            <div className="text-sm text-gray-600 dark:text-gray-400">{t('dashboard.systemStatus')}</div>
           </div>
         </div>
 
@@ -242,8 +236,8 @@ export default function DashboardPage() {
               </div>
             ) : (
               alerts.slice(0, 3).map((alert) => {
-                const ServiceIcon = serviceIcons[alert.service];
-                const gradient = serviceGradients[alert.service];
+                const ServiceIcon = serviceIcons[alert.service] || Bell;
+                const gradient = serviceGradients[alert.service] || 'from-gray-500 to-gray-600';
 
                 return (
                   <div
@@ -265,7 +259,13 @@ export default function DashboardPage() {
                         {alert.name}
                       </h3>
                       <p className="text-sm text-gray-600 dark:text-gray-400">
-                        {alert.threshold} • {t(`alerts.quickSetup.interval.${normalizeInterval(alert.interval)}`)}
+                        {alert.asset && `${alert.asset} `}
+                        {alert.operator === 'greater' && '>'}
+                        {alert.operator === 'less' && '<'}
+                        {alert.operator === 'equals' && '='}
+                        {alert.operator === 'greater_equal' && '≥'}
+                        {alert.operator === 'less_equal' && '≤'}
+                        {' $'}{Number(alert.threshold).toLocaleString()}
                       </p>
                     </div>
 

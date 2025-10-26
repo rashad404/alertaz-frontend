@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { ThemeProvider } from "@/providers/theme-provider";
+import { ServiceWorkerRegistration } from "@/components/ServiceWorkerRegistration";
 import { DM_Sans } from "next/font/google";
 
 const dmSans = DM_Sans({
@@ -38,6 +39,7 @@ export default function RootLayout({
     <html lang="az" suppressHydrationWarning>
       <body className={dmSans.variable} suppressHydrationWarning>
         <ThemeProvider>
+          <ServiceWorkerRegistration />
           {children}
         </ThemeProvider>
       </body>

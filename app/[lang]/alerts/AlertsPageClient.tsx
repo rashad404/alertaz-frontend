@@ -16,7 +16,9 @@ interface Alert {
   id: string;
   name: string;
   service: AlertService;
+  asset: string;
   threshold: string;
+  operator: string;
   interval: string;
   channels: string[];
   status: AlertStatus;
@@ -89,11 +91,11 @@ const AlertsPageClient: React.FC<AlertsPageClientProps> = ({ lang }) => {
           const loadedAlerts = alertsArray.map((alert: any) => ({
             id: alert.id.toString(),
             name: alert.name,
-            service: alert.service_type,
-            crypto: alert.config?.crypto,
-            condition: alert.config?.condition,
-            threshold: alert.config?.threshold?.toString() || 'N/A',
-            interval: '1hour', // Not used anymore but kept for compatibility
+            service: alert.service_type || 'crypto',
+            asset: alert.asset || '',
+            threshold: alert.conditions?.value?.toString() || 'N/A',
+            operator: alert.conditions?.operator || '',
+            interval: alert.check_frequency ? `${alert.check_frequency}s` : '5min',
             channels: alert.notification_channels || [],
             status: alert.is_active ? 'active' : 'paused',
             lastTriggered: alert.last_triggered_at ? new Date(alert.last_triggered_at) : undefined,
@@ -210,7 +212,7 @@ const AlertsPageClient: React.FC<AlertsPageClientProps> = ({ lang }) => {
         <div className="flex items-center justify-between mb-8 gap-4">
           <div className="flex-1 min-w-0">
             <h1 className="text-2xl md:text-4xl font-bold text-gray-900 dark:text-white mb-2">
-              {t('alerts.createNew')}
+              {t('nav.myAlerts')}
             </h1>
             <p className="text-sm md:text-base text-gray-600 dark:text-gray-400">
               {t('dashboard.viewManageAlerts')}
@@ -276,7 +278,7 @@ const AlertsPageClient: React.FC<AlertsPageClientProps> = ({ lang }) => {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
           <div className="card-glass rounded-3xl p-6">
             <div className="flex items-center justify-between">
               <div>
@@ -305,22 +307,6 @@ const AlertsPageClient: React.FC<AlertsPageClientProps> = ({ lang }) => {
               </div>
               <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center">
                 <TrendingUp className="w-6 h-6 text-white" />
-              </div>
-            </div>
-          </div>
-
-          <div className="card-glass rounded-3xl p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
-                  {t('dashboard.systemStatus')}
-                </p>
-                <p className="text-3xl font-bold text-gray-900 dark:text-white">
-                  {t('dashboard.ready')}
-                </p>
-              </div>
-              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
-                <Settings className="w-6 h-6 text-white" />
               </div>
             </div>
           </div>
@@ -367,8 +353,8 @@ const AlertsPageClient: React.FC<AlertsPageClientProps> = ({ lang }) => {
             </div>
           ) : (
             filteredAlerts.map((alert) => {
-              const ServiceIcon = serviceIcons[alert.service];
-              const gradient = serviceGradients[alert.service];
+              const ServiceIcon = serviceIcons[alert.service] || Bell;
+              const gradient = serviceGradients[alert.service] || 'from-gray-500 to-gray-600';
 
               return (
                 <div
@@ -394,7 +380,13 @@ const AlertsPageClient: React.FC<AlertsPageClientProps> = ({ lang }) => {
                             {alert.name}
                           </h3>
                           <p className="text-sm text-gray-600 dark:text-gray-400">
-                            {alert.threshold}
+                            {alert.asset && `${alert.asset} `}
+                            {alert.operator === 'greater' && '>'}
+                            {alert.operator === 'less' && '<'}
+                            {alert.operator === 'equals' && '='}
+                            {alert.operator === 'greater_equal' && '≥'}
+                            {alert.operator === 'less_equal' && '≤'}
+                            {' $'}{Number(alert.threshold).toLocaleString()}
                           </p>
                         </div>
                         <span className={`px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap ${
