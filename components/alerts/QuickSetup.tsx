@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Bell, TrendingUp, Bitcoin, Globe, Cloud, DollarSign, Plane, Check, ArrowRight, ArrowLeft, Sparkles, Edit3, Mail, Send, MessageCircle, Smartphone } from 'lucide-react';
+import { Bell, TrendingUp, Bitcoin, Globe, Cloud, DollarSign, Plane, Check, ArrowRight, ArrowLeft, Sparkles, Edit3, Mail, Send, MessageCircle, Smartphone, Info } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import alertsService from '@/lib/api/alerts';
 import authService from '@/lib/api/auth';
@@ -770,6 +770,21 @@ export default function QuickSetup() {
           ) : step === 1 ? (
             // Step 1: Configure Alert
             <div className="space-y-6">
+              {/* Coming Soon Message for Incomplete Services */}
+              {(config.service === 'weather' || config.service === 'currency' || config.service === 'flight') ? (
+                <div className="flex flex-col items-center justify-center py-12 px-6">
+                  <div className="w-20 h-20 rounded-full bg-blue-500/10 flex items-center justify-center mb-6">
+                    <Info className="w-10 h-10 text-blue-500" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">
+                    {t('alerts.quickSetup.comingSoonTitle')}
+                  </h3>
+                  <p className="text-center text-gray-600 dark:text-gray-400 max-w-md">
+                    {t('alerts.quickSetup.comingSoonMessage')}
+                  </p>
+                </div>
+              ) : (
+                <>
               {/* Mode Toggle */}
               <div className="flex items-center justify-center gap-2 mb-6">
                 <button
@@ -1070,6 +1085,8 @@ export default function QuickSetup() {
                   />
                 </div>
               )}
+              </>
+              )}
             </div>
           ) : (
             // Step 2: Choose Channels
@@ -1207,8 +1224,14 @@ export default function QuickSetup() {
             {step === 1 ? (
               <button
                 onClick={handleNext}
-                disabled={mode === 'ai' ? !fieldsEnabled : !config.threshold?.trim()}
+                disabled={
+                  config.service === 'weather' ||
+                  config.service === 'currency' ||
+                  config.service === 'flight' ||
+                  (mode === 'ai' ? !fieldsEnabled : !config.threshold?.trim())
+                }
                 className={`flex items-center gap-2 px-6 py-3 rounded-2xl font-medium text-white transition-all duration-300 ${
+                  !(config.service === 'weather' || config.service === 'currency' || config.service === 'flight') &&
                   (mode === 'ai' ? fieldsEnabled : config.threshold?.trim())
                     ? `bg-gradient-to-r ${gradient} hover:shadow-lg hover:scale-105`
                     : 'bg-gray-300 dark:bg-gray-700 cursor-not-allowed'

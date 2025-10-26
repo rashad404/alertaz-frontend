@@ -68,6 +68,9 @@
     "edit": "Redaktə et",
     "delete": "Sil",
     "notificationChannels": "Bildiriş Kanalları",
+    "editSubtitle": "Bildiriş parametrlərini yeniləyin",
+    "notFound": "Bildiriş Tapılmadı",
+    "notFoundDesc": "Axtardığınız bildiriş mövcud deyil.",
     "types": {
       "crypto": "Kripto",
       "weather": "Hava",
@@ -158,7 +161,9 @@
       "websiteUp": "Veb-sayt işləyir (UP)",
       "alertWhenDown": "Veb-sayt işləməyəndə xəbər ver",
       "alertWhenUp": "Veb-sayt işləyəndə xəbər ver",
-      "websiteCondition": "Veb-sayt vəziyyəti"
+      "websiteCondition": "Veb-sayt vəziyyəti",
+      "comingSoonTitle": "Tezliklə",
+      "comingSoonMessage": "Bu xidmət hələ hazır deyil və yaxın günlərdə əlçatan olacaq. Zəhmət olmasa yenidən yoxlayın!"
     }
   },
   "settings": {
@@ -200,6 +205,7 @@
     "error": "Xəta baş verdi",
     "retry": "Yenidən cəhd et",
     "save": "Yadda saxla",
+    "saving": "Yadda saxlanır...",
     "cancel": "Ləğv et",
     "delete": "Sil",
     "edit": "Redaktə et",
