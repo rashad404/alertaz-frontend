@@ -233,9 +233,13 @@ export default function NotificationCenter() {
             body: tNotif(`${notifType}.body`, { url: data?.url || data?.asset || notification.body })
           };
         } else if (notifType === 'crypto_target_reached') {
+          const price = data?.price ? Number(data.price).toLocaleString() : '0';
           return {
             title: tNotif(`${notifType}.title`),
-            body: tNotif(`${notifType}.body`, { asset: data?.symbol || data?.asset || 'crypto' })
+            body: tNotif(`${notifType}.body`, {
+              asset: data?.symbol || data?.asset || 'crypto',
+              price: price
+            })
           };
         }
       } catch (e) {

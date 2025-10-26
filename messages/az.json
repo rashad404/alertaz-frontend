@@ -186,7 +186,7 @@
     },
     "crypto_target_reached": {
       "title": "Kripto bildirişi",
-      "body": "{asset} hədəfə çatdı"
+      "body": "{asset} qiyməti ${price}"
     }
   },
   "common": {

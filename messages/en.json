@@ -186,7 +186,7 @@
     },
     "crypto_target_reached": {
       "title": "Crypto Alert",
-      "body": "{asset} reached your target"
+      "body": "{asset} price is ${price}"
     }
   },
   "common": {

@@ -186,7 +186,7 @@
     },
     "crypto_target_reached": {
       "title": "Крипто уведомление",
-      "body": "{asset} достиг вашей цели"
+      "body": "Цена {asset} ${price}"
     }
   },
   "common": {
