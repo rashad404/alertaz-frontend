@@ -1,7 +1,7 @@
-@import "tailwindcss";
-
 /* Import Modern Fonts - Inter for UI, Plus Jakarta Sans for headings */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+@import "tailwindcss";
 
 /* Define dark variant to use .dark class selector */
 @variant dark (&:is(.dark *));
