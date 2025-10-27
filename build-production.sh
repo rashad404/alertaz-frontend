@@ -1,7 +1,7 @@
 #!/bin/bash
 
 echo "========================================="
-echo "Production Build Script for kredit.az"
+echo "Production Build Script for alert.az"
 echo "========================================="
 echo ""
 
@@ -47,12 +47,12 @@ echo ""
 
 # Check if PM2 process exists and handle accordingly
 echo "🔍 Checking PM2 processes..."
-if pm2 list | grep -q "next.kredit.az"; then
+if pm2 list | grep -q "next.alert.az"; then
     echo "🔄 Restarting existing PM2 process..."
-    pm2 restart next.kredit.az
+    pm2 restart next.alert.az
 else
     echo "🚀 Starting new PM2 process on port 3030..."
-    pm2 start npm --name next.kredit.az -- start -- -p 3030
+    pm2 start npm --name next.alert.az -- start -- -p 3032
 fi
 
 # Save PM2 configuration
@@ -62,10 +62,10 @@ echo ""
 echo "========================================="
 echo "✅ Production deployment complete!"
 echo "✅ Debug mode is OFF"
-echo "✅ Using API: https://api.kredit.az"
+echo "✅ Using API: https://api.alert.az"
 echo "========================================="
 echo ""
-echo "📊 Check status with: pm2 status next.kredit.az"
-echo "📜 View logs with: pm2 logs next.kredit.az"
+echo "📊 Check status with: pm2 status next.alert.az"
+echo "📜 View logs with: pm2 logs next.alert.az"
 echo ""
 echo "⚠️  Note: Clear nginx cache in WHM if users see old version"
