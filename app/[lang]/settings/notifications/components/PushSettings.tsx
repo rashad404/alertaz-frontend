@@ -22,6 +22,22 @@ const PushSettings: React.FC<PushSettingsProps> = ({ user, onUpdate }) => {
     }
   }, []);
 
+  // Convert base64 string to Uint8Array for VAPID key
+  const urlBase64ToUint8Array = (base64String: string) => {
+    const padding = '='.repeat((4 - base64String.length % 4) % 4);
+    const base64 = (base64String + padding)
+      .replace(/\-/g, '+')
+      .replace(/_/g, '/');
+
+    const rawData = window.atob(base64);
+    const outputArray = new Uint8Array(rawData.length);
+
+    for (let i = 0; i < rawData.length; ++i) {
+      outputArray[i] = rawData.charCodeAt(i);
+    }
+    return outputArray;
+  };
+
   const handleEnable = async () => {
     if (!isSupported) return;
 
@@ -36,10 +52,13 @@ const PushSettings: React.FC<PushSettingsProps> = ({ user, onUpdate }) => {
         // Register service worker
         const registration = await navigator.serviceWorker.register('/sw.js');
 
+        // VAPID public key from backend
+        const vapidPublicKey = 'BLZD5pCGvMTXqOZYeCJ9cf8RkhmdYsB0eaihQRPUxzLBlVERCr4oyLXMDPiAW_MCC6tOw9D2iNTZ1KQrKBuKyyA';
+
         // Subscribe to push notifications
         const subscription = await registration.pushManager.subscribe({
           userVisibleOnly: true,
-          applicationServerKey: 'YOUR_VAPID_PUBLIC_KEY', // Replace with actual key
+          applicationServerKey: urlBase64ToUint8Array(vapidPublicKey),
         });
 
         // Save push token to user profile
