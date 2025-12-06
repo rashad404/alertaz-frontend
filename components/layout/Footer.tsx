@@ -30,7 +30,7 @@ export default function Footer() {
               <span>{t('footer.help')}</span>
             </Link>
             <Link
-              href="/docs"
+              href="/sms-api"
               className="text-gray-600 dark:text-gray-400 hover:text-[rgb(81,91,195)] transition-colors flex items-center gap-1"
             >
               <FileText className="w-3.5 h-3.5" />

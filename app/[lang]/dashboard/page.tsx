@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Bell, Plus, TrendingUp, Activity, Settings, Bitcoin, Globe, BarChart3, Play, Pause } from 'lucide-react';
+import { Bell, Plus, TrendingUp, Activity, Settings, Bitcoin, Globe, BarChart3, Play, Pause, MessageSquare, CreditCard } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 type AlertService = 'crypto' | 'stocks' | 'website' | 'weather' | 'currency' | 'flight';
@@ -60,6 +60,8 @@ export default function DashboardPage() {
   const [user, setUser] = useState<any>(null);
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [balance, setBalance] = useState<number | null>(null);
+  const [totalSpent, setTotalSpent] = useState<number>(0);
 
   const activeAlertsCount = alerts.filter(a => a.status === 'active').length;
   const triggeredCount = alerts.filter(a => a.lastTriggered).length;
@@ -121,6 +123,22 @@ export default function DashboardPage() {
             setAlerts(loadedAlerts);
           }
         }
+
+        // Fetch user balance
+        const balanceResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/sms/balance`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/json',
+          },
+        });
+
+        if (balanceResponse.ok) {
+          const balanceData = await balanceResponse.json();
+          if (balanceData.status === 'success') {
+            setBalance(balanceData.data.balance);
+            setTotalSpent(balanceData.data.total_spent);
+          }
+        }
       } catch (error) {
         console.error('Failed to load data:', error);
       } finally {
@@ -171,7 +189,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
           {/* Active Alerts */}
           <div className="card-glass rounded-3xl p-6">
             <div className="flex items-center justify-between mb-4">
@@ -193,6 +211,22 @@ export default function DashboardPage() {
             </div>
             <div className="text-3xl font-bold text-gray-900 dark:text-white mb-1">{triggeredCount}</div>
             <div className="text-sm text-gray-600 dark:text-gray-400">{t('dashboard.notificationsSent')}</div>
+          </div>
+
+          {/* Balance */}
+          <div className="card-glass rounded-3xl p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center">
+                <CreditCard className="w-6 h-6 text-white" />
+              </div>
+              <TrendingUp className="w-5 h-5 text-green-500" />
+            </div>
+            <div className="text-3xl font-bold text-gray-900 dark:text-white mb-1">
+              {balance !== null ? `${balance.toFixed(2)} AZN` : '0.00 AZN'}
+            </div>
+            <div className="text-sm text-gray-600 dark:text-gray-400">
+              {t('dashboard.balance')}
+            </div>
           </div>
         </div>
 
@@ -296,7 +330,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Quick Links */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <Link
             href="/settings"
             className="card-glass rounded-3xl p-6 hover:scale-105 transition-transform duration-300"
@@ -330,6 +364,25 @@ export default function DashboardPage() {
                 </h3>
                 <p className="text-sm text-gray-600 dark:text-gray-400">
                   {t('dashboard.viewManageAlerts')}
+                </p>
+              </div>
+            </div>
+          </Link>
+
+          <Link
+            href="/dashboard/sms"
+            className="card-glass rounded-3xl p-6 hover:scale-105 transition-transform duration-300"
+          >
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center">
+                <MessageSquare className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-1">
+                  {t('dashboard.smsApi')}
+                </h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  {t('dashboard.smsApiDescription')}
                 </p>
               </div>
             </div>
