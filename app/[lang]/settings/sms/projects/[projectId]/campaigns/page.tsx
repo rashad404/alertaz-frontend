@@ -20,6 +20,7 @@ import {
   Pencil,
   ArrowLeft,
   Server,
+  Users,
 } from 'lucide-react';
 
 const statusIcons: Record<string, React.ReactNode> = {
@@ -251,16 +252,25 @@ export default function ProjectCampaignsPage() {
               {t('smsApi.campaigns.description')}
             </p>
           </div>
-          <Link
-            href={`/${lang}/settings/sms/projects/${projectId}/campaigns/create`}
-            className="cursor-pointer group relative px-6 py-3 rounded-2xl font-medium text-white bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 transition-all duration-300 hover:shadow-lg hover:scale-105 overflow-hidden"
-          >
-            <span className="absolute inset-0 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
-            <span className="relative flex items-center gap-2">
-              <Plus className="w-5 h-5" />
-              {t('smsApi.campaigns.createCampaign')}
-            </span>
-          </Link>
+          <div className="flex items-center gap-3">
+            <Link
+              href={`/${lang}/settings/sms/projects/${projectId}/contacts`}
+              className="cursor-pointer px-6 py-3 rounded-2xl font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 transition-all duration-300 hover:shadow-lg hover:scale-105 flex items-center gap-2"
+            >
+              <Users className="w-5 h-5" />
+              {t('smsApi.contacts.title')}
+            </Link>
+            <Link
+              href={`/${lang}/settings/sms/projects/${projectId}/campaigns/create`}
+              className="cursor-pointer group relative px-6 py-3 rounded-2xl font-medium text-white bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 transition-all duration-300 hover:shadow-lg hover:scale-105 overflow-hidden"
+            >
+              <span className="absolute inset-0 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
+              <span className="relative flex items-center gap-2">
+                <Plus className="w-5 h-5" />
+                {t('smsApi.campaigns.createCampaign')}
+              </span>
+            </Link>
+          </div>
         </div>
 
         {/* Error */}

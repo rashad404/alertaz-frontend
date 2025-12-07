@@ -613,6 +613,17 @@
         "exists": "mövcuddur"
       }
     },
+    "schema": {
+      "title": "Kontakt Sxemi",
+      "editSchema": "Sxemi Redaktə Et",
+      "saveSchema": "Sxemi Saxla",
+      "invalidJson": "JSON formatı yanlışdır",
+      "saved": "Sxem uğurla yadda saxlandı",
+      "noSchema": "Sxem hələ müəyyən edilməyib",
+      "example": "Nümunə sxem",
+      "supportedTypes": "Dəstəklənən tiplər: string, number, integer, date, boolean, enum, array",
+      "description": "Kontaktlarınızın malik olacağı atributları müəyyən edin"
+    },
     "campaigns": {
       "title": "SMS Kampaniyalar",
       "description": "SMS kampaniyalarınızı yaradın və idarə edin",
@@ -700,6 +711,131 @@
         "real": "Kampaniya uğurla icra edildi!",
         "testMode": "Kampaniya TEST REJİMİNDƏ icra edildi. Heç bir SMS həqiqətən göndərilmədi.",
         "globalTestMode": "Kampaniya QLOBAL TEST REJİMİNDƏ icra edildi. Heç bir SMS həqiqətən göndərilmədi."
+      }
+    },
+    "contacts": {
+      "title": "Kontaktlar",
+      "description": "Kampaniya kontaktlarınızı idarə edin",
+      "addContact": "Kontakt əlavə et",
+      "editContact": "Kontaktı redaktə et",
+      "importCsv": "CSV idxal et",
+      "exportCsv": "CSV ixrac et",
+      "noContacts": "Hələ kontakt yoxdur",
+      "noContactsDesc": "Kontaktları əl ilə əlavə edin və ya API vasitəsilə sinxronlaşdırın",
+      "searchPlaceholder": "Telefon və ya atribut üzrə axtarın...",
+      "phone": "Telefon nömrəsi",
+      "phoneFormat": "Format: 994XXXXXXXXX",
+      "phoneInvalid": "Yanlış telefon formatı. 994XXXXXXXXX istifadə edin",
+      "attributes": "Atributlar",
+      "createdAt": "Yaradılıb",
+      "updatedAt": "Yenilənib",
+      "actions": "Əməliyyatlar",
+      "confirmDelete": "Bu kontaktı silmək istədiyinizə əminsiniz?",
+      "confirmBulkDelete": "{count} kontaktı silmək istədiyinizə əminsiniz?",
+      "deleteSuccess": "Kontakt uğurla silindi",
+      "bulkDeleteSuccess": "{count} kontakt silindi",
+      "saveSuccess": "Kontakt uğurla saxlanıldı",
+      "importSuccess": "{created} yaradıldı, {updated} yeniləndi, {failed} uğursuz",
+      "selectAll": "Hamısını seç",
+      "selected": "{count} seçildi",
+      "bulkDelete": "Seçilənləri sil",
+      "total": "Cəmi kontakt",
+      "quickStart": {
+        "title": "Tez Başlanğıc",
+        "step1Title": "API tokeninizi alın",
+        "step1Desc": "Sorğuları təsdiqləmək üçün layihə API tokeninizi kopyalayın",
+        "step2Title": "Kontakt atributlarını təyin edin",
+        "step2Desc": "Kontaktlarınız üçün məlumat strukturunu konfiqurasiya edin",
+        "step3Title": "API vasitəsilə kontaktları sinxronlaşdırın",
+        "step3Desc": "Kontakt məlumatlarınızı Alert.az-a göndərin",
+        "step4Title": "Kampaniyalar yaradın",
+        "step4Desc": "Müəyyən kontaktları hədəfləmək üçün seqmentlərdən istifadə edin",
+        "hideGuide": "Bələdçini gizlət",
+        "showGuide": "Bələdçini göstər"
+      },
+      "import": {
+        "title": "Kontaktları idxal et",
+        "dropzone": "CSV faylını buraya sürükləyin və ya yükləmək üçün klikləyin",
+        "selectFile": "Fayl seçin",
+        "mapping": "Sütun uyğunlaşdırması",
+        "mapColumn": "Sahəyə uyğunlaşdır",
+        "preview": "Önizləmə",
+        "previewRows": "İlk {count} sətir göstərilir",
+        "importing": "İdxal edilir...",
+        "validRows": "Etibarlı sətirlər",
+        "invalidRows": "Etibarsız sətirlər",
+        "skipInvalid": "Etibarsız sətirləri keç",
+        "importButton": "Kontaktları idxal et"
+      }
+    },
+    "docs": {
+      "title": "SMS API Sənədləri",
+      "subtitle": "Kontakt və SMS kampaniya inteqrasiyası üçün tam təlimat",
+      "overview": {
+        "title": "İcmal",
+        "description": "Alert.az API sisteminizdən kontaktları sinxronlaşdırmağa və seqmentləşdirilmiş SMS kampaniyaları yaratmağa imkan verir."
+      },
+      "authentication": {
+        "title": "Autentifikasiya",
+        "description": "Bütün API sorğuları layihə tokeninizlə Authorization başlığı tələb edir:",
+        "getToken": "Tokeninizi Layihələr səhifəsindən əldə edin."
+      },
+      "phoneFormat": {
+        "title": "Telefon formatı",
+        "description": "Bütün telefon nömrələri bu formatda olmalıdır:",
+        "example": "994501234567",
+        "rules": "12 rəqəm, 994 ilə başlayır (Azərbaycan ölkə kodu)"
+      },
+      "contactSchema": {
+        "title": "Kontakt Sxemi",
+        "simpleTitle": "Sadə: Yalnız telefon nömrələri",
+        "simpleDesc": "Əlavə məlumat olmadan sadə telefon nömrələri siyahısı",
+        "withNamesTitle": "Əsas atributlarla",
+        "withNamesDesc": "Ad kimi əsas məlumatlarla kontaktlar",
+        "complexTitle": "Xüsusi atributlarla",
+        "complexDesc": "Xüsusi sahələr, massivlər və müxtəlif məlumat tipləri ilə tam kontakt məlumatları"
+      },
+      "endpoints": {
+        "title": "API ünvanları",
+        "syncSingle": "Tək kontakt sinxronizasiyası",
+        "syncSingleDesc": "Telefon nömrəsinə görə kontakt yaradın və ya yeniləyin",
+        "syncBulk": "Toplu sinxronizasiya",
+        "syncBulkDesc": "Bir sorğuda 1000-ə qədər kontakt sinxronlaşdırın",
+        "list": "Kontaktlar siyahısı",
+        "listDesc": "Səhifələmə və axtarışla kontaktları əldə edin",
+        "delete": "Kontaktı sil",
+        "deleteDesc": "Telefon nömrəsinə görə kontaktı silin",
+        "export": "Kontaktları ixrac et",
+        "exportDesc": "Bütün kontaktları CSV olaraq yükləyin"
+      },
+      "codeExamples": {
+        "title": "Kod nümunələri",
+        "curl": "cURL",
+        "javascript": "JavaScript",
+        "php": "PHP",
+        "python": "Python"
+      },
+      "errorCodes": {
+        "title": "Xəta kodları",
+        "code": "Kod",
+        "description": "Təsvir",
+        "400": "Doğrulama xətası - məlumat formatını yoxlayın",
+        "401": "İcazəsiz - yanlış və ya olmayan token",
+        "404": "Tapılmadı - kontakt mövcud deyil",
+        "422": "İşlənə bilməyən məlumat - yanlış telefon formatı",
+        "429": "Çox sayda sorğu - limit aşıldı",
+        "500": "Server xətası - daha sonra yenidən cəhd edin"
+      },
+      "rateLimits": {
+        "title": "Sorğu limitləri",
+        "description": "API hər layihə tokeni üçün dəqiqədə 60 sorğu ilə məhdudlaşdırılır."
+      },
+      "segmentation": {
+        "title": "Seqmentasiya nümunələri",
+        "description": "Kontaktları sinxronlaşdırdıqdan sonra atributlara əsasən kampaniya seqmentləri yarada bilərsiniz:",
+        "example1": "city bərabərdir \"Bakı\" → Bakıdakı müştərilər",
+        "example2": "is_active bərabərdir true → Yalnız aktiv müştərilər",
+        "example3": "balance böyükdür 100 → Yüksək balanslı müştərilər"
       }
     }
   }

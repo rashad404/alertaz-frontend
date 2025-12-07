@@ -613,6 +613,17 @@
         "exists": "exists"
       }
     },
+    "schema": {
+      "title": "Contact Schema",
+      "editSchema": "Edit Schema",
+      "saveSchema": "Save Schema",
+      "invalidJson": "Invalid JSON format",
+      "saved": "Schema saved successfully",
+      "noSchema": "No schema defined yet",
+      "example": "Example schema",
+      "supportedTypes": "Supported types: string, number, integer, date, boolean, enum, array",
+      "description": "Define the attributes that your contacts will have"
+    },
     "campaigns": {
       "title": "SMS Campaigns",
       "description": "Create and manage your SMS campaigns",
@@ -700,6 +711,131 @@
         "real": "Campaign executed successfully!",
         "testMode": "Campaign executed in TEST MODE. No SMS was actually sent.",
         "globalTestMode": "Campaign executed in GLOBAL TEST MODE. No SMS was actually sent."
+      }
+    },
+    "contacts": {
+      "title": "Contacts",
+      "description": "Manage your campaign contacts",
+      "addContact": "Add Contact",
+      "editContact": "Edit Contact",
+      "importCsv": "Import CSV",
+      "exportCsv": "Export CSV",
+      "noContacts": "No contacts yet",
+      "noContactsDesc": "Add contacts manually or sync them via API",
+      "searchPlaceholder": "Search by phone or attribute...",
+      "phone": "Phone Number",
+      "phoneFormat": "Format: 994XXXXXXXXX",
+      "phoneInvalid": "Invalid phone format. Use 994XXXXXXXXX",
+      "attributes": "Attributes",
+      "createdAt": "Created",
+      "updatedAt": "Updated",
+      "actions": "Actions",
+      "confirmDelete": "Are you sure you want to delete this contact?",
+      "confirmBulkDelete": "Are you sure you want to delete {count} contacts?",
+      "deleteSuccess": "Contact deleted successfully",
+      "bulkDeleteSuccess": "{count} contacts deleted",
+      "saveSuccess": "Contact saved successfully",
+      "importSuccess": "{created} created, {updated} updated, {failed} failed",
+      "selectAll": "Select All",
+      "selected": "{count} selected",
+      "bulkDelete": "Delete Selected",
+      "total": "Total Contacts",
+      "quickStart": {
+        "title": "Quick Start Guide",
+        "step1Title": "Get your API token",
+        "step1Desc": "Copy your project API token to authenticate requests",
+        "step2Title": "Define contact attributes",
+        "step2Desc": "Configure the data structure for your contacts",
+        "step3Title": "Sync contacts via API",
+        "step3Desc": "Push your contact data to Alert.az",
+        "step4Title": "Create campaigns",
+        "step4Desc": "Use segments to target specific contacts",
+        "hideGuide": "Hide guide",
+        "showGuide": "Show guide"
+      },
+      "import": {
+        "title": "Import Contacts",
+        "dropzone": "Drop CSV file here or click to upload",
+        "selectFile": "Select File",
+        "mapping": "Column Mapping",
+        "mapColumn": "Map to field",
+        "preview": "Preview",
+        "previewRows": "Showing first {count} rows",
+        "importing": "Importing...",
+        "validRows": "Valid rows",
+        "invalidRows": "Invalid rows",
+        "skipInvalid": "Skip invalid rows",
+        "importButton": "Import Contacts"
+      }
+    },
+    "docs": {
+      "title": "SMS API Documentation",
+      "subtitle": "Complete guide for integrating contacts and SMS campaigns",
+      "overview": {
+        "title": "Overview",
+        "description": "The Alert.az API allows you to sync contacts from your system and create segmented SMS campaigns."
+      },
+      "authentication": {
+        "title": "Authentication",
+        "description": "All API requests require an Authorization header with your project token:",
+        "getToken": "Get your token from the Projects page."
+      },
+      "phoneFormat": {
+        "title": "Phone Format",
+        "description": "All phone numbers must be in the format:",
+        "example": "994501234567",
+        "rules": "12 digits, starting with 994 (Azerbaijan country code)"
+      },
+      "contactSchema": {
+        "title": "Contact Schema",
+        "simpleTitle": "Simple: Phone numbers only",
+        "simpleDesc": "Simple list of phone numbers without additional data",
+        "withNamesTitle": "With basic attributes",
+        "withNamesDesc": "Contacts with basic information like name",
+        "complexTitle": "With custom attributes",
+        "complexDesc": "Full contact data with custom fields, arrays and different data types"
+      },
+      "endpoints": {
+        "title": "API Endpoints",
+        "syncSingle": "Sync Single Contact",
+        "syncSingleDesc": "Create or update a contact by phone number",
+        "syncBulk": "Bulk Sync",
+        "syncBulkDesc": "Sync up to 1000 contacts in a single request",
+        "list": "List Contacts",
+        "listDesc": "Get contacts with pagination and search",
+        "delete": "Delete Contact",
+        "deleteDesc": "Delete a contact by phone number",
+        "export": "Export Contacts",
+        "exportDesc": "Download all contacts as CSV"
+      },
+      "codeExamples": {
+        "title": "Code Examples",
+        "curl": "cURL",
+        "javascript": "JavaScript",
+        "php": "PHP",
+        "python": "Python"
+      },
+      "errorCodes": {
+        "title": "Error Codes",
+        "code": "Code",
+        "description": "Description",
+        "400": "Validation error - check data format",
+        "401": "Unauthorized - invalid or missing token",
+        "404": "Not found - contact does not exist",
+        "422": "Unprocessable entity - invalid phone format",
+        "429": "Too many requests - rate limit exceeded",
+        "500": "Server error - try again later"
+      },
+      "rateLimits": {
+        "title": "Rate Limits",
+        "description": "API is limited to 60 requests per minute per project token."
+      },
+      "segmentation": {
+        "title": "Segmentation Examples",
+        "description": "After syncing contacts, you can create campaign segments based on attributes:",
+        "example1": "city equals \"Baku\" → Target customers in Baku",
+        "example2": "is_active equals true → Active customers only",
+        "example3": "balance greater than 100 → High balance customers"
       }
     }
   }
