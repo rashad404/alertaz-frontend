@@ -622,7 +622,8 @@
       "noSchema": "No schema defined yet",
       "example": "Example schema",
       "supportedTypes": "Supported types: string, number, integer, date, boolean, enum, array",
-      "description": "Define the attributes that your contacts will have"
+      "description": "Define the attributes that your contacts will have",
+      "contactsCleared": "Schema updated. All contact attributes have been cleared. Please re-sync your contacts via API."
     },
     "campaigns": {
       "title": "SMS Campaigns",

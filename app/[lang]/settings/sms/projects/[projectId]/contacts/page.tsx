@@ -300,13 +300,27 @@ export default function ProjectContactsPage() {
 
     setIsSavingSchema(true);
     try {
-      await campaignsApi.registerSchema(parsedAttributes);
+      const result = await campaignsApi.registerSchema(parsedAttributes);
       setSchema(parsedAttributes as AttributeSchema[]);
       setSchemaSaved(true);
-      setTimeout(() => {
-        setShowSchemaEditor(false);
-        setSchemaSaved(false);
-      }, 1500);
+
+      // Refresh contacts list to show cleared attributes
+      await loadContacts();
+
+      // Show warning if contacts were cleared
+      if (result?.contacts_cleared > 0) {
+        setTimeout(() => {
+          setShowSchemaEditor(false);
+          setSchemaSaved(false);
+          // Show alert about cleared contacts
+          window.alert(t('smsApi.schema.contactsCleared'));
+        }, 1000);
+      } else {
+        setTimeout(() => {
+          setShowSchemaEditor(false);
+          setSchemaSaved(false);
+        }, 1500);
+      }
     } catch (err: any) {
       setSchemaError(err.response?.data?.message || 'Failed to save schema');
     } finally {

@@ -622,7 +622,8 @@
       "noSchema": "Sxem hələ müəyyən edilməyib",
       "example": "Nümunə sxem",
       "supportedTypes": "Dəstəklənən tiplər: string, number, integer, date, boolean, enum, array",
-      "description": "Kontaktlarınızın malik olacağı atributları müəyyən edin"
+      "description": "Kontaktlarınızın malik olacağı atributları müəyyən edin",
+      "contactsCleared": "Sxem yeniləndi. Bütün kontakt atributları silindi. Zəhmət olmasa kontaktlarınızı API vasitəsilə yenidən sinxronlaşdırın."
     },
     "campaigns": {
       "title": "SMS Kampaniyalar",
