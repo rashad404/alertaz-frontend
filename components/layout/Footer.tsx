@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Mail, Phone, Shield, HelpCircle, FileText } from 'lucide-react';
+import { Mail, Phone, Shield, HelpCircle, FileText, Megaphone } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 export default function Footer() {
@@ -35,6 +35,13 @@ export default function Footer() {
             >
               <FileText className="w-3.5 h-3.5" />
               <span>{t('footer.apiDocs')}</span>
+            </Link>
+            <Link
+              href="/settings/sms/projects"
+              className="text-gray-600 dark:text-gray-400 hover:text-[rgb(81,91,195)] transition-colors flex items-center gap-1"
+            >
+              <Megaphone className="w-3.5 h-3.5" />
+              <span>{t('footer.smsCampaigns')}</span>
             </Link>
             <Link
               href="/privacy"

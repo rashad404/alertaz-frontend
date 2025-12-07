@@ -1,0 +1,507 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
+import { useParams } from 'next/navigation';
+import { projectsApi, Project } from '@/lib/api/projects';
+import { campaignsApi, Campaign, setProjectToken } from '@/lib/api/campaigns';
+import Link from 'next/link';
+import {
+  ArrowLeft,
+  Send,
+  Clock,
+  CheckCircle,
+  XCircle,
+  AlertCircle,
+  Play,
+  Trash2,
+  Pencil,
+  Server,
+  Users,
+  MessageSquare,
+  Calendar,
+  RefreshCw,
+  FlaskConical,
+} from 'lucide-react';
+
+const statusIcons: Record<string, React.ReactNode> = {
+  draft: <Clock className="w-5 h-5" />,
+  scheduled: <Clock className="w-5 h-5" />,
+  sending: <Send className="w-5 h-5 animate-pulse" />,
+  completed: <CheckCircle className="w-5 h-5" />,
+  cancelled: <XCircle className="w-5 h-5" />,
+  failed: <AlertCircle className="w-5 h-5" />,
+};
+
+const statusColors: Record<string, string> = {
+  draft: 'bg-gray-100 text-gray-700 dark:bg-gray-700/30 dark:text-gray-400',
+  scheduled: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
+  sending: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
+  completed: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
+  cancelled: 'bg-gray-100 text-gray-700 dark:bg-gray-700/30 dark:text-gray-400',
+  failed: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+};
+
+interface MessagePreview {
+  phone: string;
+  message: string;
+  segments: number;
+  attributes: Record<string, any>;
+}
+
+export default function CampaignDetailPage() {
+  const t = useTranslations();
+  const params = useParams();
+  const lang = params.lang as string;
+  const projectId = params.projectId as string;
+  const campaignId = params.campaignId as string;
+
+  const [project, setProject] = useState<Project | null>(null);
+  const [campaign, setCampaign] = useState<Campaign | null>(null);
+  const [previews, setPreviews] = useState<MessagePreview[]>([]);
+  const [currentCount, setCurrentCount] = useState<number | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    loadData();
+  }, [projectId, campaignId]);
+
+  const loadData = async () => {
+    try {
+      setIsLoading(true);
+
+      // Load project first
+      const projectData = await projectsApi.get(parseInt(projectId));
+      setProject(projectData.project);
+      setProjectToken(projectData.project.api_token);
+
+      // Load campaign
+      const campaignData = await campaignsApi.get(parseInt(campaignId));
+      setCampaign(campaignData.campaign);
+
+      // Load message previews
+      try {
+        const previewData = await campaignsApi.previewMessages(parseInt(campaignId), 5);
+        setPreviews(previewData.previews || []);
+      } catch (err) {
+        console.error('Failed to load previews:', err);
+      }
+
+      // Get current matching count
+      await refreshCount(campaignData.campaign);
+
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Failed to load campaign');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const refreshCount = async (campaignData?: Campaign) => {
+    const c = campaignData || campaign;
+    if (!c) return;
+
+    try {
+      setIsRefreshing(true);
+      const data = await campaignsApi.previewSegment(c.segment_filter, 1);
+      setCurrentCount(data.total_count);
+    } catch (err) {
+      console.error('Failed to refresh count:', err);
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
+  const translateError = (errorMessage: string): string => {
+    // Parse "Insufficient balance. Required: X, Available: Y" pattern
+    const balanceMatch = errorMessage.match(/Insufficient balance\. Required: ([\d.]+), Available: ([\d.]+)/);
+    if (balanceMatch) {
+      return t('smsApi.campaigns.errors.insufficientBalance', {
+        required: balanceMatch[1],
+        available: balanceMatch[2]
+      });
+    }
+
+    // Map other common backend errors to translation keys
+    const errorMappings: Record<string, string> = {
+      'Only draft campaigns can be executed': 'smsApi.campaigns.errors.campaignNotDraft',
+      'No contacts match the segment filter': 'smsApi.campaigns.errors.noContacts',
+      'Campaign validation failed': 'smsApi.campaigns.errors.validationFailed',
+      'Campaign execution failed': 'smsApi.campaigns.errors.executionFailed',
+    };
+
+    for (const [pattern, key] of Object.entries(errorMappings)) {
+      if (errorMessage.includes(pattern)) {
+        return t(key);
+      }
+    }
+
+    // Return original message if no translation found
+    return errorMessage;
+  };
+
+  const handleExecute = async () => {
+    if (!campaign) return;
+    if (!confirm(t('smsApi.campaigns.confirmExecute'))) return;
+
+    try {
+      await campaignsApi.execute(campaign.id);
+      await loadData();
+    } catch (err: any) {
+      const errorData = err.response?.data;
+      let errorMessage = errorData?.message || 'Failed to execute campaign';
+
+      // If there are specific errors in the array, use the first one
+      if (errorData?.errors && Array.isArray(errorData.errors) && errorData.errors.length > 0) {
+        errorMessage = errorData.errors[0];
+      }
+
+      setError(translateError(errorMessage));
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!campaign) return;
+    if (!confirm(t('smsApi.campaigns.confirmDelete'))) return;
+
+    try {
+      await campaignsApi.delete(campaign.id);
+      window.location.href = `/${lang}/settings/sms/projects/${projectId}/campaigns`;
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Failed to delete campaign');
+    }
+  };
+
+  const handleCancel = async () => {
+    if (!campaign) return;
+    if (!confirm(t('smsApi.campaigns.confirmCancel'))) return;
+
+    try {
+      await campaignsApi.cancel(campaign.id);
+      await loadData();
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Failed to cancel campaign');
+    }
+  };
+
+  const formatDate = (dateString: string | null) => {
+    if (!dateString) return '-';
+    const date = new Date(dateString);
+    const localeMap: Record<string, string> = {
+      az: 'az-AZ',
+      en: 'en-US',
+      ru: 'ru-RU',
+    };
+    const locale = localeMap[lang] || 'en-US';
+
+    return date.toLocaleDateString(locale, {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-indigo-50 dark:from-gray-950 dark:via-gray-900 dark:to-indigo-950 p-6">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center py-20">
+            <div className="relative inline-flex">
+              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 opacity-20 animate-pulse"></div>
+              <div className="absolute inset-0 w-16 h-16 rounded-full border-4 border-transparent border-t-indigo-600 dark:border-t-indigo-400 animate-spin"></div>
+            </div>
+            <p className="mt-6 text-gray-600 dark:text-gray-400 font-medium">{t('common.loading')}</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!campaign || !project) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-indigo-50 dark:from-gray-950 dark:via-gray-900 dark:to-indigo-950 p-6">
+        <div className="max-w-4xl mx-auto text-center py-20">
+          <div className="w-20 h-20 mx-auto mb-6 rounded-3xl bg-gradient-to-br from-red-500 to-orange-500 flex items-center justify-center">
+            <AlertCircle className="w-10 h-10 text-white" />
+          </div>
+          <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">
+            {t('smsApi.campaigns.notFound') || 'Campaign not found'}
+          </h3>
+          <p className="text-gray-600 dark:text-gray-400 mb-8">{error}</p>
+          <Link
+            href={`/${lang}/settings/sms/projects/${projectId}/campaigns`}
+            className="cursor-pointer px-8 py-3 rounded-2xl font-medium text-white bg-gradient-to-r from-indigo-500 to-purple-500 hover:shadow-lg transition-all duration-300 hover:scale-105 inline-block"
+          >
+            {t('common.back')}
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-indigo-50 dark:from-gray-950 dark:via-gray-900 dark:to-indigo-950 p-6">
+      <div className="max-w-4xl mx-auto">
+        {/* Header */}
+        <div className="mb-8">
+          <Link
+            href={`/${lang}/settings/sms/projects/${projectId}/campaigns`}
+            className="inline-flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors cursor-pointer mb-4"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            {t('common.back')}
+          </Link>
+
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 ml-4">
+            <Server className="w-4 h-4" />
+            <span className="font-medium">{project.name}</span>
+          </div>
+        </div>
+
+        {/* Campaign Header */}
+        <div className="rounded-3xl p-8 bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50 mb-6">
+          <div className="flex items-start justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+                {campaign.name}
+              </h1>
+              <div className="flex items-center gap-4">
+                <span className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium ${statusColors[campaign.status]}`}>
+                  {statusIcons[campaign.status]}
+                  {t(`smsApi.campaigns.statuses.${campaign.status}`)}
+                </span>
+                <span className="text-sm text-gray-500 dark:text-gray-400">
+                  {formatDate(campaign.created_at)}
+                </span>
+              </div>
+            </div>
+
+            {/* Actions */}
+            <div className="flex items-center gap-3">
+              {campaign.status === 'draft' && (
+                <>
+                  <Link
+                    href={`/${lang}/settings/sms/projects/${projectId}/campaigns/${campaignId}/edit`}
+                    className="cursor-pointer flex items-center gap-2 px-6 py-3 rounded-xl font-medium bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all"
+                  >
+                    <Pencil className="w-5 h-5" />
+                    {t('smsApi.campaigns.actions.edit')}
+                  </Link>
+                  <button
+                    onClick={handleExecute}
+                    className="cursor-pointer flex items-center gap-2 px-6 py-3 rounded-xl font-medium bg-gradient-to-r from-emerald-500 to-teal-500 text-white hover:shadow-lg transition-all"
+                  >
+                    <Play className="w-5 h-5" />
+                    {t('smsApi.campaigns.actions.execute')}
+                  </button>
+                  <button
+                    onClick={handleDelete}
+                    className="cursor-pointer p-3 rounded-xl text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                  >
+                    <Trash2 className="w-5 h-5" />
+                  </button>
+                </>
+              )}
+              {(campaign.status === 'scheduled' || campaign.status === 'sending') && (
+                <button
+                  onClick={handleCancel}
+                  className="cursor-pointer flex items-center gap-2 px-6 py-3 rounded-xl font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 hover:bg-amber-200 dark:hover:bg-amber-900/50 transition-all"
+                >
+                  <XCircle className="w-5 h-5" />
+                  {t('smsApi.campaigns.actions.cancel')}
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Test Mode Warning */}
+        {campaign.is_test && (
+          <div className="mb-6 rounded-2xl p-4 bg-amber-50/80 dark:bg-amber-900/20 border border-amber-200/30 dark:border-amber-800/30">
+            <div className="flex items-center gap-3">
+              <FlaskConical className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+              <div>
+                <p className="font-medium text-amber-800 dark:text-amber-200">
+                  {t('smsApi.campaigns.testModeEnabled')}
+                </p>
+                <p className="text-sm text-amber-700 dark:text-amber-300">
+                  {t('smsApi.campaigns.testModeWarning')}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Error */}
+        {error && (
+          <div className="mb-6 rounded-2xl p-4 bg-red-50/80 dark:bg-red-900/20 border border-red-200/30 dark:border-red-800/30">
+            <p className="text-red-800 dark:text-red-200">{error}</p>
+          </div>
+        )}
+
+        {/* Stats Grid */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+          <div className="rounded-2xl p-4 bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center">
+                <Users className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+              </div>
+              <div>
+                <p className="text-xs text-gray-500 dark:text-gray-400">{t('smsApi.campaigns.stats.target')}</p>
+                <p className="text-xl font-bold text-gray-900 dark:text-white">{campaign.target_count}</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="rounded-2xl p-4 bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+                <Send className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+              </div>
+              <div>
+                <p className="text-xs text-gray-500 dark:text-gray-400">{t('smsApi.campaigns.stats.sent')}</p>
+                <p className="text-xl font-bold text-gray-900 dark:text-white">{campaign.sent_count}</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="rounded-2xl p-4 bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
+                <CheckCircle className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+              </div>
+              <div>
+                <p className="text-xs text-gray-500 dark:text-gray-400">{t('smsApi.campaigns.stats.delivered')}</p>
+                <p className="text-xl font-bold text-gray-900 dark:text-white">{campaign.delivered_count}</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="rounded-2xl p-4 bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
+                <XCircle className="w-5 h-5 text-red-600 dark:text-red-400" />
+              </div>
+              <div>
+                <p className="text-xs text-gray-500 dark:text-gray-400">{t('smsApi.campaigns.stats.failed')}</p>
+                <p className="text-xl font-bold text-gray-900 dark:text-white">{campaign.failed_count}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Current Count Warning (for drafts) */}
+        {campaign.status === 'draft' && currentCount !== null && currentCount !== campaign.target_count && (
+          <div className="mb-6 rounded-2xl p-4 bg-amber-50/80 dark:bg-amber-900/20 border border-amber-200/30 dark:border-amber-800/30">
+            <div className="flex items-start gap-3">
+              <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="text-sm font-medium text-amber-800 dark:text-amber-200">
+                  {t('smsApi.campaigns.countChanged')}
+                </p>
+                <p className="text-sm text-amber-700 dark:text-amber-300 mt-1">
+                  {t('smsApi.campaigns.countChangedDesc', {
+                    original: campaign.target_count,
+                    current: currentCount
+                  })}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Campaign Details */}
+        <div className="rounded-3xl p-6 bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50 mb-6">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+            <MessageSquare className="w-5 h-5" />
+            {t('smsApi.campaigns.details')}
+          </h2>
+
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <p className="text-sm text-gray-500 dark:text-gray-400">{t('smsApi.campaigns.sender')}</p>
+                <p className="text-gray-900 dark:text-white font-medium">{campaign.sender}</p>
+              </div>
+              {campaign.scheduled_at && (
+                <div>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">{t('smsApi.campaigns.scheduledAt')}</p>
+                  <p className="text-gray-900 dark:text-white font-medium flex items-center gap-2">
+                    <Calendar className="w-4 h-4" />
+                    {formatDate(campaign.scheduled_at)}
+                  </p>
+                </div>
+              )}
+            </div>
+
+            <div>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">{t('smsApi.campaigns.messageTemplate')}</p>
+              <div className="p-4 rounded-xl bg-gray-50 dark:bg-gray-800 font-mono text-sm whitespace-pre-wrap">
+                {campaign.message_template}
+              </div>
+            </div>
+
+            {/* Current Target Count with Refresh */}
+            {campaign.status === 'draft' && (
+              <div className="p-4 rounded-xl bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200/30 dark:border-indigo-800/30">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <Users className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+                    <div>
+                      <p className="text-sm text-indigo-700 dark:text-indigo-300">{t('smsApi.campaigns.currentTargetCount')}</p>
+                      <p className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">
+                        {currentCount !== null ? currentCount : campaign.target_count}
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => refreshCount()}
+                    disabled={isRefreshing}
+                    className="cursor-pointer flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-200 dark:hover:bg-indigo-900/50 transition-colors disabled:opacity-50"
+                  >
+                    <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+                    {t('smsApi.campaigns.refreshCount')}
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Message Previews */}
+        {previews.length > 0 && (
+          <div className="rounded-3xl p-6 bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+              {t('smsApi.campaigns.messagePreview')}
+            </h2>
+
+            <div className="space-y-3">
+              {previews.map((preview, index) => (
+                <div
+                  key={index}
+                  className="p-4 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700"
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                      {preview.phone}
+                    </span>
+                    <span className="text-xs text-gray-500">
+                      {preview.segments} {t('smsApi.campaigns.segments')}
+                    </span>
+                  </div>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 whitespace-pre-wrap">
+                    {preview.message}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}

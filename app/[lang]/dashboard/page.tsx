@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Bell, Plus, TrendingUp, Activity, Settings, Bitcoin, Globe, BarChart3, Play, Pause, MessageSquare, CreditCard } from 'lucide-react';
+import { Bell, Plus, TrendingUp, Activity, Settings, Bitcoin, Globe, BarChart3, Play, Pause, MessageSquare, CreditCard, Megaphone, Code } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 type AlertService = 'crypto' | 'stocks' | 'website' | 'weather' | 'currency' | 'flight';
@@ -222,7 +222,7 @@ export default function DashboardPage() {
               <TrendingUp className="w-5 h-5 text-green-500" />
             </div>
             <div className="text-3xl font-bold text-gray-900 dark:text-white mb-1">
-              {balance !== null ? `${balance.toFixed(2)} AZN` : '0.00 AZN'}
+              {balance !== null ? `${Number(balance).toFixed(2)} AZN` : '0.00 AZN'}
             </div>
             <div className="text-sm text-gray-600 dark:text-gray-400">
               {t('dashboard.balance')}
@@ -330,7 +330,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Quick Links */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <Link
             href="/settings"
             className="card-glass rounded-3xl p-6 hover:scale-105 transition-transform duration-300"
@@ -370,12 +370,12 @@ export default function DashboardPage() {
           </Link>
 
           <Link
-            href="/dashboard/sms"
+            href="/sms-api"
             className="card-glass rounded-3xl p-6 hover:scale-105 transition-transform duration-300"
           >
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center">
-                <MessageSquare className="w-6 h-6 text-white" />
+                <Code className="w-6 h-6 text-white" />
               </div>
               <div>
                 <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-1">
@@ -383,6 +383,25 @@ export default function DashboardPage() {
                 </h3>
                 <p className="text-sm text-gray-600 dark:text-gray-400">
                   {t('dashboard.smsApiDescription')}
+                </p>
+              </div>
+            </div>
+          </Link>
+
+          <Link
+            href="/settings/sms/projects"
+            className="card-glass rounded-3xl p-6 hover:scale-105 transition-transform duration-300"
+          >
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-pink-500 to-rose-500 flex items-center justify-center">
+                <Megaphone className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-1">
+                  {t('dashboard.smsCampaigns')}
+                </h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  {t('dashboard.smsCampaignsDescription')}
                 </p>
               </div>
             </div>
