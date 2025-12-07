@@ -20,6 +20,7 @@ export default function ProjectsPage() {
     name: '',
     description: '',
   });
+  const [copiedTokenId, setCopiedTokenId] = useState<number | null>(null);
 
   useEffect(() => {
     loadProjects();
@@ -82,9 +83,28 @@ export default function ProjectsPage() {
     }
   };
 
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
-    alert(t('smsApi.projects.copiedToClipboard'));
+  const copyToClipboard = async (text: string, projectId: number) => {
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(text);
+      } else {
+        // Fallback for non-secure contexts
+        const textArea = document.createElement('textarea');
+        textArea.value = text;
+        textArea.style.position = 'fixed';
+        textArea.style.left = '-999999px';
+        textArea.style.top = '-999999px';
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        document.execCommand('copy');
+        textArea.remove();
+      }
+      setCopiedTokenId(projectId);
+      setTimeout(() => setCopiedTokenId(null), 2000);
+    } catch (err) {
+      console.error('Failed to copy:', err);
+    }
   };
 
   const openAddModal = () => {
@@ -253,11 +273,15 @@ export default function ProjectsPage() {
                           className="flex-1 text-sm bg-gray-50/50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2 text-gray-900 dark:text-white font-mono backdrop-blur-sm transition-colors"
                         />
                         <button
-                          onClick={() => copyToClipboard(project.api_token)}
-                          className="p-2 rounded-xl bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 transition-colors cursor-pointer"
+                          onClick={() => copyToClipboard(project.api_token, project.id)}
+                          className={`p-2 rounded-xl transition-colors cursor-pointer ${
+                            copiedTokenId === project.id
+                              ? 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400'
+                              : 'bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300'
+                          }`}
                           title={t('smsApi.projects.copyToken')}
                         >
-                          <Copy className="w-4 h-4" />
+                          {copiedTokenId === project.id ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
                         </button>
                       </div>
                     </div>

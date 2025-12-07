@@ -102,10 +102,28 @@ export default function SMSHistoryPage() {
     }
   };
 
-  const copyToken = () => {
-    navigator.clipboard.writeText(apiToken);
-    setTokenCopied(true);
-    setTimeout(() => setTokenCopied(false), 2000);
+  const copyToken = async () => {
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(apiToken);
+      } else {
+        // Fallback for non-secure contexts
+        const textArea = document.createElement('textarea');
+        textArea.value = apiToken;
+        textArea.style.position = 'fixed';
+        textArea.style.left = '-999999px';
+        textArea.style.top = '-999999px';
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        document.execCommand('copy');
+        textArea.remove();
+      }
+      setTokenCopied(true);
+      setTimeout(() => setTokenCopied(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy:', err);
+    }
   };
 
   const getStatusColor = (status: string) => {

@@ -292,9 +292,10 @@ export default function ProjectCampaignsPage() {
         ) : (
           <div className="space-y-4">
             {campaigns.map((campaign) => (
-              <div
+              <Link
                 key={campaign.id}
-                className="relative rounded-2xl p-6 bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50 transition-all duration-300 hover:shadow-xl hover:shadow-indigo-500/10"
+                href={`/${lang}/settings/sms/projects/${projectId}/campaigns/${campaign.id}`}
+                className="block relative rounded-2xl p-6 bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50 transition-all duration-300 hover:shadow-xl hover:shadow-indigo-500/10 cursor-pointer"
               >
                 <div className="flex items-center justify-between">
                   {/* Campaign Info */}
@@ -365,29 +366,40 @@ export default function ProjectCampaignsPage() {
                   </div>
 
                   {/* Actions */}
-                  <div className="relative">
+                  <div className="relative" onClick={(e) => e.preventDefault()}>
                     <button
-                      onClick={() => setOpenMenuId(openMenuId === campaign.id ? null : campaign.id)}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setOpenMenuId(openMenuId === campaign.id ? null : campaign.id);
+                      }}
                       className="cursor-pointer p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400 transition-colors"
                     >
                       <MoreVertical className="w-5 h-5" />
                     </button>
 
                     {openMenuId === campaign.id && (
-                      <div className="absolute right-0 top-full mt-2 w-48 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-xl z-10">
+                      <div className="absolute right-0 top-full mt-2 w-48 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-xl z-10" onClick={(e) => e.stopPropagation()}>
                         <div className="p-2">
                           {campaign.status === 'draft' && (
                             <>
                               <Link
                                 href={`/${lang}/settings/sms/projects/${projectId}/campaigns/${campaign.id}/edit`}
                                 className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                                onClick={() => setOpenMenuId(null)}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setOpenMenuId(null);
+                                }}
                               >
                                 <Pencil className="w-4 h-4" />
                                 {t('smsApi.campaigns.actions.edit')}
                               </Link>
                               <button
-                                onClick={() => handleExecute(campaign.id)}
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  handleExecute(campaign.id);
+                                }}
                                 className="cursor-pointer w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                               >
                                 <Play className="w-4 h-4" />
@@ -397,7 +409,11 @@ export default function ProjectCampaignsPage() {
                           )}
                           {(campaign.status === 'scheduled' || campaign.status === 'sending') && (
                             <button
-                              onClick={() => handleCancel(campaign.id)}
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                handleCancel(campaign.id);
+                              }}
                               className="cursor-pointer w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-colors"
                             >
                               <XCircle className="w-4 h-4" />
@@ -407,13 +423,18 @@ export default function ProjectCampaignsPage() {
                           <Link
                             href={`/${lang}/settings/sms/projects/${projectId}/campaigns/${campaign.id}`}
                             className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                            onClick={(e) => e.stopPropagation()}
                           >
                             <Eye className="w-4 h-4" />
                             {t('smsApi.campaigns.actions.preview')}
                           </Link>
                           {campaign.status === 'draft' && (
                             <button
-                              onClick={() => handleDelete(campaign.id)}
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                handleDelete(campaign.id);
+                              }}
                               className="cursor-pointer w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
                             >
                               <Trash2 className="w-4 h-4" />
@@ -457,7 +478,7 @@ export default function ProjectCampaignsPage() {
                     </div>
                   </div>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         )}

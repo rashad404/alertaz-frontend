@@ -244,20 +244,21 @@ export default function CampaignDetailPage() {
   const formatDate = (dateString: string | null) => {
     if (!dateString) return '-';
     const date = new Date(dateString);
-    const localeMap: Record<string, string> = {
-      az: 'az-AZ',
-      en: 'en-US',
-      ru: 'ru-RU',
-    };
-    const locale = localeMap[lang] || 'en-US';
 
-    return date.toLocaleDateString(locale, {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
+    const monthNames: Record<string, string[]> = {
+      az: ['Yan', 'Fev', 'Mar', 'Apr', 'May', 'İyn', 'İyl', 'Avq', 'Sen', 'Okt', 'Noy', 'Dek'],
+      en: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+      ru: ['Янв', 'Фев', 'Мар', 'Апр', 'Май', 'Июн', 'Июл', 'Авг', 'Сен', 'Окт', 'Ноя', 'Дек'],
+    };
+
+    const months = monthNames[lang] || monthNames.en;
+    const month = months[date.getMonth()];
+    const day = date.getDate();
+    const year = date.getFullYear();
+    const hours = date.getHours().toString().padStart(2, '0');
+    const minutes = date.getMinutes().toString().padStart(2, '0');
+
+    return `${day} ${month} ${year}, ${hours}:${minutes}`;
   };
 
   if (isLoading) {
