@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
-import { MessageSquare, Copy, Check, Code, Filter, X, Search, Eye, EyeOff } from 'lucide-react';
+import { MessageSquare, Copy, Check, Code, Filter, X, Search, Eye, EyeOff, FlaskConical } from 'lucide-react';
 import Link from 'next/link';
 import axios from 'axios';
 
@@ -20,6 +20,7 @@ interface SMSMessage {
   sender: string;
   cost: number;
   status: string;
+  is_test: boolean;
   created_at: string;
   sent_at: string | null;
   delivered_at: string | null;
@@ -419,9 +420,17 @@ export default function SMSHistoryPage() {
                           {msg.sender}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <span className={`px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(msg.status)}`}>
-                            {msg.status}
-                          </span>
+                          <div className="flex items-center gap-2">
+                            <span className={`px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(msg.status)}`}>
+                              {msg.status}
+                            </span>
+                            {msg.is_test && (
+                              <span className="inline-flex items-center gap-1 px-2 py-1 text-xs font-semibold rounded-full bg-amber-100 text-amber-700 dark:bg-amber-900/20 dark:text-amber-400">
+                                <FlaskConical className="w-3 h-3" />
+                                {t('smsApi.testMode')}
+                              </span>
+                            )}
+                          </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">
                           {msg.cost} AZN

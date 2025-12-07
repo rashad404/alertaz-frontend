@@ -516,6 +516,7 @@
     "source": "Источник",
     "sourceApi": "API",
     "sourceCampaign": "Кампания",
+    "testMode": "Тест",
     "filterBySource": "По источнику",
     "filterByProject": "По проекту",
     "filterByPhone": "Номер телефона",

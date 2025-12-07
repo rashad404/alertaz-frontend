@@ -5,7 +5,7 @@ import { useTranslations } from 'next-intl';
 import { projectsApi, Project } from '@/lib/api/projects';
 import { campaignsApi, Campaign, setProjectToken } from '@/lib/api/campaigns';
 import Link from 'next/link';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import {
   Plus,
   Send,
@@ -21,6 +21,7 @@ import {
   ArrowLeft,
   Server,
   Users,
+  Copy,
 } from 'lucide-react';
 
 const statusIcons: Record<string, React.ReactNode> = {
@@ -44,6 +45,7 @@ const statusColors: Record<string, string> = {
 export default function ProjectCampaignsPage() {
   const t = useTranslations();
   const params = useParams();
+  const router = useRouter();
   const lang = params.lang as string;
   const projectId = params.projectId as string;
 
@@ -54,6 +56,18 @@ export default function ProjectCampaignsPage() {
   const [openMenuId, setOpenMenuId] = useState<number | null>(null);
   const [currentCounts, setCurrentCounts] = useState<Record<number, number | null>>({});
   const [loadingCounts, setLoadingCounts] = useState<Record<number, boolean>>({});
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = () => {
+      if (openMenuId !== null) {
+        setOpenMenuId(null);
+      }
+    };
+
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, [openMenuId]);
 
   useEffect(() => {
     loadProject();
@@ -154,6 +168,16 @@ export default function ProjectCampaignsPage() {
       await loadCampaigns();
     } catch (err: any) {
       setError(err.response?.data?.message || 'Failed to execute campaign');
+    }
+    setOpenMenuId(null);
+  };
+
+  const handleDuplicate = async (id: number) => {
+    try {
+      const result = await campaignsApi.duplicate(id);
+      router.push(`/${lang}/settings/sms/projects/${projectId}/campaigns/${result.campaign.id}`);
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Failed to duplicate campaign');
     }
     setOpenMenuId(null);
   };
@@ -302,10 +326,10 @@ export default function ProjectCampaignsPage() {
         ) : (
           <div className="space-y-4">
             {campaigns.map((campaign) => (
-              <Link
+              <div
                 key={campaign.id}
-                href={`/${lang}/settings/sms/projects/${projectId}/campaigns/${campaign.id}`}
-                className="block relative rounded-2xl p-6 bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50 transition-all duration-300 hover:shadow-xl hover:shadow-indigo-500/10 cursor-pointer"
+                onClick={() => router.push(`/${lang}/settings/sms/projects/${projectId}/campaigns/${campaign.id}`)}
+                className={`block relative rounded-2xl p-6 bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50 transition-all duration-300 hover:shadow-xl hover:shadow-indigo-500/10 cursor-pointer ${openMenuId === campaign.id ? 'z-50' : 'z-0'}`}
               >
                 <div className="flex items-center justify-between">
                   {/* Campaign Info */}
@@ -376,7 +400,7 @@ export default function ProjectCampaignsPage() {
                   </div>
 
                   {/* Actions */}
-                  <div className="relative" onClick={(e) => e.preventDefault()}>
+                  <div className="relative z-20" onClick={(e) => e.preventDefault()}>
                     <button
                       onClick={(e) => {
                         e.preventDefault();
@@ -389,7 +413,7 @@ export default function ProjectCampaignsPage() {
                     </button>
 
                     {openMenuId === campaign.id && (
-                      <div className="absolute right-0 top-full mt-2 w-48 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-xl z-10" onClick={(e) => e.stopPropagation()}>
+                      <div className="absolute right-0 top-full mt-2 w-48 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-xl z-50" onClick={(e) => e.stopPropagation()}>
                         <div className="p-2">
                           {campaign.status === 'draft' && (
                             <>
@@ -433,11 +457,26 @@ export default function ProjectCampaignsPage() {
                           <Link
                             href={`/${lang}/settings/sms/projects/${projectId}/campaigns/${campaign.id}`}
                             className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                            onClick={(e) => e.stopPropagation()}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setOpenMenuId(null);
+                            }}
                           >
                             <Eye className="w-4 h-4" />
                             {t('smsApi.campaigns.actions.preview')}
                           </Link>
+                          {/* Duplicate - always available */}
+                          <button
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              handleDuplicate(campaign.id);
+                            }}
+                            className="cursor-pointer w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                          >
+                            <Copy className="w-4 h-4" />
+                            {t('smsApi.campaigns.actions.duplicate')}
+                          </button>
                           {campaign.status === 'draft' && (
                             <button
                               onClick={(e) => {
@@ -488,7 +527,7 @@ export default function ProjectCampaignsPage() {
                     </div>
                   </div>
                 </div>
-              </Link>
+              </div>
             ))}
           </div>
         )}

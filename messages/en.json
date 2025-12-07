@@ -516,6 +516,7 @@
     "source": "Source",
     "sourceApi": "API",
     "sourceCampaign": "Campaign",
+    "testMode": "Test",
     "filterBySource": "Filter by source",
     "filterByProject": "Filter by project",
     "filterByPhone": "Phone number",

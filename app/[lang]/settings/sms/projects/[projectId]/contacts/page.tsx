@@ -720,10 +720,13 @@ export default function ProjectContactsPage() {
 
         {/* Add/Edit Contact Modal */}
         {showModal && (
-          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-            <div className="relative w-full max-w-lg">
+          <div
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50 overflow-y-auto"
+            onClick={() => setShowModal(false)}
+          >
+            <div className="relative w-full max-w-lg my-8" onClick={(e) => e.stopPropagation()}>
               <div className="absolute inset-0 bg-gradient-to-br from-indigo-500 to-purple-500 opacity-20 blur-3xl"></div>
-              <div className="relative rounded-3xl p-8 bg-white/90 dark:bg-gray-900/90 backdrop-blur-2xl border border-white/30 dark:border-gray-700/30 shadow-2xl">
+              <div className="relative rounded-3xl p-8 bg-white/90 dark:bg-gray-900/90 backdrop-blur-2xl border border-white/30 dark:border-gray-700/30 shadow-2xl max-h-[85vh] overflow-y-auto">
                 <h2 className="text-2xl font-bold mb-6">
                   <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
                     {editingContact ? t('smsApi.contacts.editContact') : t('smsApi.contacts.addContact')}

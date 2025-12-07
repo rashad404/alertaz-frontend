@@ -22,6 +22,7 @@ import {
   Calendar,
   RefreshCw,
   FlaskConical,
+  Copy,
 } from 'lucide-react';
 
 const statusIcons: Record<string, React.ReactNode> = {
@@ -241,6 +242,18 @@ export default function CampaignDetailPage() {
     }
   };
 
+  const handleDuplicate = async () => {
+    if (!campaign) return;
+
+    try {
+      const result = await campaignsApi.duplicate(campaign.id);
+      // Redirect to the new campaign
+      window.location.href = `/${lang}/settings/sms/projects/${projectId}/campaigns/${result.campaign.id}`;
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Failed to duplicate campaign');
+    }
+  };
+
   const formatDate = (dateString: string | null) => {
     if (!dateString) return '-';
     const date = new Date(dateString);
@@ -371,6 +384,14 @@ export default function CampaignDetailPage() {
                   {t('smsApi.campaigns.actions.cancel')}
                 </button>
               )}
+              {/* Duplicate button - always visible */}
+              <button
+                onClick={handleDuplicate}
+                className="cursor-pointer flex items-center gap-2 px-6 py-3 rounded-xl font-medium bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all"
+              >
+                <Copy className="w-5 h-5" />
+                {t('smsApi.campaigns.actions.duplicate')}
+              </button>
             </div>
           </div>
         </div>
@@ -629,9 +650,17 @@ export default function CampaignDetailPage() {
                             {msg.message}
                           </td>
                           <td className="px-4 py-3 whitespace-nowrap">
-                            <span className={`px-2 py-1 text-xs font-semibold rounded-full ${getMessageStatusColor(msg.status)}`}>
-                              {msg.status}
-                            </span>
+                            <div className="flex items-center gap-2">
+                              <span className={`px-2 py-1 text-xs font-semibold rounded-full ${getMessageStatusColor(msg.status)}`}>
+                                {msg.status}
+                              </span>
+                              {msg.is_test && (
+                                <span className="inline-flex items-center gap-1 px-2 py-1 text-xs font-semibold rounded-full bg-amber-100 text-amber-700 dark:bg-amber-900/20 dark:text-amber-400">
+                                  <FlaskConical className="w-3 h-3" />
+                                  {t('smsApi.testMode')}
+                                </span>
+                              )}
+                            </div>
                           </td>
                           <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">
                             {msg.cost} AZN

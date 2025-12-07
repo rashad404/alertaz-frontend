@@ -79,6 +79,7 @@ export interface CampaignMessage {
   sender: string;
   cost: number;
   status: 'pending' | 'sent' | 'delivered' | 'failed';
+  is_test: boolean;
   sent_at: string | null;
   delivered_at: string | null;
   created_at: string;
@@ -208,6 +209,12 @@ export const campaignsApi = {
   executeTest: async (id: number) => {
     const response = await campaignClient.post(`/campaigns/${id}/execute-test`, {}, { headers: getHeaders() });
     return response.data;
+  },
+
+  // Duplicate campaign
+  duplicate: async (id: number): Promise<{ campaign: Campaign }> => {
+    const response = await campaignClient.post(`/campaigns/${id}/duplicate`, {}, { headers: getHeaders() });
+    return response.data.data;
   },
 
   // Contacts
