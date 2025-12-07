@@ -12,7 +12,6 @@ import {
   Phone,
   Edit2,
   Loader2,
-  MessageSquare
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
@@ -92,15 +91,6 @@ export default function SettingsPage() {
       href: `/${locale}/settings/security`,
       color: 'text-green-600 dark:text-green-400',
       bgColor: 'bg-green-100 dark:bg-green-900/30'
-    },
-    {
-      id: 'sms',
-      title: 'SMS API',
-      description: 'Manage SMS balance, view history, and API credentials',
-      icon: MessageSquare,
-      href: `/${locale}/dashboard/sms`,
-      color: 'text-purple-600 dark:text-purple-400',
-      bgColor: 'bg-purple-100 dark:bg-purple-900/30'
     }
   ];
 

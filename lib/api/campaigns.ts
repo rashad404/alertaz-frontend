@@ -72,6 +72,23 @@ export interface CampaignStats {
   success_rate: number;
 }
 
+export interface CampaignMessage {
+  id: number;
+  phone: string;
+  message: string;
+  sender: string;
+  cost: number;
+  status: 'pending' | 'sent' | 'delivered' | 'failed';
+  sent_at: string | null;
+  delivered_at: string | null;
+  created_at: string;
+  contact?: {
+    id: number;
+    phone: string;
+    attributes: Record<string, any>;
+  };
+}
+
 // Helper to set project token
 let currentProjectToken: string | null = null;
 
@@ -239,5 +256,22 @@ export const campaignsApi = {
 
   deleteSavedSegment: async (id: number) => {
     await campaignClient.delete(`/saved-segments/${id}`, { headers: getHeaders() });
+  },
+
+  // Get campaign message history
+  getCampaignMessages: async (id: number, page: number = 1, perPage: number = 20): Promise<{
+    messages: CampaignMessage[];
+    pagination: {
+      current_page: number;
+      last_page: number;
+      per_page: number;
+      total: number;
+    };
+  }> => {
+    const response = await campaignClient.get(`/campaigns/${id}/messages`, {
+      params: { page, per_page: perPage },
+      headers: getHeaders(),
+    });
+    return response.data.data;
   },
 };

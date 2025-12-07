@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useParams } from 'next/navigation';
 import { projectsApi, Project } from '@/lib/api/projects';
-import { campaignsApi, Campaign, setProjectToken } from '@/lib/api/campaigns';
+import { campaignsApi, Campaign, CampaignMessage, setProjectToken } from '@/lib/api/campaigns';
 import Link from 'next/link';
 import {
   ArrowLeft,
@@ -63,10 +63,24 @@ export default function CampaignDetailPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  // Message history state
+  const [messages, setMessages] = useState<CampaignMessage[]>([]);
+  const [messagesPage, setMessagesPage] = useState(1);
+  const [messagesTotalPages, setMessagesTotalPages] = useState(1);
+  const [messagesLoading, setMessagesLoading] = useState(false);
 
   useEffect(() => {
     loadData();
   }, [projectId, campaignId]);
+
+  // Load message history when campaign is executed (completed, failed, sending)
+  useEffect(() => {
+    if (campaign && ['completed', 'failed', 'sending'].includes(campaign.status)) {
+      loadMessages();
+    }
+  }, [campaign?.status, messagesPage]);
 
   const loadData = async () => {
     try {
@@ -114,6 +128,34 @@ export default function CampaignDetailPage() {
     }
   };
 
+  const loadMessages = async () => {
+    if (!campaign) return;
+
+    try {
+      setMessagesLoading(true);
+      const data = await campaignsApi.getCampaignMessages(campaign.id, messagesPage, 10);
+      setMessages(data.messages);
+      setMessagesTotalPages(data.pagination.last_page);
+    } catch (err) {
+      console.error('Failed to load messages:', err);
+    } finally {
+      setMessagesLoading(false);
+    }
+  };
+
+  const getMessageStatusColor = (status: string) => {
+    switch (status) {
+      case 'delivered':
+        return 'text-green-600 bg-green-50 dark:bg-green-900/20';
+      case 'sent':
+        return 'text-blue-600 bg-blue-50 dark:bg-blue-900/20';
+      case 'failed':
+        return 'text-red-600 bg-red-50 dark:bg-red-900/20';
+      default:
+        return 'text-gray-600 bg-gray-50 dark:bg-gray-900/20';
+    }
+  };
+
   const translateError = (errorMessage: string): string => {
     // Parse "Insufficient balance. Required: X, Available: Y" pattern
     const balanceMatch = errorMessage.match(/Insufficient balance\. Required: ([\d.]+), Available: ([\d.]+)/);
@@ -146,8 +188,21 @@ export default function CampaignDetailPage() {
     if (!campaign) return;
     if (!confirm(t('smsApi.campaigns.confirmExecute'))) return;
 
+    setError(null);
+    setSuccessMessage(null);
+
     try {
-      await campaignsApi.execute(campaign.id);
+      const result = await campaignsApi.execute(campaign.id);
+
+      // Show appropriate success message based on test mode
+      if (result.data?.global_test_mode) {
+        setSuccessMessage(t('smsApi.campaigns.executionSuccess.globalTestMode'));
+      } else if (result.data?.mock_mode) {
+        setSuccessMessage(t('smsApi.campaigns.executionSuccess.testMode'));
+      } else {
+        setSuccessMessage(t('smsApi.campaigns.executionSuccess.real'));
+      }
+
       await loadData();
     } catch (err: any) {
       const errorData = err.response?.data;
@@ -336,6 +391,16 @@ export default function CampaignDetailPage() {
           </div>
         )}
 
+        {/* Success Message */}
+        {successMessage && (
+          <div className="mb-6 rounded-2xl p-4 bg-emerald-50/80 dark:bg-emerald-900/20 border border-emerald-200/30 dark:border-emerald-800/30">
+            <div className="flex items-center gap-3">
+              <CheckCircle className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+              <p className="text-emerald-800 dark:text-emerald-200">{successMessage}</p>
+            </div>
+          </div>
+        )}
+
         {/* Error */}
         {error && (
           <div className="mb-6 rounded-2xl p-4 bg-red-50/80 dark:bg-red-900/20 border border-red-200/30 dark:border-red-800/30">
@@ -472,12 +537,20 @@ export default function CampaignDetailPage() {
           </div>
         </div>
 
-        {/* Message Previews */}
-        {previews.length > 0 && (
-          <div className="rounded-3xl p-6 bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-              {t('smsApi.campaigns.messagePreview')}
-            </h2>
+        {/* Message Previews (for drafts) */}
+        {campaign.status === 'draft' && previews.length > 0 && (
+          <div className="rounded-3xl p-6 bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50 mb-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+                {t('smsApi.campaigns.messagePreview')}
+              </h2>
+              <span className="text-sm text-gray-500 dark:text-gray-400">
+                {t('smsApi.campaigns.showingSamples', {
+                  count: previews.length,
+                  total: currentCount ?? campaign.target_count
+                })}
+              </span>
+            </div>
 
             <div className="space-y-3">
               {previews.map((preview, index) => (
@@ -499,6 +572,102 @@ export default function CampaignDetailPage() {
                 </div>
               ))}
             </div>
+          </div>
+        )}
+
+        {/* Message History (for executed campaigns) */}
+        {['completed', 'failed', 'sending'].includes(campaign.status) && (
+          <div className="rounded-3xl p-6 bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+                {t('smsApi.campaignMessages')}
+              </h2>
+              <span className="text-sm text-gray-500 dark:text-gray-400">
+                {campaign.sent_count} {t('smsApi.message').toLowerCase()}
+              </span>
+            </div>
+
+            {messagesLoading ? (
+              <div className="text-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto"></div>
+              </div>
+            ) : messages.length === 0 ? (
+              <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                {t('smsApi.noMessages')}
+              </div>
+            ) : (
+              <>
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                    <thead className="bg-gray-50 dark:bg-gray-900/50">
+                      <tr>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                          {t('smsApi.phone')}
+                        </th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                          {t('smsApi.message')}
+                        </th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                          {t('smsApi.status')}
+                        </th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                          {t('smsApi.cost')}
+                        </th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                          {t('smsApi.sentAt')}
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                      {messages.map((msg) => (
+                        <tr key={msg.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                          <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
+                            {msg.phone}
+                          </td>
+                          <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300 max-w-xs truncate">
+                            {msg.message}
+                          </td>
+                          <td className="px-4 py-3 whitespace-nowrap">
+                            <span className={`px-2 py-1 text-xs font-semibold rounded-full ${getMessageStatusColor(msg.status)}`}>
+                              {msg.status}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">
+                            {msg.cost} AZN
+                          </td>
+                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                            {msg.sent_at ? formatDate(msg.sent_at) : '-'}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Pagination */}
+                {messagesTotalPages > 1 && (
+                  <div className="px-4 py-4 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between mt-4">
+                    <button
+                      onClick={() => setMessagesPage(p => Math.max(1, p - 1))}
+                      disabled={messagesPage === 1}
+                      className="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                    >
+                      {t('common.previous')}
+                    </button>
+                    <span className="text-sm text-gray-600 dark:text-gray-400">
+                      {t('common.pageOf', { current: messagesPage, total: messagesTotalPages })}
+                    </span>
+                    <button
+                      onClick={() => setMessagesPage(p => Math.min(messagesTotalPages, p + 1))}
+                      disabled={messagesPage === messagesTotalPages}
+                      className="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                    >
+                      {t('common.next')}
+                    </button>
+                  </div>
+                )}
+              </>
+            )}
           </div>
         )}
       </div>

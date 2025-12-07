@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Bell, Plus, TrendingUp, Activity, Settings, Bitcoin, Globe, BarChart3, Play, Pause, MessageSquare, CreditCard, Megaphone, Code } from 'lucide-react';
+import { Bell, Plus, TrendingUp, Activity, Settings, Bitcoin, Globe, BarChart3, Play, Pause, MessageSquare, CreditCard, Megaphone } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 type AlertService = 'crypto' | 'stocks' | 'website' | 'weather' | 'currency' | 'flight';
@@ -370,12 +370,12 @@ export default function DashboardPage() {
           </Link>
 
           <Link
-            href="/sms-api"
+            href="/dashboard/sms"
             className="card-glass rounded-3xl p-6 hover:scale-105 transition-transform duration-300"
           >
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center">
-                <Code className="w-6 h-6 text-white" />
+                <MessageSquare className="w-6 h-6 text-white" />
               </div>
               <div>
                 <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-1">
