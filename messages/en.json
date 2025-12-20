@@ -333,7 +333,8 @@
     "pageOf": "Page {current} of {total}",
     "filter": "Filter",
     "filters": "Filters",
-    "confirmDelete": "Are you sure you want to delete this alert?"
+    "confirmDelete": "Are you sure you want to delete this alert?",
+    "days": "days"
   },
   "search": {
     "placeholder1": "Bitcoin reaches $100,000",
@@ -657,13 +658,38 @@
       "draftNote": "Campaign will be saved as draft. Click \"Execute\" from the campaigns list to send.",
       "scheduledAt": "Scheduled for",
       "status": "Status",
+      "campaignType": "Campaign Type",
+      "typeOneTime": "One-time",
+      "typeOneTimeDesc": "Send once and complete",
+      "typeAutomated": "Automated",
+      "typeAutomatedDesc": "Automatically send to contacts matching conditions",
+      "checkInterval": "Check Interval",
+      "checkIntervalDesc": "How often the system checks for new matching contacts",
+      "cooldownDays": "Cooldown Period (days)",
+      "cooldownDaysDesc": "Days before resending to the same contact",
+      "endsAt": "End Date",
+      "endsAtDesc": "Optional - campaign will stop on this date",
+      "noEndDate": "No end date",
+      "automatedSettings": "Automated Campaign Settings",
+      "interval": {
+        "1min": "Every minute",
+        "5min": "Every 5 minutes",
+        "15min": "Every 15 minutes",
+        "30min": "Every 30 minutes",
+        "1hour": "Every hour",
+        "6hours": "Every 6 hours",
+        "12hours": "Every 12 hours",
+        "daily": "Daily"
+      },
       "statuses": {
         "draft": "Draft",
         "scheduled": "Scheduled",
         "sending": "Sending",
         "completed": "Completed",
         "cancelled": "Cancelled",
-        "failed": "Failed"
+        "failed": "Failed",
+        "active": "Active",
+        "paused": "Paused"
       },
       "stats": {
         "target": "Target",
@@ -678,7 +704,9 @@
         "cancel": "Cancel Campaign",
         "execute": "Send Now",
         "preview": "Preview",
-        "duplicate": "Duplicate"
+        "duplicate": "Duplicate",
+        "activate": "Activate",
+        "pause": "Pause"
       },
       "confirmCancel": "Are you sure you want to cancel this campaign?",
       "confirmDelete": "Are you sure you want to delete this campaign?",

@@ -333,7 +333,8 @@
     "pageOf": "Səhifə {current} / {total}",
     "filter": "Filtr",
     "filters": "Filtrlər",
-    "confirmDelete": "Bu bildirişi silmək istədiyinizə əminsiniz?"
+    "confirmDelete": "Bu bildirişi silmək istədiyinizə əminsiniz?",
+    "days": "gün"
   },
   "search": {
     "placeholder1": "Bitcoin 100,000 dollara çatır",
@@ -657,13 +658,38 @@
       "draftNote": "Kampaniya qaralama olaraq yaradılacaq. Göndərmək üçün kampaniyalar siyahısından \"İcra Et\" düyməsini basın.",
       "scheduledAt": "Planlaşdırılıb",
       "status": "Status",
+      "campaignType": "Kampaniya Növü",
+      "typeOneTime": "Birdəfəlik",
+      "typeOneTimeDesc": "Bir dəfə göndərilib tamamlanır",
+      "typeAutomated": "Avtomatik",
+      "typeAutomatedDesc": "Şərtlərə uyğun kontaktlara avtomatik göndərilir",
+      "checkInterval": "Yoxlama Aralığı",
+      "checkIntervalDesc": "Sistemin yeni kontaktları nə qədər tez-tez yoxlayacağı",
+      "cooldownDays": "Təkrar göndərmə aralığı (gün)",
+      "cooldownDaysDesc": "Eyni kontakta yenidən SMS göndərilmədən əvvəl keçməli olan günlər",
+      "endsAt": "Bitmə Tarixi",
+      "endsAtDesc": "İstəyə bağlı - kampaniya bu tarixdə dayandırılacaq",
+      "noEndDate": "Bitmə tarixi yoxdur",
+      "automatedSettings": "Avtomatik Kampaniya Parametrləri",
+      "interval": {
+        "1min": "Hər dəqiqə",
+        "5min": "Hər 5 dəqiqə",
+        "15min": "Hər 15 dəqiqə",
+        "30min": "Hər 30 dəqiqə",
+        "1hour": "Hər saat",
+        "6hours": "Hər 6 saat",
+        "12hours": "Hər 12 saat",
+        "daily": "Gündəlik"
+      },
       "statuses": {
         "draft": "Qaralama",
         "scheduled": "Planlaşdırılıb",
         "sending": "Göndərilir",
         "completed": "Tamamlandı",
         "cancelled": "Ləğv edildi",
-        "failed": "Uğursuz"
+        "failed": "Uğursuz",
+        "active": "Aktiv",
+        "paused": "Dayandırılıb"
       },
       "stats": {
         "target": "Hədəf",
@@ -678,7 +704,9 @@
         "cancel": "Kampaniyanı Ləğv Et",
         "execute": "İndi Göndər",
         "preview": "Önizləmə",
-        "duplicate": "Kopyala"
+        "duplicate": "Kopyala",
+        "activate": "Aktivləşdir",
+        "pause": "Dayandır"
       },
       "confirmCancel": "Bu kampaniyanı ləğv etmək istədiyinizə əminsiniz?",
       "confirmDelete": "Bu kampaniyanı silmək istədiyinizə əminsiniz?",
