@@ -780,22 +780,21 @@
       "authentication": {
         "title": "Autentifikasiya",
         "description": "Bütün API sorğuları layihə tokeninizlə Authorization başlığı tələb edir:",
-        "getToken": "Tokeninizi Layihələr səhifəsindən əldə edin."
+        "getToken": "Tokeninizi Layihələr səhifəsindən əldə edin.",
+        "phoneFormat": "Telefon nömrəsi formatı:",
+        "phoneExample": "12 rəqəm, 994 ilə başlayır"
       },
-      "phoneFormat": {
-        "title": "Telefon formatı",
-        "description": "Bütün telefon nömrələri bu formatda olmalıdır:",
-        "example": "994501234567",
-        "rules": "12 rəqəm, 994 ilə başlayır (Azərbaycan ölkə kodu)"
+      "contactSync": {
+        "navTitle": "2. Kontakt Sinxronizasiyası",
+        "title": "Kontakt Sinxronizasiyası",
+        "description": "Sxeminizi qeydiyyatdan keçirdikdən sonra kontaktları atributları ilə sinxronlaşdıra bilərsiniz. Kontaktlar telefon nömrəsinə görə müəyyənləşdirilir - mövcud kontaktlar yenilənəcək, yeni kontaktlar yaradılacaq."
       },
-      "contactSchema": {
-        "title": "Kontakt Sxemi",
+      "contactData": {
+        "title": "Kontakt Məlumatları",
         "simpleTitle": "Sadə: Yalnız telefon nömrələri",
         "simpleDesc": "Əlavə məlumat olmadan sadə telefon nömrələri siyahısı",
-        "withNamesTitle": "Əsas atributlarla",
-        "withNamesDesc": "Ad kimi əsas məlumatlarla kontaktlar",
-        "complexTitle": "Xüsusi atributlarla",
-        "complexDesc": "Xüsusi sahələr, massivlər və müxtəlif məlumat tipləri ilə tam kontakt məlumatları"
+        "withAttributesTitle": "Atributlarla",
+        "withAttributesDesc": "Qeydiyyatdan keçmiş sxeminizə uyğun xüsusi atributlarla kontaktlar"
       },
       "endpoints": {
         "title": "API ünvanları",
@@ -831,6 +830,25 @@
       "rateLimits": {
         "title": "Sorğu limitləri",
         "description": "API hər layihə tokeni üçün dəqiqədə 60 sorğu ilə məhdudlaşdırılır."
+      },
+      "schemaRegistration": {
+        "navTitle": "1. Sxem Qeydiyyatı",
+        "title": "Sxem Qeydiyyatı",
+        "description": "Kontaktları sinxronlaşdırmadan əvvəl atribut sxeminizi qeydiyyatdan keçirin. Bu, kontaktlarınızla hansı məlumat sahələrini göndərəcəyinizi müəyyənləşdirir və kampaniyalarda filtrasiyanı təmin edir.",
+        "endpointTitle": "API Ünvanı",
+        "typesTitle": "Atribut Növləri",
+        "typeColumn": "Növ",
+        "descriptionColumn": "Təsvir",
+        "exampleColumn": "Nümunə",
+        "types": {
+          "string": "Adlar, şəhərlər kimi mətn dəyərləri",
+          "number": "Ondalıq daxil olmaqla rəqəm dəyərləri",
+          "boolean": "Doğru/yanlış dəyərləri",
+          "date": "YYYY-MM-DD formatında tarix",
+          "enum": "Əvvəlcədən təyin edilmiş seçimlərdən bir dəyər (\"options\" sahəsi tələb olunur)",
+          "array": "Dəyərlər siyahısı"
+        },
+        "responseTitle": "Cavab"
       },
       "segmentation": {
         "title": "Seqmentasiya nümunələri",

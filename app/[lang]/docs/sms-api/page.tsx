@@ -9,16 +9,24 @@ import {
   Copy,
   Check,
   Key,
-  Phone,
   Users,
   Code,
   AlertCircle,
   Zap,
   Filter,
   ChevronRight,
+  Database,
+  Send,
 } from 'lucide-react';
 
 type CodeTab = 'curl' | 'javascript' | 'php' | 'python';
+
+interface SidebarItem {
+  id: string;
+  label: string;
+  icon?: React.ComponentType<{ className?: string }>;
+  level: 'main' | 'sub';
+}
 
 export default function SMSApiDocsPage() {
   const t = useTranslations();
@@ -54,15 +62,22 @@ export default function SMSApiDocsPage() {
     }
   };
 
-  const sections = [
-    { id: 'overview', label: t('smsApi.docs.overview.title'), icon: Zap },
-    { id: 'authentication', label: t('smsApi.docs.authentication.title'), icon: Key },
-    { id: 'phone-format', label: t('smsApi.docs.phoneFormat.title'), icon: Phone },
-    { id: 'contact-schema', label: t('smsApi.docs.contactSchema.title'), icon: Users },
-    { id: 'endpoints', label: t('smsApi.docs.endpoints.title'), icon: Code },
-    { id: 'code-examples', label: t('smsApi.docs.codeExamples.title'), icon: Code },
-    { id: 'error-codes', label: t('smsApi.docs.errorCodes.title'), icon: AlertCircle },
-    { id: 'segmentation', label: t('smsApi.docs.segmentation.title'), icon: Filter },
+  const sidebarItems: SidebarItem[] = [
+    // Getting Started
+    { id: 'overview', label: t('smsApi.docs.overview.title'), icon: Zap, level: 'main' },
+    { id: 'authentication', label: t('smsApi.docs.authentication.title'), icon: Key, level: 'main' },
+    // Step 1
+    { id: 'schema-registration', label: t('smsApi.docs.schemaRegistration.navTitle'), icon: Database, level: 'main' },
+    { id: 'schema-endpoint', label: t('smsApi.docs.schemaRegistration.endpointTitle'), level: 'sub' },
+    { id: 'schema-types', label: t('smsApi.docs.schemaRegistration.typesTitle'), level: 'sub' },
+    // Step 2
+    { id: 'contact-sync', label: t('smsApi.docs.contactSync.navTitle'), icon: Send, level: 'main' },
+    { id: 'contact-data', label: t('smsApi.docs.contactData.title'), level: 'sub' },
+    { id: 'endpoints', label: t('smsApi.docs.endpoints.title'), level: 'sub' },
+    { id: 'code-examples', label: t('smsApi.docs.codeExamples.title'), level: 'sub' },
+    // Reference
+    { id: 'error-codes', label: t('smsApi.docs.errorCodes.title'), icon: AlertCircle, level: 'main' },
+    { id: 'segmentation', label: t('smsApi.docs.segmentation.title'), icon: Filter, level: 'main' },
   ];
 
   const codeExamples: Record<CodeTab, string> = {
@@ -196,7 +211,7 @@ print(result)
 # {'status': 'success', 'data': {'total': 2, 'created': 2, 'updated': 0, 'failed': 0}}`
   };
 
-  const CodeBlock = ({ code, id, language }: { code: string; id: string; language?: string }) => (
+  const CodeBlock = ({ code, id }: { code: string; id: string }) => (
     <div className="relative group">
       <pre className="bg-gray-900 text-gray-100 rounded-xl p-4 overflow-x-auto text-sm">
         <code>{code}</code>
@@ -232,19 +247,22 @@ print(result)
               {t('smsApi.docs.title')}
             </h2>
             <nav className="space-y-1">
-              {sections.map((section) => (
+              {sidebarItems.map((item) => (
                 <a
-                  key={section.id}
-                  href={`#${section.id}`}
-                  onClick={() => setActiveSection(section.id)}
-                  className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${
-                    activeSection === section.id
+                  key={item.id}
+                  href={`#${item.id}`}
+                  onClick={() => setActiveSection(item.id)}
+                  className={`flex items-center gap-3 py-2 rounded-lg text-sm transition-colors ${
+                    item.level === 'sub' ? 'pl-9 pr-3' : 'px-3'
+                  } ${
+                    activeSection === item.id
                       ? 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 font-medium'
                       : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'
                   }`}
                 >
-                  <section.icon className="w-4 h-4" />
-                  {section.label}
+                  {item.icon && <item.icon className="w-4 h-4" />}
+                  {item.level === 'sub' && <span className="w-1 h-1 rounded-full bg-gray-400 dark:bg-gray-600" />}
+                  {item.label}
                 </a>
               ))}
             </nav>
@@ -310,40 +328,181 @@ print(result)
             </div>
           </section>
 
-          {/* Phone Format Section */}
-          <section id="phone-format" className="mb-12 scroll-mt-6">
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-3">
-              <Phone className="w-6 h-6 text-indigo-500" />
-              {t('smsApi.docs.phoneFormat.title')}
-            </h2>
-            <div className="rounded-2xl p-6 bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50 space-y-4">
+          {/* ==================== STEP 1: SCHEMA REGISTRATION ==================== */}
+          <section id="schema-registration" className="mb-6 scroll-mt-6">
+            <div className="flex items-center gap-3 mb-4">
+              <span className="flex items-center justify-center w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 font-bold text-sm">
+                1
+              </span>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
+                <Database className="w-6 h-6 text-indigo-500" />
+                {t('smsApi.docs.schemaRegistration.title')}
+              </h2>
+            </div>
+            <div className="rounded-2xl p-6 bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50">
               <p className="text-gray-600 dark:text-gray-400">
-                {t('smsApi.docs.phoneFormat.description')}
-              </p>
-              <CodeBlock
-                code={t('smsApi.docs.phoneFormat.example')}
-                id="phone-example"
-              />
-              <p className="text-sm text-gray-500 dark:text-gray-400">
-                {t('smsApi.docs.phoneFormat.rules')}
+                {t('smsApi.docs.schemaRegistration.description')}
               </p>
             </div>
           </section>
 
-          {/* Contact Schema Section */}
-          <section id="contact-schema" className="mb-12 scroll-mt-6">
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-3">
-              <Users className="w-6 h-6 text-indigo-500" />
-              {t('smsApi.docs.contactSchema.title')}
-            </h2>
-            <div className="space-y-6">
+          {/* Schema Endpoint - Subsection */}
+          <section id="schema-endpoint" className="mb-8 scroll-mt-6 ml-8 pl-4">
+            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-3">
+              <Code className="w-5 h-5 text-indigo-500" />
+              {t('smsApi.docs.schemaRegistration.endpointTitle')}
+            </h3>
+            <div className="rounded-2xl p-6 bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50">
+              <div className="flex items-center gap-3 mb-4">
+                <span className="px-2 py-1 rounded-lg text-xs font-bold bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
+                  POST
+                </span>
+                <code className="text-sm font-mono text-gray-700 dark:text-gray-300">/clients/schema</code>
+              </div>
+              <CodeBlock
+                code={`{
+  "attributes": [
+    { "key": "first_name", "type": "string", "label": "Ad" },
+    { "key": "city", "type": "string", "label": "Şəhər" },
+    { "key": "balance", "type": "number", "label": "Balans" },
+    { "key": "is_active", "type": "boolean", "label": "Aktiv" },
+    { "key": "registration_date", "type": "date", "label": "Qeydiyyat tarixi" },
+    { "key": "status", "type": "enum", "label": "Status", "options": ["pending", "approved", "rejected"] },
+    { "key": "tags", "type": "array", "label": "Teqlər" }
+  ]
+}`}
+                id="schema-register"
+              />
+            </div>
+          </section>
+
+          {/* Schema Types - Subsection */}
+          <section id="schema-types" className="mb-12 scroll-mt-6 ml-8 pl-4">
+            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-3">
+              <Database className="w-5 h-5 text-indigo-500" />
+              {t('smsApi.docs.schemaRegistration.typesTitle')}
+            </h3>
+            <div className="rounded-2xl p-6 bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50">
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b border-gray-200 dark:border-gray-700">
+                      <th className="px-4 py-2 text-left text-sm font-semibold text-gray-900 dark:text-white">
+                        {t('smsApi.docs.schemaRegistration.typeColumn')}
+                      </th>
+                      <th className="px-4 py-2 text-left text-sm font-semibold text-gray-900 dark:text-white">
+                        {t('smsApi.docs.schemaRegistration.descriptionColumn')}
+                      </th>
+                      <th className="px-4 py-2 text-left text-sm font-semibold text-gray-900 dark:text-white">
+                        {t('smsApi.docs.schemaRegistration.exampleColumn')}
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                    <tr>
+                      <td className="px-4 py-3">
+                        <code className="px-2 py-1 rounded bg-gray-100 dark:bg-gray-800 text-sm">string</code>
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">
+                        {t('smsApi.docs.schemaRegistration.types.string')}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">
+                        <code>&quot;Baku&quot;</code>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="px-4 py-3">
+                        <code className="px-2 py-1 rounded bg-gray-100 dark:bg-gray-800 text-sm">number</code>
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">
+                        {t('smsApi.docs.schemaRegistration.types.number')}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">
+                        <code>150.50</code>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="px-4 py-3">
+                        <code className="px-2 py-1 rounded bg-gray-100 dark:bg-gray-800 text-sm">boolean</code>
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">
+                        {t('smsApi.docs.schemaRegistration.types.boolean')}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">
+                        <code>true</code>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="px-4 py-3">
+                        <code className="px-2 py-1 rounded bg-gray-100 dark:bg-gray-800 text-sm">date</code>
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">
+                        {t('smsApi.docs.schemaRegistration.types.date')}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">
+                        <code>&quot;2024-01-15&quot;</code>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="px-4 py-3">
+                        <code className="px-2 py-1 rounded bg-gray-100 dark:bg-gray-800 text-sm">enum</code>
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">
+                        {t('smsApi.docs.schemaRegistration.types.enum')}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">
+                        <code>&quot;approved&quot;</code>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="px-4 py-3">
+                        <code className="px-2 py-1 rounded bg-gray-100 dark:bg-gray-800 text-sm">array</code>
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">
+                        {t('smsApi.docs.schemaRegistration.types.array')}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">
+                        <code>[&quot;premium&quot;, &quot;loyal&quot;]</code>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+
+          {/* ==================== STEP 2: CONTACT SYNC ==================== */}
+          <section id="contact-sync" className="mb-6 scroll-mt-6">
+            <div className="flex items-center gap-3 mb-4">
+              <span className="flex items-center justify-center w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 font-bold text-sm">
+                2
+              </span>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
+                <Send className="w-6 h-6 text-indigo-500" />
+                {t('smsApi.docs.contactSync.title')}
+              </h2>
+            </div>
+            <div className="rounded-2xl p-6 bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50">
+              <p className="text-gray-600 dark:text-gray-400">
+                {t('smsApi.docs.contactSync.description')}
+              </p>
+            </div>
+          </section>
+
+          {/* Contact Data Examples - Subsection */}
+          <section id="contact-data" className="mb-8 scroll-mt-6 ml-8 pl-4">
+            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-3">
+              <Users className="w-5 h-5 text-indigo-500" />
+              {t('smsApi.docs.contactData.title')}
+            </h3>
+            <div className="space-y-4">
               {/* Simple */}
               <div className="rounded-2xl p-6 bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50">
-                <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
-                  {t('smsApi.docs.contactSchema.simpleTitle')}
-                </h3>
+                <h4 className="font-medium text-gray-900 dark:text-white mb-2">
+                  {t('smsApi.docs.contactData.simpleTitle')}
+                </h4>
                 <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-                  {t('smsApi.docs.contactSchema.simpleDesc')}
+                  {t('smsApi.docs.contactData.simpleDesc')}
                 </p>
                 <CodeBlock
                   code={`{
@@ -352,17 +511,17 @@ print(result)
     { "phone": "994502345678" }
   ]
 }`}
-                  id="schema-simple"
+                  id="data-simple"
                 />
               </div>
 
-              {/* With Names */}
+              {/* With Attributes */}
               <div className="rounded-2xl p-6 bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50">
-                <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
-                  {t('smsApi.docs.contactSchema.withNamesTitle')}
-                </h3>
+                <h4 className="font-medium text-gray-900 dark:text-white mb-2">
+                  {t('smsApi.docs.contactData.withAttributesTitle')}
+                </h4>
                 <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-                  {t('smsApi.docs.contactSchema.withNamesDesc')}
+                  {t('smsApi.docs.contactData.withAttributesDesc')}
                 </p>
                 <CodeBlock
                   code={`{
@@ -371,32 +530,6 @@ print(result)
       "phone": "994501234567",
       "attributes": {
         "first_name": "Elvin",
-        "last_name": "Mammadov"
-      }
-    }
-  ]
-}`}
-                  id="schema-names"
-                />
-              </div>
-
-              {/* Complex */}
-              <div className="rounded-2xl p-6 bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50">
-                <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
-                  {t('smsApi.docs.contactSchema.complexTitle')}
-                </h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-                  {t('smsApi.docs.contactSchema.complexDesc')}
-                </p>
-                <CodeBlock
-                  code={`{
-  "contacts": [
-    {
-      "phone": "994501234567",
-      "attributes": {
-        "first_name": "Elvin",
-        "last_name": "Mammadov",
-        "company": "ABC Company",
         "city": "Baku",
         "balance": 150.00,
         "is_active": true,
@@ -406,18 +539,18 @@ print(result)
     }
   ]
 }`}
-                  id="schema-complex"
+                  id="data-attributes"
                 />
               </div>
             </div>
           </section>
 
-          {/* Endpoints Section */}
-          <section id="endpoints" className="mb-12 scroll-mt-6">
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-3">
-              <Code className="w-6 h-6 text-indigo-500" />
+          {/* Endpoints - Subsection */}
+          <section id="endpoints" className="mb-8 scroll-mt-6 ml-8 pl-4">
+            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-3">
+              <Code className="w-5 h-5 text-indigo-500" />
               {t('smsApi.docs.endpoints.title')}
-            </h2>
+            </h3>
             <div className="space-y-4">
               {/* Sync Single */}
               <div className="rounded-2xl p-6 bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50">
@@ -427,20 +560,9 @@ print(result)
                   </span>
                   <code className="text-sm font-mono text-gray-700 dark:text-gray-300">/contacts/sync</code>
                 </div>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                <p className="text-sm text-gray-500 dark:text-gray-400">
                   {t('smsApi.docs.endpoints.syncSingleDesc')}
                 </p>
-                <CodeBlock
-                  code={`{
-  "phone": "994501234567",
-  "attributes": {
-    "first_name": "Elvin",
-    "last_name": "Mammadov",
-    "city": "Baku"
-  }
-}`}
-                  id="endpoint-sync"
-                />
               </div>
 
               {/* Bulk Sync */}
@@ -497,12 +619,12 @@ print(result)
             </div>
           </section>
 
-          {/* Code Examples Section */}
-          <section id="code-examples" className="mb-12 scroll-mt-6">
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-3">
-              <Code className="w-6 h-6 text-indigo-500" />
+          {/* Code Examples - Subsection */}
+          <section id="code-examples" className="mb-12 scroll-mt-6 ml-8 pl-4">
+            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-3">
+              <Code className="w-5 h-5 text-indigo-500" />
               {t('smsApi.docs.codeExamples.title')}
-            </h2>
+            </h3>
             <div className="rounded-2xl bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50 overflow-hidden">
               {/* Tabs */}
               <div className="flex border-b border-gray-200 dark:border-gray-700">
@@ -565,11 +687,9 @@ print(result)
                 </tbody>
               </table>
             </div>
-          </section>
 
-          {/* Rate Limits */}
-          <section id="rate-limits" className="mb-12 scroll-mt-6">
-            <div className="rounded-2xl p-6 bg-amber-50 dark:bg-amber-900/20 border border-amber-200/50 dark:border-amber-700/50">
+            {/* Rate Limits */}
+            <div className="mt-4 rounded-2xl p-6 bg-amber-50 dark:bg-amber-900/20 border border-amber-200/50 dark:border-amber-700/50">
               <h3 className="font-semibold text-amber-800 dark:text-amber-200 mb-2">
                 {t('smsApi.docs.rateLimits.title')}
               </h3>

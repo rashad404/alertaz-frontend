@@ -780,22 +780,21 @@
       "authentication": {
         "title": "Authentication",
         "description": "All API requests require an Authorization header with your project token:",
-        "getToken": "Get your token from the Projects page."
+        "getToken": "Get your token from the Projects page.",
+        "phoneFormat": "Phone number format:",
+        "phoneExample": "12 digits, starting with 994"
       },
-      "phoneFormat": {
-        "title": "Phone Format",
-        "description": "All phone numbers must be in the format:",
-        "example": "994501234567",
-        "rules": "12 digits, starting with 994 (Azerbaijan country code)"
+      "contactSync": {
+        "navTitle": "2. Contact Sync",
+        "title": "Contact Sync",
+        "description": "After registering your schema, you can sync contacts with their attributes. Contacts are identified by phone number - existing contacts will be updated, new ones will be created."
       },
-      "contactSchema": {
-        "title": "Contact Schema",
+      "contactData": {
+        "title": "Contact Data",
         "simpleTitle": "Simple: Phone numbers only",
         "simpleDesc": "Simple list of phone numbers without additional data",
-        "withNamesTitle": "With basic attributes",
-        "withNamesDesc": "Contacts with basic information like name",
-        "complexTitle": "With custom attributes",
-        "complexDesc": "Full contact data with custom fields, arrays and different data types"
+        "withAttributesTitle": "With attributes",
+        "withAttributesDesc": "Contacts with custom attributes matching your registered schema"
       },
       "endpoints": {
         "title": "API Endpoints",
@@ -831,6 +830,25 @@
       "rateLimits": {
         "title": "Rate Limits",
         "description": "API is limited to 60 requests per minute per project token."
+      },
+      "schemaRegistration": {
+        "navTitle": "1. Schema Registration",
+        "title": "Schema Registration",
+        "description": "Before syncing contacts, register your attribute schema. This defines what data fields you'll send with your contacts and enables filtering in campaigns.",
+        "endpointTitle": "API Endpoint",
+        "typesTitle": "Attribute Types",
+        "typeColumn": "Type",
+        "descriptionColumn": "Description",
+        "exampleColumn": "Example",
+        "types": {
+          "string": "Text values like names, cities",
+          "number": "Numeric values including decimals",
+          "boolean": "True/false values",
+          "date": "Date in YYYY-MM-DD format",
+          "enum": "One value from predefined options (requires \"options\" field)",
+          "array": "List of values"
+        },
+        "responseTitle": "Response"
       },
       "segmentation": {
         "title": "Segmentation Examples",
