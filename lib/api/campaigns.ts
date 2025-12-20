@@ -18,7 +18,7 @@ export interface Campaign {
   name: string;
   sender: string;
   message_template: string;
-  status: 'draft' | 'scheduled' | 'sending' | 'completed' | 'cancelled' | 'failed';
+  status: 'draft' | 'scheduled' | 'sending' | 'completed' | 'cancelled' | 'failed' | 'active' | 'paused';
   segment_filter: SegmentFilter;
   scheduled_at: string | null;
   started_at: string | null;
@@ -32,6 +32,13 @@ export interface Campaign {
   is_test: boolean;
   created_at: string;
   updated_at: string;
+  // Automated campaign fields
+  type: 'one_time' | 'automated';
+  check_interval_minutes: number | null;
+  cooldown_days: number | null;
+  ends_at: string | null;
+  last_run_at: string | null;
+  next_run_at: string | null;
 }
 
 export interface SegmentFilter {
@@ -175,6 +182,18 @@ export const campaignsApi = {
   // Cancel campaign
   cancel: async (id: number) => {
     const response = await campaignClient.post(`/campaigns/${id}/cancel`, {}, { headers: getHeaders() });
+    return response.data.data;
+  },
+
+  // Activate automated campaign
+  activate: async (id: number) => {
+    const response = await campaignClient.post(`/campaigns/${id}/activate`, {}, { headers: getHeaders() });
+    return response.data.data;
+  },
+
+  // Pause automated campaign
+  pause: async (id: number) => {
+    const response = await campaignClient.post(`/campaigns/${id}/pause`, {}, { headers: getHeaders() });
     return response.data.data;
   },
 

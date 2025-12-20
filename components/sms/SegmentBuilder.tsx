@@ -163,14 +163,21 @@ export default function SegmentBuilder({ value, onChange, showPreview = true }: 
     }
 
     if (attribute.type === 'date') {
-      if (condition.operator === 'expires_within') {
+      // Operators that need number input (days from now)
+      const daysOperators = [
+        'expires_within', 'expired_since',
+        'expires_in_days_eq', 'expires_in_days_gt', 'expires_in_days_gte',
+        'expires_in_days_lt', 'expires_in_days_lte'
+      ];
+
+      if (daysOperators.includes(condition.operator)) {
         return (
           <input
             type="number"
             value={condition.value || ''}
             onChange={(e) => updateCondition(index, 'value', parseInt(e.target.value) || '')}
-            placeholder={t('smsApi.segments.enterValue')}
-            min="1"
+            placeholder={t('smsApi.segments.enterDays')}
+            min="0"
             className="flex-1 min-w-[120px] px-3 py-2.5 border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
           />
         );

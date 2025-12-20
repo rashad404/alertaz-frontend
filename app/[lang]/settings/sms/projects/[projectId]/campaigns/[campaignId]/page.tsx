@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useParams } from 'next/navigation';
 import { projectsApi, Project } from '@/lib/api/projects';
-import { campaignsApi, Campaign, CampaignMessage, setProjectToken } from '@/lib/api/campaigns';
+import { campaignsApi, Campaign, CampaignMessage, AttributeSchema, setProjectToken } from '@/lib/api/campaigns';
 import Link from 'next/link';
 import {
   ArrowLeft,
@@ -14,6 +14,7 @@ import {
   XCircle,
   AlertCircle,
   Play,
+  Pause,
   Trash2,
   Pencil,
   Server,
@@ -23,6 +24,8 @@ import {
   RefreshCw,
   FlaskConical,
   Copy,
+  Repeat,
+  Filter,
 } from 'lucide-react';
 
 const statusIcons: Record<string, React.ReactNode> = {
@@ -32,6 +35,8 @@ const statusIcons: Record<string, React.ReactNode> = {
   completed: <CheckCircle className="w-5 h-5" />,
   cancelled: <XCircle className="w-5 h-5" />,
   failed: <AlertCircle className="w-5 h-5" />,
+  active: <Play className="w-5 h-5" />,
+  paused: <Clock className="w-5 h-5" />,
 };
 
 const statusColors: Record<string, string> = {
@@ -41,6 +46,8 @@ const statusColors: Record<string, string> = {
   completed: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
   cancelled: 'bg-gray-100 text-gray-700 dark:bg-gray-700/30 dark:text-gray-400',
   failed: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+  active: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
+  paused: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400',
 };
 
 interface MessagePreview {
@@ -72,13 +79,16 @@ export default function CampaignDetailPage() {
   const [messagesTotalPages, setMessagesTotalPages] = useState(1);
   const [messagesLoading, setMessagesLoading] = useState(false);
 
+  // Attributes for displaying condition labels
+  const [attributes, setAttributes] = useState<AttributeSchema[]>([]);
+
   useEffect(() => {
     loadData();
   }, [projectId, campaignId]);
 
-  // Load message history when campaign is executed (completed, failed, sending)
+  // Load message history when campaign has sent messages
   useEffect(() => {
-    if (campaign && ['completed', 'failed', 'sending'].includes(campaign.status)) {
+    if (campaign && ['completed', 'failed', 'sending', 'active', 'paused'].includes(campaign.status)) {
       loadMessages();
     }
   }, [campaign?.status, messagesPage]);
@@ -92,9 +102,13 @@ export default function CampaignDetailPage() {
       setProject(projectData.project);
       setProjectToken(projectData.project.api_token);
 
-      // Load campaign
-      const campaignData = await campaignsApi.get(parseInt(campaignId));
+      // Load campaign and attributes in parallel
+      const [campaignData, attributesData] = await Promise.all([
+        campaignsApi.get(parseInt(campaignId)),
+        campaignsApi.getAttributes().catch(() => ({ attributes: [] })),
+      ]);
       setCampaign(campaignData.campaign);
+      setAttributes(attributesData.attributes || []);
 
       // Load message previews
       try {
@@ -254,6 +268,38 @@ export default function CampaignDetailPage() {
     }
   };
 
+  const handleActivate = async () => {
+    if (!campaign) return;
+    if (!confirm(t('smsApi.campaigns.confirmActivate'))) return;
+
+    setError(null);
+    setSuccessMessage(null);
+
+    try {
+      await campaignsApi.activate(campaign.id);
+      setSuccessMessage(t('smsApi.campaigns.activateSuccess'));
+      await loadData();
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Failed to activate campaign');
+    }
+  };
+
+  const handlePause = async () => {
+    if (!campaign) return;
+    if (!confirm(t('smsApi.campaigns.confirmPause'))) return;
+
+    setError(null);
+    setSuccessMessage(null);
+
+    try {
+      await campaignsApi.pause(campaign.id);
+      setSuccessMessage(t('smsApi.campaigns.pauseSuccess'));
+      await loadData();
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Failed to pause campaign');
+    }
+  };
+
   const formatDate = (dateString: string | null) => {
     if (!dateString) return '-';
     const date = new Date(dateString);
@@ -351,22 +397,36 @@ export default function CampaignDetailPage() {
 
             {/* Actions */}
             <div className="flex items-center gap-3">
+              {/* Edit button - for draft and paused campaigns */}
+              {(campaign.status === 'draft' || campaign.status === 'paused') && (
+                <Link
+                  href={`/${lang}/settings/sms/projects/${projectId}/campaigns/${campaignId}/edit`}
+                  className="cursor-pointer flex items-center gap-2 px-6 py-3 rounded-xl font-medium bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all"
+                >
+                  <Pencil className="w-5 h-5" />
+                  {t('smsApi.campaigns.actions.edit')}
+                </Link>
+              )}
+              {/* Draft campaign actions */}
               {campaign.status === 'draft' && (
                 <>
-                  <Link
-                    href={`/${lang}/settings/sms/projects/${projectId}/campaigns/${campaignId}/edit`}
-                    className="cursor-pointer flex items-center gap-2 px-6 py-3 rounded-xl font-medium bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all"
-                  >
-                    <Pencil className="w-5 h-5" />
-                    {t('smsApi.campaigns.actions.edit')}
-                  </Link>
-                  <button
-                    onClick={handleExecute}
-                    className="cursor-pointer flex items-center gap-2 px-6 py-3 rounded-xl font-medium bg-gradient-to-r from-emerald-500 to-teal-500 text-white hover:shadow-lg transition-all"
-                  >
-                    <Play className="w-5 h-5" />
-                    {t('smsApi.campaigns.actions.execute')}
-                  </button>
+                  {campaign.type === 'automated' ? (
+                    <button
+                      onClick={handleActivate}
+                      className="cursor-pointer flex items-center gap-2 px-6 py-3 rounded-xl font-medium bg-gradient-to-r from-emerald-500 to-teal-500 text-white hover:shadow-lg transition-all"
+                    >
+                      <Play className="w-5 h-5" />
+                      {t('smsApi.campaigns.actions.activate')}
+                    </button>
+                  ) : (
+                    <button
+                      onClick={handleExecute}
+                      className="cursor-pointer flex items-center gap-2 px-6 py-3 rounded-xl font-medium bg-gradient-to-r from-emerald-500 to-teal-500 text-white hover:shadow-lg transition-all"
+                    >
+                      <Play className="w-5 h-5" />
+                      {t('smsApi.campaigns.actions.execute')}
+                    </button>
+                  )}
                   <button
                     onClick={handleDelete}
                     className="cursor-pointer p-3 rounded-xl text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
@@ -374,6 +434,26 @@ export default function CampaignDetailPage() {
                     <Trash2 className="w-5 h-5" />
                   </button>
                 </>
+              )}
+              {/* Active automated campaign - show Pause */}
+              {campaign.status === 'active' && campaign.type === 'automated' && (
+                <button
+                  onClick={handlePause}
+                  className="cursor-pointer flex items-center gap-2 px-6 py-3 rounded-xl font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 hover:bg-amber-200 dark:hover:bg-amber-900/50 transition-all"
+                >
+                  <Pause className="w-5 h-5" />
+                  {t('smsApi.campaigns.actions.pause')}
+                </button>
+              )}
+              {/* Paused automated campaign - show Activate */}
+              {campaign.status === 'paused' && campaign.type === 'automated' && (
+                <button
+                  onClick={handleActivate}
+                  className="cursor-pointer flex items-center gap-2 px-6 py-3 rounded-xl font-medium bg-gradient-to-r from-emerald-500 to-teal-500 text-white hover:shadow-lg transition-all"
+                >
+                  <Play className="w-5 h-5" />
+                  {t('smsApi.campaigns.actions.activate')}
+                </button>
               )}
               {(campaign.status === 'scheduled' || campaign.status === 'sending') && (
                 <button
@@ -532,6 +612,42 @@ export default function CampaignDetailPage() {
               </div>
             </div>
 
+            {/* Segment Filter Conditions */}
+            <div>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-2 flex items-center gap-2">
+                <Filter className="w-4 h-4" />
+                {t('smsApi.campaigns.segmentConditions')}
+              </p>
+              <div className="p-4 rounded-xl bg-gray-50 dark:bg-gray-800">
+                {campaign.segment_filter?.conditions?.length > 0 ? (
+                  <div className="space-y-2">
+                    {campaign.segment_filter.conditions.map((condition: any, index: number) => {
+                      const attr = attributes.find(a => a.key === condition.key);
+                      const label = attr?.label || condition.key;
+                      return (
+                        <div key={index} className="flex items-center gap-2 text-sm">
+                          {index > 0 && (
+                            <span className="px-2 py-0.5 rounded bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 text-xs font-medium">
+                              {campaign.segment_filter.logic}
+                            </span>
+                          )}
+                          <span className="font-medium text-gray-900 dark:text-white">{label}</span>
+                          <span className="text-gray-500 dark:text-gray-400">{t(`smsApi.segments.operators.${condition.operator}`)}</span>
+                          {condition.value !== undefined && condition.value !== null && condition.value !== '' && (
+                            <span className="px-2 py-0.5 rounded bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200">
+                              {typeof condition.value === 'object' ? JSON.stringify(condition.value) : String(condition.value)}
+                            </span>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <p className="text-sm text-gray-500 dark:text-gray-400">{t('smsApi.campaigns.noConditions')}</p>
+                )}
+              </div>
+            </div>
+
             {/* Current Target Count with Refresh */}
             {campaign.status === 'draft' && (
               <div className="p-4 rounded-xl bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200/30 dark:border-indigo-800/30">
@@ -558,6 +674,59 @@ export default function CampaignDetailPage() {
             )}
           </div>
         </div>
+
+        {/* Automated Campaign Info */}
+        {campaign.type === 'automated' && (
+          <div className="rounded-3xl p-6 bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50 mb-6">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+              <Repeat className="w-5 h-5" />
+              {t('smsApi.campaigns.automatedSettings')}
+            </h2>
+
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="p-4 rounded-xl bg-indigo-50 dark:bg-indigo-900/20">
+                <p className="text-xs text-gray-500 dark:text-gray-400">{t('smsApi.campaigns.checkInterval')}</p>
+                <p className="text-lg font-semibold text-gray-900 dark:text-white">
+                  {campaign.check_interval_minutes} {t('smsApi.campaigns.minutes')}
+                </p>
+              </div>
+
+              <div className="p-4 rounded-xl bg-amber-50 dark:bg-amber-900/20">
+                <p className="text-xs text-gray-500 dark:text-gray-400">{t('smsApi.campaigns.cooldownDays')}</p>
+                <p className="text-lg font-semibold text-gray-900 dark:text-white">
+                  {campaign.cooldown_days || 30} {t('smsApi.campaigns.days')}
+                </p>
+              </div>
+
+              {campaign.next_run_at && (
+                <div className="p-4 rounded-xl bg-blue-50 dark:bg-blue-900/20">
+                  <p className="text-xs text-gray-500 dark:text-gray-400">{t('smsApi.campaigns.nextRun')}</p>
+                  <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                    {formatDate(campaign.next_run_at)}
+                  </p>
+                </div>
+              )}
+
+              {campaign.last_run_at && (
+                <div className="p-4 rounded-xl bg-green-50 dark:bg-green-900/20">
+                  <p className="text-xs text-gray-500 dark:text-gray-400">{t('smsApi.campaigns.lastRun')}</p>
+                  <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                    {formatDate(campaign.last_run_at)}
+                  </p>
+                </div>
+              )}
+
+              {campaign.ends_at && (
+                <div className="p-4 rounded-xl bg-red-50 dark:bg-red-900/20">
+                  <p className="text-xs text-gray-500 dark:text-gray-400">{t('smsApi.campaigns.endsAt')}</p>
+                  <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                    {formatDate(campaign.ends_at)}
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Message Previews (for drafts) */}
         {campaign.status === 'draft' && previews.length > 0 && (
@@ -598,7 +767,7 @@ export default function CampaignDetailPage() {
         )}
 
         {/* Message History (for executed campaigns) */}
-        {['completed', 'failed', 'sending'].includes(campaign.status) && (
+        {['completed', 'failed', 'sending', 'active', 'paused'].includes(campaign.status) && (
           <div className="rounded-3xl p-6 bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-semibold text-gray-900 dark:text-white">

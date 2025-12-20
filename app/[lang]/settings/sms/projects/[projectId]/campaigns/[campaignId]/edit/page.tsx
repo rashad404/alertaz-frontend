@@ -18,6 +18,8 @@ import {
   Server,
   AlertCircle,
   Save,
+  Zap,
+  RefreshCw,
 } from 'lucide-react';
 
 const STEPS = ['details', 'audience', 'message', 'review'];
@@ -51,6 +53,10 @@ export default function EditCampaignPage() {
     scheduled_at: '',
     schedule_type: 'now' as 'now' | 'later',
     is_test: true,
+    type: 'one_time' as 'one_time' | 'automated',
+    check_interval_minutes: 1440,
+    cooldown_days: 30,
+    ends_at: '',
   });
 
   useEffect(() => {
@@ -89,6 +95,10 @@ export default function EditCampaignPage() {
         scheduled_at: c.scheduled_at || '',
         schedule_type: c.scheduled_at ? 'later' : 'now',
         is_test: c.is_test ?? true,
+        type: c.type || 'one_time',
+        check_interval_minutes: c.check_interval_minutes || 1440,
+        cooldown_days: c.cooldown_days || 30,
+        ends_at: c.ends_at || '',
       });
 
     } catch (err: any) {
@@ -131,12 +141,20 @@ export default function EditCampaignPage() {
         message_template: formData.message_template,
         segment_filter: formData.segment_filter,
         is_test: formData.is_test,
+        type: formData.type,
       };
 
-      if (formData.schedule_type === 'later' && formData.scheduled_at) {
-        payload.scheduled_at = formData.scheduled_at;
+      if (formData.type === 'one_time') {
+        if (formData.schedule_type === 'later' && formData.scheduled_at) {
+          payload.scheduled_at = formData.scheduled_at;
+        } else {
+          payload.scheduled_at = null;
+        }
       } else {
-        payload.scheduled_at = null;
+        // Automated campaign
+        payload.check_interval_minutes = formData.check_interval_minutes;
+        payload.cooldown_days = formData.cooldown_days;
+        payload.ends_at = formData.ends_at || null;
       }
 
       await campaignsApi.update(campaign.id, payload);
@@ -215,8 +233,8 @@ export default function EditCampaignPage() {
     );
   }
 
-  // Only allow editing draft campaigns
-  if (campaign.status !== 'draft') {
+  // Only allow editing draft or paused campaigns
+  if (!['draft', 'paused'].includes(campaign.status)) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-indigo-50 dark:from-gray-950 dark:via-gray-900 dark:to-indigo-950 p-6">
         <div className="max-w-4xl mx-auto text-center py-20">
@@ -357,43 +375,173 @@ export default function EditCampaignPage() {
                 </p>
               </div>
 
+              {/* Campaign Type */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  {t('smsApi.campaigns.schedule')}
+                  {t('smsApi.campaigns.campaignType')} *
                 </label>
-                <div className="flex gap-3">
+                <div className="grid grid-cols-2 gap-4">
                   <button
                     type="button"
-                    onClick={() => setFormData({ ...formData, schedule_type: 'now', scheduled_at: '' })}
-                    className={`cursor-pointer flex-1 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
-                      formData.schedule_type === 'now'
-                        ? 'bg-indigo-500 text-white'
-                        : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700'
+                    onClick={() => setFormData({ ...formData, type: 'one_time' })}
+                    className={`cursor-pointer p-4 rounded-xl text-left transition-all border-2 ${
+                      formData.type === 'one_time'
+                        ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20'
+                        : 'border-gray-200 dark:border-gray-700 hover:border-indigo-300 dark:hover:border-indigo-700'
                     }`}
                   >
-                    {t('smsApi.campaigns.scheduleNow')}
+                    <div className="flex items-center gap-3 mb-2">
+                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+                        formData.type === 'one_time'
+                          ? 'bg-indigo-500 text-white'
+                          : 'bg-gray-100 dark:bg-gray-800 text-gray-500'
+                      }`}>
+                        <Zap className="w-5 h-5" />
+                      </div>
+                      <span className={`font-medium ${
+                        formData.type === 'one_time'
+                          ? 'text-indigo-700 dark:text-indigo-300'
+                          : 'text-gray-700 dark:text-gray-300'
+                      }`}>
+                        {t('smsApi.campaigns.typeOneTime')}
+                      </span>
+                    </div>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      {t('smsApi.campaigns.typeOneTimeDesc')}
+                    </p>
                   </button>
                   <button
                     type="button"
-                    onClick={() => setFormData({ ...formData, schedule_type: 'later' })}
-                    className={`cursor-pointer flex-1 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
-                      formData.schedule_type === 'later'
-                        ? 'bg-indigo-500 text-white'
-                        : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700'
+                    onClick={() => setFormData({ ...formData, type: 'automated' })}
+                    className={`cursor-pointer p-4 rounded-xl text-left transition-all border-2 ${
+                      formData.type === 'automated'
+                        ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/20'
+                        : 'border-gray-200 dark:border-gray-700 hover:border-purple-300 dark:hover:border-purple-700'
                     }`}
                   >
-                    {t('smsApi.campaigns.scheduleLater')}
+                    <div className="flex items-center gap-3 mb-2">
+                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+                        formData.type === 'automated'
+                          ? 'bg-purple-500 text-white'
+                          : 'bg-gray-100 dark:bg-gray-800 text-gray-500'
+                      }`}>
+                        <RefreshCw className="w-5 h-5" />
+                      </div>
+                      <span className={`font-medium ${
+                        formData.type === 'automated'
+                          ? 'text-purple-700 dark:text-purple-300'
+                          : 'text-gray-700 dark:text-gray-300'
+                      }`}>
+                        {t('smsApi.campaigns.typeAutomated')}
+                      </span>
+                    </div>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      {t('smsApi.campaigns.typeAutomatedDesc')}
+                    </p>
                   </button>
                 </div>
-                {formData.schedule_type === 'later' && (
-                  <input
-                    type="datetime-local"
-                    value={formData.scheduled_at}
-                    onChange={(e) => setFormData({ ...formData, scheduled_at: e.target.value })}
-                    className="mt-3 w-full px-4 py-3 border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
-                  />
-                )}
               </div>
+
+              {/* One-time campaign scheduling */}
+              {formData.type === 'one_time' && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    {t('smsApi.campaigns.schedule')}
+                  </label>
+                  <div className="flex gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setFormData({ ...formData, schedule_type: 'now', scheduled_at: '' })}
+                      className={`cursor-pointer flex-1 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
+                        formData.schedule_type === 'now'
+                          ? 'bg-indigo-500 text-white'
+                          : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700'
+                      }`}
+                    >
+                      {t('smsApi.campaigns.scheduleNow')}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setFormData({ ...formData, schedule_type: 'later' })}
+                      className={`cursor-pointer flex-1 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
+                        formData.schedule_type === 'later'
+                          ? 'bg-indigo-500 text-white'
+                          : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700'
+                      }`}
+                    >
+                      {t('smsApi.campaigns.scheduleLater')}
+                    </button>
+                  </div>
+                  {formData.schedule_type === 'later' && (
+                    <input
+                      type="datetime-local"
+                      value={formData.scheduled_at}
+                      onChange={(e) => setFormData({ ...formData, scheduled_at: e.target.value })}
+                      className="mt-3 w-full px-4 py-3 border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                    />
+                  )}
+                </div>
+              )}
+
+              {/* Automated campaign settings */}
+              {formData.type === 'automated' && (
+                <div className="space-y-4 p-4 rounded-xl bg-purple-50 dark:bg-purple-900/10 border border-purple-200 dark:border-purple-800/30">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      {t('smsApi.campaigns.checkInterval')} *
+                    </label>
+                    <select
+                      value={formData.check_interval_minutes}
+                      onChange={(e) => setFormData({ ...formData, check_interval_minutes: parseInt(e.target.value) })}
+                      className="w-full px-4 py-3 border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all cursor-pointer"
+                    >
+                      <option value={1}>{t('smsApi.campaigns.interval.1min')}</option>
+                      <option value={5}>{t('smsApi.campaigns.interval.5min')}</option>
+                      <option value={15}>{t('smsApi.campaigns.interval.15min')}</option>
+                      <option value={30}>{t('smsApi.campaigns.interval.30min')}</option>
+                      <option value={60}>{t('smsApi.campaigns.interval.1hour')}</option>
+                      <option value={360}>{t('smsApi.campaigns.interval.6hours')}</option>
+                      <option value={720}>{t('smsApi.campaigns.interval.12hours')}</option>
+                      <option value={1440}>{t('smsApi.campaigns.interval.daily')}</option>
+                    </select>
+                    <p className="mt-1 text-xs text-gray-500">
+                      {t('smsApi.campaigns.checkIntervalDesc')}
+                    </p>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      {t('smsApi.campaigns.cooldownDays')}
+                    </label>
+                    <input
+                      type="number"
+                      min={1}
+                      max={365}
+                      value={formData.cooldown_days}
+                      onChange={(e) => setFormData({ ...formData, cooldown_days: parseInt(e.target.value) || 30 })}
+                      className="w-full px-4 py-3 border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+                    />
+                    <p className="mt-1 text-xs text-gray-500">
+                      {t('smsApi.campaigns.cooldownDaysDesc')}
+                    </p>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      {t('smsApi.campaigns.endsAt')}
+                    </label>
+                    <input
+                      type="datetime-local"
+                      value={formData.ends_at}
+                      onChange={(e) => setFormData({ ...formData, ends_at: e.target.value })}
+                      className="w-full px-4 py-3 border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+                    />
+                    <p className="mt-1 text-xs text-gray-500">
+                      {t('smsApi.campaigns.endsAtDesc')}
+                    </p>
+                  </div>
+                </div>
+              )}
 
               {/* Test Mode Toggle */}
               <div className="p-4 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/30">
