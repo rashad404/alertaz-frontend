@@ -750,6 +750,7 @@
         "noContacts": "Seqment filterinə uyğun kontakt tapılmadı",
         "invalidSender": "Göndərən adı etibarsızdır",
         "executionFailed": "Kampaniya icrası uğursuz oldu",
+        "unicodeNotAllowed": "Xüsusi simvollar (ə, ı, ü, ö, ş, ç, ğ) istifadə edilə bilməz. Yalnız latın hərfləri icazəlidir.",
         "validationFailed": "Kampaniya doğrulaması uğursuz oldu"
       },
       "executionSuccess": {

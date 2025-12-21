@@ -750,6 +750,7 @@
         "noContacts": "No contacts match the segment filter",
         "invalidSender": "Sender name is invalid",
         "executionFailed": "Campaign execution failed",
+        "unicodeNotAllowed": "Special characters are not allowed. Only Latin characters are permitted.",
         "validationFailed": "Campaign validation failed"
       },
       "executionSuccess": {

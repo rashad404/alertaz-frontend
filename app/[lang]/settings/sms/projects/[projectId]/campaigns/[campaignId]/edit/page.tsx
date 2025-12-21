@@ -24,6 +24,12 @@ import {
 
 const STEPS = ['details', 'audience', 'message', 'review'];
 
+// Helper to check if string contains Unicode characters (non-GSM-7)
+const hasUnicode = (str: string): boolean => {
+  // Check if byte length differs from character length
+  return new Blob([str]).size !== str.length;
+};
+
 export default function EditCampaignPage() {
   const t = useTranslations();
   const router = useRouter();
@@ -173,7 +179,7 @@ export default function EditCampaignPage() {
       case 1:
         return formData.segment_filter.conditions.length > 0;
       case 2:
-        return formData.message_template.trim() !== '';
+        return formData.message_template.trim() !== '' && !hasUnicode(formData.message_template);
       case 3:
         return true;
       default:
@@ -591,11 +597,22 @@ export default function EditCampaignPage() {
                   onChange={(e) => setFormData({ ...formData, message_template: e.target.value })}
                   placeholder={t('smsApi.campaigns.messagePlaceholder')}
                   rows={6}
-                  className="w-full px-4 py-3 border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all resize-none"
+                  className={`w-full px-4 py-3 border rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all resize-none ${
+                    hasUnicode(formData.message_template)
+                      ? 'border-red-500 dark:border-red-500'
+                      : 'border-gray-200 dark:border-gray-700'
+                  }`}
                 />
-                <p className="mt-1 text-xs text-gray-500">
-                  {formData.message_template.length} / 1000
-                </p>
+                <div className="mt-1 flex justify-between items-center">
+                  <p className="text-xs text-gray-500">
+                    {formData.message_template.length} / 500
+                  </p>
+                  {hasUnicode(formData.message_template) && (
+                    <p className="text-xs text-red-500">
+                      {t('smsApi.campaigns.errors.unicodeNotAllowed')}
+                    </p>
+                  )}
+                </div>
               </div>
 
               {attributes.length > 0 && (
