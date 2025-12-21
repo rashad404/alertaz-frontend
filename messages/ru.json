@@ -743,6 +743,8 @@
       "customPhoneDescription": "Проверьте как будет выглядеть сообщение, отправив тест на любой номер телефона.",
       "messagePreview": "Предпросмотр сообщения",
       "showingSamples": "Показано {count} из {total} примеров",
+      "noMatchingContacts": "{count} подходящих контактов",
+      "noContactsToSend": "Нет контактов соответствующих текущему фильтру сегмента",
       "smsSegments": "SMS сегментов",
       "segments": "сегментов",
       "estimatedCost": "Примерная стоимость",

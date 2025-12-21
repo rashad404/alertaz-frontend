@@ -743,6 +743,8 @@
       "customPhoneDescription": "Check how your message looks by sending a test to any phone number.",
       "messagePreview": "Message Preview",
       "showingSamples": "Showing {count} of {total} samples",
+      "noMatchingContacts": "{count} matching contacts",
+      "noContactsToSend": "No contacts match the current segment filter",
       "smsSegments": "SMS Segments",
       "segments": "segments",
       "estimatedCost": "Estimated Cost",

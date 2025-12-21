@@ -743,6 +743,8 @@
       "customPhoneDescription": "Mesajın necə görünəcəyini yoxlamaq üçün istənilən telefon nömrəsinə test göndərin.",
       "messagePreview": "Mesaj Önizləməsi",
       "showingSamples": "{count} / {total} nümunə göstərilir",
+      "noMatchingContacts": "{count} uyğun kontakt",
+      "noContactsToSend": "Cari seqment filterinə uyğun kontakt yoxdur",
       "smsSegments": "SMS Seqmentləri",
       "segments": "seqment",
       "estimatedCost": "Təxmini Qiymət",

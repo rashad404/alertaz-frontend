@@ -105,12 +105,12 @@ export default function CampaignDetailPage() {
     loadData();
   }, [projectId, campaignId]);
 
-  // Load message history when campaign has sent messages
+  // Load message history for all campaigns
   useEffect(() => {
-    if (campaign && ['completed', 'failed', 'sending', 'active', 'paused'].includes(campaign.status)) {
+    if (campaign) {
       loadMessages();
     }
-  }, [campaign?.status, messagesPage]);
+  }, [campaign?.id, messagesPage]);
 
   const loadData = async () => {
     try {
@@ -888,65 +888,79 @@ export default function CampaignDetailPage() {
           </div>
         )}
 
-        {/* Message Previews (for drafts) */}
-        {campaign.status === 'draft' && previews.length > 0 && (
+        {/* Message Previews (for draft, active, paused - shows what will be sent next) */}
+        {['draft', 'active', 'paused'].includes(campaign.status) && (
           <div className="rounded-3xl p-6 bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50 mb-6">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
                 {t('smsApi.campaigns.messagePreview')}
               </h2>
               <span className="text-sm text-gray-500 dark:text-gray-400">
-                {t('smsApi.campaigns.showingSamples', {
-                  count: previews.length,
-                  total: currentCount ?? campaign.target_count
-                })}
+                {previews.length > 0
+                  ? t('smsApi.campaigns.showingSamples', {
+                      count: previews.length,
+                      total: currentCount ?? campaign.target_count
+                    })
+                  : t('smsApi.campaigns.noMatchingContacts', { count: currentCount ?? 0 })
+                }
               </span>
             </div>
 
-            <div className="space-y-3">
-              {previews.map((preview, index) => (
-                <div
-                  key={index}
-                  className="p-4 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700"
-                >
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                      {preview.phone}
-                    </span>
-                    <span className="text-xs text-gray-500">
-                      {preview.segments} {t('smsApi.campaigns.segments')}
-                    </span>
+            {previews.length > 0 ? (
+              <div className="space-y-3">
+                {previews.map((preview, index) => (
+                  <div
+                    key={index}
+                    className="p-4 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700"
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                        {preview.phone}
+                      </span>
+                      <span className="text-xs text-gray-500">
+                        {preview.segments} {t('smsApi.campaigns.segments')}
+                      </span>
+                    </div>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 whitespace-pre-wrap">
+                      {preview.message}
+                    </p>
                   </div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 whitespace-pre-wrap">
-                    {preview.message}
-                  </p>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <Users className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
+                <p className="text-gray-500 dark:text-gray-400">
+                  {t('smsApi.campaigns.noContactsToSend')}
+                </p>
+              </div>
+            )}
           </div>
         )}
 
-        {/* Message History (for executed campaigns) */}
-        {['completed', 'failed', 'sending', 'active', 'paused'].includes(campaign.status) && (
-          <div className="rounded-3xl p-6 bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-                {t('smsApi.campaignMessages')}
-              </h2>
-              <span className="text-sm text-gray-500 dark:text-gray-400">
-                {campaign.sent_count} {t('smsApi.message').toLowerCase()}
-              </span>
-            </div>
+        {/* Message History (for all campaigns) */}
+        <div className="rounded-3xl p-6 bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+              {t('smsApi.campaignMessages')}
+            </h2>
+            <span className="text-sm text-gray-500 dark:text-gray-400">
+              {campaign.sent_count} {t('smsApi.message').toLowerCase()}
+            </span>
+          </div>
 
-            {messagesLoading ? (
-              <div className="text-center py-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto"></div>
-              </div>
-            ) : messages.length === 0 ? (
-              <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+          {messagesLoading ? (
+            <div className="text-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto"></div>
+            </div>
+          ) : messages.length === 0 ? (
+            <div className="text-center py-8">
+              <MessageSquare className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
+              <p className="text-gray-500 dark:text-gray-400">
                 {t('smsApi.noMessages')}
-              </div>
-            ) : (
+              </p>
+            </div>
+          ) : (
               <>
                 <div className="overflow-x-auto">
                   <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
@@ -1027,8 +1041,7 @@ export default function CampaignDetailPage() {
                 )}
               </>
             )}
-          </div>
-        )}
+        </div>
 
         {/* Test Send Modal */}
         {showTestSendModal && (
