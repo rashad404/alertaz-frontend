@@ -129,16 +129,17 @@ export default function CampaignDetailPage() {
       setCampaign(campaignData.campaign);
       setAttributes(attributesData.attributes || []);
 
-      // Load message previews
+      // Load message previews and current count (from same API call)
       try {
         const previewData = await campaignsApi.previewMessages(parseInt(campaignId), 5);
         setPreviews(previewData.previews || []);
+        // Use fresh count from preview response
+        if (previewData.total_count !== undefined) {
+          setCurrentCount(previewData.total_count);
+        }
       } catch (err) {
         console.error('Failed to load previews:', err);
       }
-
-      // Get current matching count
-      await refreshCount(campaignData.campaign);
 
     } catch (err: any) {
       setError(err.response?.data?.message || 'Failed to load campaign');
@@ -678,7 +679,7 @@ export default function CampaignDetailPage() {
               </div>
               <div>
                 <p className="text-xs text-gray-500 dark:text-gray-400">{t('smsApi.campaigns.stats.target')}</p>
-                <p className="text-xl font-bold text-gray-900 dark:text-white">{campaign.target_count}</p>
+                <p className="text-xl font-bold text-gray-900 dark:text-white">{currentCount ?? campaign.target_count}</p>
               </div>
             </div>
           </div>

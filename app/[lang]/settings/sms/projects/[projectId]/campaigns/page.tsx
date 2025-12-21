@@ -107,19 +107,19 @@ export default function ProjectCampaignsPage() {
   };
 
   const fetchCurrentCounts = async (campaignList: Campaign[]) => {
-    // Only fetch for draft campaigns
-    const draftCampaigns = campaignList.filter(c => c.status === 'draft');
+    // Fetch for draft, active, and paused campaigns (ones where fresh count matters)
+    const relevantCampaigns = campaignList.filter(c => ['draft', 'active', 'paused'].includes(c.status));
 
-    if (draftCampaigns.length === 0) return;
+    if (relevantCampaigns.length === 0) return;
 
-    // Set loading state for all draft campaigns
+    // Set loading state for relevant campaigns
     const loadingState: Record<number, boolean> = {};
-    draftCampaigns.forEach(c => { loadingState[c.id] = true; });
+    relevantCampaigns.forEach(c => { loadingState[c.id] = true; });
     setLoadingCounts(loadingState);
 
     // Fetch counts in parallel
     const results = await Promise.allSettled(
-      draftCampaigns.map(async (campaign) => {
+      relevantCampaigns.map(async (campaign) => {
         try {
           const result = await campaignsApi.previewSegment(campaign.segment_filter, 0);
           return { id: campaign.id, count: result.total_count };
@@ -357,7 +357,7 @@ export default function ProjectCampaignsPage() {
                   <div className="hidden md:flex items-center gap-8">
                     <div className="text-center">
                       <div className="text-xl font-bold bg-gradient-to-br from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-                        {campaign.status === 'draft' ? (
+                        {['draft', 'active', 'paused'].includes(campaign.status) ? (
                           loadingCounts[campaign.id] ? (
                             <span className="inline-block w-6 h-6 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
                           ) : (
@@ -501,7 +501,7 @@ export default function ProjectCampaignsPage() {
                   <div className="grid grid-cols-3 gap-4">
                     <div className="text-center">
                       <div className="text-lg font-bold text-indigo-600 dark:text-indigo-400">
-                        {campaign.status === 'draft' ? (
+                        {['draft', 'active', 'paused'].includes(campaign.status) ? (
                           loadingCounts[campaign.id] ? (
                             <span className="inline-block w-5 h-5 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
                           ) : (
