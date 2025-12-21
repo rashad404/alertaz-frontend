@@ -186,14 +186,48 @@ export const campaignsApi = {
   },
 
   // Activate automated campaign
-  activate: async (id: number) => {
-    const response = await campaignClient.post(`/campaigns/${id}/activate`, {}, { headers: getHeaders() });
-    return response.data.data;
+  activate: async (id: number, confirm: boolean = false) => {
+    const response = await campaignClient.post(`/campaigns/${id}/activate`, { confirm }, { headers: getHeaders() });
+    return response.data;
   },
 
   // Pause automated campaign
   pause: async (id: number) => {
     const response = await campaignClient.post(`/campaigns/${id}/pause`, {}, { headers: getHeaders() });
+    return response.data.data;
+  },
+
+  // Test send to X customers
+  testSend: async (id: number, count: number): Promise<{
+    sent: number;
+    messages: Array<{ phone: string; message: string; status: string; transaction_id?: string; error?: string }>;
+  }> => {
+    const response = await campaignClient.post(`/campaigns/${id}/test-send`, { count }, { headers: getHeaders() });
+    return response.data.data;
+  },
+
+  // Test send to custom phone
+  testSendCustom: async (id: number, phone: string, sampleContactId?: number): Promise<{
+    phone: string;
+    message: string;
+    status: string;
+    transaction_id?: string;
+    error?: string;
+  }> => {
+    const response = await campaignClient.post(`/campaigns/${id}/test-send-custom`, {
+      phone,
+      sample_contact_id: sampleContactId,
+    }, { headers: getHeaders() });
+    return response.data.data;
+  },
+
+  // Retry failed messages
+  retryFailed: async (id: number): Promise<{
+    retried: number;
+    skipped: number;
+    messages: Array<{ phone: string; status: string; error?: string }>;
+  }> => {
+    const response = await campaignClient.post(`/campaigns/${id}/retry-failed`, {}, { headers: getHeaders() });
     return response.data.data;
   },
 

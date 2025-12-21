@@ -26,6 +26,10 @@ import {
   Copy,
   Repeat,
   Filter,
+  TestTube,
+  Phone,
+  RotateCcw,
+  X,
 } from 'lucide-react';
 
 const statusIcons: Record<string, React.ReactNode> = {
@@ -81,6 +85,21 @@ export default function CampaignDetailPage() {
 
   // Attributes for displaying condition labels
   const [attributes, setAttributes] = useState<AttributeSchema[]>([]);
+
+  // Test send state
+  const [showTestSendModal, setShowTestSendModal] = useState(false);
+  const [testSendCount, setTestSendCount] = useState(5);
+  const [testSendLoading, setTestSendLoading] = useState(false);
+  const [testSendResults, setTestSendResults] = useState<Array<{ phone: string; message: string; status: string; error?: string }> | null>(null);
+
+  // Custom phone test send state
+  const [showCustomPhoneModal, setShowCustomPhoneModal] = useState(false);
+  const [customPhone, setCustomPhone] = useState('');
+  const [customPhoneLoading, setCustomPhoneLoading] = useState(false);
+  const [customPhoneResult, setCustomPhoneResult] = useState<{ phone: string; message: string; status: string; error?: string } | null>(null);
+
+  // Retry failed state
+  const [retryLoading, setRetryLoading] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -268,18 +287,59 @@ export default function CampaignDetailPage() {
     }
   };
 
-  const handleActivate = async () => {
+  const handleActivate = async (confirmed: boolean = false) => {
     if (!campaign) return;
-    if (!confirm(t('smsApi.campaigns.confirmActivate'))) return;
+
+    // Only show basic confirmation for non-confirmed calls
+    if (!confirmed && !confirm(t('smsApi.campaigns.confirmActivate'))) return;
 
     setError(null);
     setSuccessMessage(null);
 
     try {
-      await campaignsApi.activate(campaign.id);
+      await campaignsApi.activate(campaign.id, confirmed);
       setSuccessMessage(t('smsApi.campaigns.activateSuccess'));
       await loadData();
     } catch (err: any) {
+      const status = err.response?.status;
+      const errorData = err.response?.data;
+
+      // Handle 412 - Confirmation required for large campaigns
+      if (status === 412 && errorData?.code === 'CONFIRMATION_REQUIRED') {
+        const data = errorData.data;
+        const confirmMessage = t('smsApi.campaigns.confirmLargeCampaign', {
+          count: data.target_count,
+          cost: data.estimated_cost,
+          balance: data.current_balance,
+        });
+
+        if (confirm(confirmMessage)) {
+          // Retry with confirmation
+          await handleActivate(true);
+        }
+        return;
+      }
+
+      // Handle 402 - Insufficient balance
+      if (status === 402 && errorData?.code === 'INSUFFICIENT_BALANCE') {
+        const data = errorData.data;
+        setError(t('smsApi.campaigns.errors.insufficientBalanceDetailed', {
+          required: data.estimated_cost,
+          available: data.current_balance,
+          shortfall: data.shortfall,
+        }));
+        return;
+      }
+
+      // Handle 422 - Template validation failed
+      if (status === 422 && errorData?.code === 'TEMPLATE_VALIDATION_FAILED') {
+        const data = errorData.data;
+        const variables = data.unresolved_variables?.join(', ') || '';
+        setError(t('smsApi.campaigns.errors.templateValidationFailed', { variables }));
+        return;
+      }
+
+      // Generic error
       setError(err.response?.data?.message || 'Failed to activate campaign');
     }
   };
@@ -297,6 +357,61 @@ export default function CampaignDetailPage() {
       await loadData();
     } catch (err: any) {
       setError(err.response?.data?.message || 'Failed to pause campaign');
+    }
+  };
+
+  const handleTestSend = async () => {
+    if (!campaign || testSendCount < 1 || testSendCount > 100) return;
+
+    setTestSendLoading(true);
+    setTestSendResults(null);
+    setError(null);
+
+    try {
+      const result = await campaignsApi.testSend(campaign.id, testSendCount);
+      setTestSendResults(result.messages);
+      setSuccessMessage(t('smsApi.campaigns.testSendSuccess', { count: result.sent }));
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Test send failed');
+    } finally {
+      setTestSendLoading(false);
+    }
+  };
+
+  const handleCustomPhoneTest = async () => {
+    if (!campaign || !customPhone) return;
+
+    setCustomPhoneLoading(true);
+    setCustomPhoneResult(null);
+    setError(null);
+
+    try {
+      const result = await campaignsApi.testSendCustom(campaign.id, customPhone);
+      setCustomPhoneResult(result);
+      setSuccessMessage(t('smsApi.campaigns.customPhoneSuccess'));
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Custom phone test failed');
+    } finally {
+      setCustomPhoneLoading(false);
+    }
+  };
+
+  const handleRetryFailed = async () => {
+    if (!campaign) return;
+    if (!confirm(t('smsApi.campaigns.confirmRetryFailed'))) return;
+
+    setRetryLoading(true);
+    setError(null);
+
+    try {
+      const result = await campaignsApi.retryFailed(campaign.id);
+      setSuccessMessage(t('smsApi.campaigns.retrySuccess', { retried: result.retried, skipped: result.skipped }));
+      await loadData();
+      await loadMessages();
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Retry failed');
+    } finally {
+      setRetryLoading(false);
     }
   };
 
@@ -378,101 +493,145 @@ export default function CampaignDetailPage() {
         </div>
 
         {/* Campaign Header */}
-        <div className="rounded-3xl p-8 bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50 mb-6">
-          <div className="flex items-start justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-                {campaign.name}
-              </h1>
-              <div className="flex items-center gap-4">
-                <span className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium ${statusColors[campaign.status]}`}>
-                  {statusIcons[campaign.status]}
-                  {t(`smsApi.campaigns.statuses.${campaign.status}`)}
-                </span>
-                <span className="text-sm text-gray-500 dark:text-gray-400">
-                  {formatDate(campaign.created_at)}
-                </span>
-              </div>
+        <div className="rounded-3xl p-6 md:p-8 bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50 mb-6">
+          {/* Title and Status */}
+          <div className="mb-6">
+            <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-2">
+              {campaign.name}
+            </h1>
+            <div className="flex flex-wrap items-center gap-3">
+              <span className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium ${statusColors[campaign.status]}`}>
+                {statusIcons[campaign.status]}
+                {t(`smsApi.campaigns.statuses.${campaign.status}`)}
+              </span>
+              <span className="text-sm text-gray-500 dark:text-gray-400">
+                {formatDate(campaign.created_at)}
+              </span>
             </div>
+          </div>
 
-            {/* Actions */}
-            <div className="flex items-center gap-3">
-              {/* Edit button - for draft and paused campaigns */}
-              {(campaign.status === 'draft' || campaign.status === 'paused') && (
+          {/* Primary Actions */}
+          <div className="flex flex-wrap gap-3 mb-4">
+            {/* Draft campaign - Edit + Execute/Activate */}
+            {campaign.status === 'draft' && (
+              <>
                 <Link
                   href={`/${lang}/settings/sms/projects/${projectId}/campaigns/${campaignId}/edit`}
-                  className="cursor-pointer flex items-center gap-2 px-6 py-3 rounded-xl font-medium bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all"
+                  className="cursor-pointer flex items-center gap-2 px-5 py-2.5 rounded-xl font-medium bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all text-sm"
                 >
-                  <Pencil className="w-5 h-5" />
+                  <Pencil className="w-4 h-4" />
                   {t('smsApi.campaigns.actions.edit')}
                 </Link>
-              )}
-              {/* Draft campaign actions */}
-              {campaign.status === 'draft' && (
-                <>
-                  {campaign.type === 'automated' ? (
-                    <button
-                      onClick={handleActivate}
-                      className="cursor-pointer flex items-center gap-2 px-6 py-3 rounded-xl font-medium bg-gradient-to-r from-emerald-500 to-teal-500 text-white hover:shadow-lg transition-all"
-                    >
-                      <Play className="w-5 h-5" />
-                      {t('smsApi.campaigns.actions.activate')}
-                    </button>
-                  ) : (
-                    <button
-                      onClick={handleExecute}
-                      className="cursor-pointer flex items-center gap-2 px-6 py-3 rounded-xl font-medium bg-gradient-to-r from-emerald-500 to-teal-500 text-white hover:shadow-lg transition-all"
-                    >
-                      <Play className="w-5 h-5" />
-                      {t('smsApi.campaigns.actions.execute')}
-                    </button>
-                  )}
+                {campaign.type === 'automated' ? (
                   <button
-                    onClick={handleDelete}
-                    className="cursor-pointer p-3 rounded-xl text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                    onClick={() => handleActivate()}
+                    className="cursor-pointer flex items-center gap-2 px-5 py-2.5 rounded-xl font-medium bg-gradient-to-r from-emerald-500 to-teal-500 text-white hover:shadow-lg transition-all text-sm"
                   >
-                    <Trash2 className="w-5 h-5" />
+                    <Play className="w-4 h-4" />
+                    {t('smsApi.campaigns.actions.activate')}
                   </button>
-                </>
-              )}
-              {/* Active automated campaign - show Pause */}
-              {campaign.status === 'active' && campaign.type === 'automated' && (
-                <button
-                  onClick={handlePause}
-                  className="cursor-pointer flex items-center gap-2 px-6 py-3 rounded-xl font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 hover:bg-amber-200 dark:hover:bg-amber-900/50 transition-all"
+                ) : (
+                  <button
+                    onClick={handleExecute}
+                    className="cursor-pointer flex items-center gap-2 px-5 py-2.5 rounded-xl font-medium bg-gradient-to-r from-emerald-500 to-teal-500 text-white hover:shadow-lg transition-all text-sm"
+                  >
+                    <Play className="w-4 h-4" />
+                    {t('smsApi.campaigns.actions.execute')}
+                  </button>
+                )}
+              </>
+            )}
+            {/* Active campaign - Pause */}
+            {campaign.status === 'active' && campaign.type === 'automated' && (
+              <button
+                onClick={handlePause}
+                className="cursor-pointer flex items-center gap-2 px-5 py-2.5 rounded-xl font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 hover:bg-amber-200 dark:hover:bg-amber-900/50 transition-all text-sm"
+              >
+                <Pause className="w-4 h-4" />
+                {t('smsApi.campaigns.actions.pause')}
+              </button>
+            )}
+            {/* Paused campaign - Edit + Activate */}
+            {campaign.status === 'paused' && campaign.type === 'automated' && (
+              <>
+                <Link
+                  href={`/${lang}/settings/sms/projects/${projectId}/campaigns/${campaignId}/edit`}
+                  className="cursor-pointer flex items-center gap-2 px-5 py-2.5 rounded-xl font-medium bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all text-sm"
                 >
-                  <Pause className="w-5 h-5" />
-                  {t('smsApi.campaigns.actions.pause')}
-                </button>
-              )}
-              {/* Paused automated campaign - show Activate */}
-              {campaign.status === 'paused' && campaign.type === 'automated' && (
+                  <Pencil className="w-4 h-4" />
+                  {t('smsApi.campaigns.actions.edit')}
+                </Link>
                 <button
-                  onClick={handleActivate}
-                  className="cursor-pointer flex items-center gap-2 px-6 py-3 rounded-xl font-medium bg-gradient-to-r from-emerald-500 to-teal-500 text-white hover:shadow-lg transition-all"
+                  onClick={() => handleActivate()}
+                  className="cursor-pointer flex items-center gap-2 px-5 py-2.5 rounded-xl font-medium bg-gradient-to-r from-emerald-500 to-teal-500 text-white hover:shadow-lg transition-all text-sm"
                 >
-                  <Play className="w-5 h-5" />
+                  <Play className="w-4 h-4" />
                   {t('smsApi.campaigns.actions.activate')}
                 </button>
-              )}
-              {(campaign.status === 'scheduled' || campaign.status === 'sending') && (
-                <button
-                  onClick={handleCancel}
-                  className="cursor-pointer flex items-center gap-2 px-6 py-3 rounded-xl font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 hover:bg-amber-200 dark:hover:bg-amber-900/50 transition-all"
-                >
-                  <XCircle className="w-5 h-5" />
-                  {t('smsApi.campaigns.actions.cancel')}
-                </button>
-              )}
-              {/* Duplicate button - always visible */}
+              </>
+            )}
+            {/* Sending/Scheduled - Cancel */}
+            {(campaign.status === 'scheduled' || campaign.status === 'sending') && (
               <button
-                onClick={handleDuplicate}
-                className="cursor-pointer flex items-center gap-2 px-6 py-3 rounded-xl font-medium bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all"
+                onClick={handleCancel}
+                className="cursor-pointer flex items-center gap-2 px-5 py-2.5 rounded-xl font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 hover:bg-amber-200 dark:hover:bg-amber-900/50 transition-all text-sm"
               >
-                <Copy className="w-5 h-5" />
-                {t('smsApi.campaigns.actions.duplicate')}
+                <XCircle className="w-4 h-4" />
+                {t('smsApi.campaigns.actions.cancel')}
               </button>
-            </div>
+            )}
+          </div>
+
+          {/* Secondary Actions */}
+          <div className="flex flex-wrap gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+            {/* Test buttons - for draft campaigns */}
+            {campaign.status === 'draft' && (
+              <>
+                <button
+                  onClick={() => setShowTestSendModal(true)}
+                  className="cursor-pointer flex items-center gap-2 px-4 py-2 rounded-lg font-medium bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300 hover:bg-purple-100 dark:hover:bg-purple-900/30 transition-all text-sm"
+                >
+                  <TestTube className="w-4 h-4" />
+                  {t('smsApi.campaigns.actions.testSend')}
+                </button>
+                <button
+                  onClick={() => setShowCustomPhoneModal(true)}
+                  className="cursor-pointer flex items-center gap-2 px-4 py-2 rounded-lg font-medium bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-all text-sm"
+                >
+                  <Phone className="w-4 h-4" />
+                  {t('smsApi.campaigns.actions.testCustomPhone')}
+                </button>
+              </>
+            )}
+            {/* Retry failed - for campaigns with failures */}
+            {campaign.failed_count > 0 && ['completed', 'failed', 'active', 'paused'].includes(campaign.status) && (
+              <button
+                onClick={handleRetryFailed}
+                disabled={retryLoading}
+                className="cursor-pointer flex items-center gap-2 px-4 py-2 rounded-lg font-medium bg-orange-50 dark:bg-orange-900/20 text-orange-700 dark:text-orange-300 hover:bg-orange-100 dark:hover:bg-orange-900/30 transition-all text-sm disabled:opacity-50"
+              >
+                <RotateCcw className={`w-4 h-4 ${retryLoading ? 'animate-spin' : ''}`} />
+                {t('smsApi.campaigns.actions.retryFailed')} ({campaign.failed_count})
+              </button>
+            )}
+            {/* Duplicate - always visible */}
+            <button
+              onClick={handleDuplicate}
+              className="cursor-pointer flex items-center gap-2 px-4 py-2 rounded-lg font-medium bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all text-sm"
+            >
+              <Copy className="w-4 h-4" />
+              {t('smsApi.campaigns.actions.duplicate')}
+            </button>
+            {/* Delete - for draft campaigns */}
+            {campaign.status === 'draft' && (
+              <button
+                onClick={handleDelete}
+                className="cursor-pointer flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all text-sm"
+              >
+                <Trash2 className="w-4 h-4" />
+                {t('smsApi.campaigns.actions.delete')}
+              </button>
+            )}
           </div>
         </div>
 
@@ -867,6 +1026,184 @@ export default function CampaignDetailPage() {
                 )}
               </>
             )}
+          </div>
+        )}
+
+        {/* Test Send Modal */}
+        {showTestSendModal && (
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 max-w-lg w-full max-h-[80vh] overflow-y-auto">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                  <TestTube className="w-5 h-5" />
+                  {t('smsApi.campaigns.testSendTitle')}
+                </h3>
+                <button
+                  onClick={() => {
+                    setShowTestSendModal(false);
+                    setTestSendResults(null);
+                  }}
+                  className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                {t('smsApi.campaigns.testSendDescription')}
+              </p>
+
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  {t('smsApi.campaigns.testSendCount')}
+                </label>
+                <input
+                  type="number"
+                  min="1"
+                  max="100"
+                  value={testSendCount}
+                  onChange={(e) => setTestSendCount(Math.min(100, Math.max(1, parseInt(e.target.value) || 1)))}
+                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                />
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  {t('smsApi.campaigns.testSendCountHint')}
+                </p>
+              </div>
+
+              {testSendResults && (
+                <div className="mb-4 p-4 rounded-lg bg-gray-50 dark:bg-gray-800 max-h-60 overflow-y-auto">
+                  <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    {t('smsApi.campaigns.testSendResults')}
+                  </h4>
+                  <div className="space-y-2">
+                    {testSendResults.map((result, index) => (
+                      <div key={index} className="text-sm p-2 rounded bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600">
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="font-medium">{result.phone}</span>
+                          <span className={`text-xs px-2 py-0.5 rounded ${
+                            result.status === 'sent' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+                          }`}>
+                            {result.status}
+                          </span>
+                        </div>
+                        {result.error && (
+                          <p className="text-xs text-red-600 dark:text-red-400">{result.error}</p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div className="flex gap-3">
+                <button
+                  onClick={() => {
+                    setShowTestSendModal(false);
+                    setTestSendResults(null);
+                  }}
+                  className="flex-1 px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
+                >
+                  {t('common.close')}
+                </button>
+                <button
+                  onClick={handleTestSend}
+                  disabled={testSendLoading}
+                  className="flex-1 px-4 py-2 rounded-lg bg-purple-600 text-white hover:bg-purple-700 disabled:opacity-50 flex items-center justify-center gap-2"
+                >
+                  {testSendLoading ? (
+                    <RefreshCw className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Send className="w-4 h-4" />
+                  )}
+                  {t('smsApi.campaigns.sendTest')}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Custom Phone Test Modal */}
+        {showCustomPhoneModal && (
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 max-w-lg w-full">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                  <Phone className="w-5 h-5" />
+                  {t('smsApi.campaigns.customPhoneTitle')}
+                </h3>
+                <button
+                  onClick={() => {
+                    setShowCustomPhoneModal(false);
+                    setCustomPhoneResult(null);
+                    setCustomPhone('');
+                  }}
+                  className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                {t('smsApi.campaigns.customPhoneDescription')}
+              </p>
+
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  {t('smsApi.phone')}
+                </label>
+                <input
+                  type="tel"
+                  value={customPhone}
+                  onChange={(e) => setCustomPhone(e.target.value)}
+                  placeholder="994501234567"
+                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                />
+              </div>
+
+              {customPhoneResult && (
+                <div className={`mb-4 p-4 rounded-lg ${
+                  customPhoneResult.status === 'sent' ? 'bg-green-50 dark:bg-green-900/20' : 'bg-red-50 dark:bg-red-900/20'
+                }`}>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="font-medium text-gray-900 dark:text-white">{customPhoneResult.phone}</span>
+                    <span className={`text-xs px-2 py-0.5 rounded ${
+                      customPhoneResult.status === 'sent' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+                    }`}>
+                      {customPhoneResult.status}
+                    </span>
+                  </div>
+                  <p className="text-sm text-gray-700 dark:text-gray-300 mb-2">{customPhoneResult.message}</p>
+                  {customPhoneResult.error && (
+                    <p className="text-xs text-red-600 dark:text-red-400">{customPhoneResult.error}</p>
+                  )}
+                </div>
+              )}
+
+              <div className="flex gap-3">
+                <button
+                  onClick={() => {
+                    setShowCustomPhoneModal(false);
+                    setCustomPhoneResult(null);
+                    setCustomPhone('');
+                  }}
+                  className="flex-1 px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
+                >
+                  {t('common.close')}
+                </button>
+                <button
+                  onClick={handleCustomPhoneTest}
+                  disabled={customPhoneLoading || !customPhone}
+                  className="flex-1 px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 flex items-center justify-center gap-2"
+                >
+                  {customPhoneLoading ? (
+                    <RefreshCw className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Send className="w-4 h-4" />
+                  )}
+                  {t('smsApi.campaigns.sendTest')}
+                </button>
+              </div>
+            </div>
           </div>
         )}
       </div>
