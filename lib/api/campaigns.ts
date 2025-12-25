@@ -97,6 +97,14 @@ export interface CampaignMessage {
   };
 }
 
+export interface PlannedContact {
+  contact_id: number;
+  phone: string;
+  message: string;
+  segments: number;
+  attributes: Record<string, any>;
+}
+
 // Helper to set project token
 let currentProjectToken: string | null = null;
 
@@ -329,6 +337,24 @@ export const campaignsApi = {
     };
   }> => {
     const response = await campaignClient.get(`/campaigns/${id}/messages`, {
+      params: { page, per_page: perPage },
+      headers: getHeaders(),
+    });
+    return response.data.data;
+  },
+
+  // Get planned messages (contacts that will receive SMS on next run)
+  getPlannedMessages: async (id: number, page: number = 1, perPage: number = 10): Promise<{
+    contacts: PlannedContact[];
+    pagination: {
+      current_page: number;
+      last_page: number;
+      per_page: number;
+      total: number;
+    };
+    next_run_at: string | null;
+  }> => {
+    const response = await campaignClient.get(`/campaigns/${id}/planned`, {
       params: { page, per_page: perPage },
       headers: getHeaders(),
     });
