@@ -27,6 +27,7 @@ import {
   BookOpen,
   Settings,
   Code,
+  Clock,
 } from 'lucide-react';
 
 export default function ProjectContactsPage() {
@@ -44,6 +45,7 @@ export default function ProjectContactsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
+  const [lastSyncAt, setLastSyncAt] = useState<string | null>(null);
   const [selectedContacts, setSelectedContacts] = useState<Set<string>>(new Set());
   const [showModal, setShowModal] = useState(false);
   const [editingContact, setEditingContact] = useState<Contact | null>(null);
@@ -115,6 +117,7 @@ export default function ProjectContactsPage() {
       setContacts(data.contacts);
       setTotalPages(data.pagination.last_page);
       setTotal(data.pagination.total);
+      setLastSyncAt(data.last_sync_at || null);
       setError(null);
     } catch (err: any) {
       setError(err.response?.data?.message || 'Failed to load contacts');
@@ -328,7 +331,7 @@ export default function ProjectContactsPage() {
     }
   };
 
-  const formatDate = (dateString: string) => {
+  const formatDate = (dateString: string, includeTime: boolean = false) => {
     const date = new Date(dateString);
     const monthNames: Record<string, string[]> = {
       az: ['Yan', 'Fev', 'Mar', 'Apr', 'May', 'İyn', 'İyl', 'Avq', 'Sen', 'Okt', 'Noy', 'Dek'],
@@ -336,7 +339,13 @@ export default function ProjectContactsPage() {
       ru: ['Янв', 'Фев', 'Мар', 'Апр', 'Май', 'Июн', 'Июл', 'Авг', 'Сен', 'Окт', 'Ноя', 'Дек'],
     };
     const months = monthNames[lang] || monthNames.en;
-    return `${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`;
+    let result = `${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`;
+    if (includeTime) {
+      const hours = date.getHours().toString().padStart(2, '0');
+      const minutes = date.getMinutes().toString().padStart(2, '0');
+      result += ` ${hours}:${minutes}`;
+    }
+    return result;
   };
 
   const renderAttributeValue = (value: any): string => {
@@ -571,6 +580,12 @@ export default function ProjectContactsPage() {
                 <Trash2 className="w-4 h-4" />
                 {t('smsApi.contacts.bulkDelete')} ({selectedContacts.size})
               </button>
+            )}
+            {lastSyncAt && (
+              <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                <Clock className="w-4 h-4" />
+                {t('smsApi.contacts.lastSync')}: {formatDate(lastSyncAt, true)}
+              </div>
             )}
             <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
               <Users className="w-4 h-4" />

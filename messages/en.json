@@ -806,6 +806,7 @@
       "selected": "{count} selected",
       "bulkDelete": "Delete Selected",
       "total": "Total Contacts",
+      "lastSync": "Last Sync",
       "quickStart": {
         "title": "Quick Start Guide",
         "step1Title": "Get your API token",

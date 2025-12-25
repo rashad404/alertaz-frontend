@@ -31,6 +31,7 @@ export interface ContactsPagination {
 export interface ContactsListResponse {
   contacts: Contact[];
   pagination: ContactsPagination;
+  last_sync_at: string | null;
 }
 
 export interface BulkSyncResult {

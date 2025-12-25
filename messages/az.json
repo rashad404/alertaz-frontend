@@ -806,6 +806,7 @@
       "selected": "{count} seçildi",
       "bulkDelete": "Seçilənləri sil",
       "total": "Cəmi kontakt",
+      "lastSync": "Son sinxronizasiya",
       "quickStart": {
         "title": "Tez Başlanğıc",
         "step1Title": "API tokeninizi alın",
