@@ -74,24 +74,6 @@ export default function EditCampaignPage() {
     loadData();
   }, [projectId, campaignId]);
 
-  // Fetch user timezone
-  useEffect(() => {
-    const fetchUserTimezone = async () => {
-      try {
-        const response = await fetch('/api/user/profile');
-        if (response.ok) {
-          const data = await response.json();
-          if (data.user?.timezone) {
-            setUserTimezone(data.user.timezone);
-          }
-        }
-      } catch (error) {
-        console.error('Failed to fetch user timezone:', error);
-      }
-    };
-    fetchUserTimezone();
-  }, []);
-
   const loadData = async () => {
     try {
       setIsLoading(true);
@@ -99,12 +81,17 @@ export default function EditCampaignPage() {
       // Fetch user timezone first for proper hour conversion
       let timezone = 'Asia/Baku';
       try {
-        const tzResponse = await fetch('/api/user/profile');
-        if (tzResponse.ok) {
-          const tzData = await tzResponse.json();
-          if (tzData.user?.timezone) {
-            timezone = tzData.user.timezone;
-            setUserTimezone(timezone);
+        const token = localStorage.getItem('token');
+        if (token) {
+          const tzResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/user`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          if (tzResponse.ok) {
+            const tzData = await tzResponse.json();
+            if (tzData.status === 'success' && tzData.data?.timezone) {
+              timezone = tzData.data.timezone;
+              setUserTimezone(timezone);
+            }
           }
         }
       } catch (error) {
