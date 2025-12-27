@@ -135,7 +135,7 @@ export default function SegmentBuilder({ value, onChange, showPreview = true }: 
     if (!attribute) return null;
 
     // Array operators that need days input
-    const arrayDaysOperators = ['any_expiry_within', 'any_expiry_expired_since'];
+    const arrayDaysOperators = ['any_expiry_within', 'any_expiry_in_days', 'any_expiry_after', 'any_expiry_expired_since'];
     if (attribute.type === 'array' && arrayDaysOperators.includes(condition.operator)) {
       return (
         <input

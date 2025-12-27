@@ -625,6 +625,8 @@
         "count": "say",
         "not_empty": "ən azı bir var",
         "any_expiry_within": "hər hansı biri bitir (gün ərzində)",
+        "any_expiry_in_days": "hər hansı biri bitir (dəqiq gün)",
+        "any_expiry_after": "hər hansı biri bitir (gündən sonra)",
         "any_expiry_expired_since": "hər hansı biri bitib (gün əvvəl)",
         "any_expiry_today": "hər hansı biri bu gün bitir",
         "any": "hər hansı birini ehtiva edir",

@@ -625,6 +625,8 @@
         "count": "count",
         "not_empty": "has at least one",
         "any_expiry_within": "any expires within (days)",
+        "any_expiry_in_days": "any expires in exactly (days)",
+        "any_expiry_after": "any expires after (days)",
         "any_expiry_expired_since": "any expired since (days)",
         "any_expiry_today": "any expires today",
         "any": "contains any",
