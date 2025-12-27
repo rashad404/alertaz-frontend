@@ -21,7 +21,10 @@ interface PreviewData {
   }>;
 }
 
-const OPERATORS_WITHOUT_VALUE = ['is_empty', 'is_not_empty', 'is_true', 'is_false', 'is_set', 'is_not_set'];
+const OPERATORS_WITHOUT_VALUE = [
+  'is_empty', 'is_not_empty', 'is_true', 'is_false', 'is_set', 'is_not_set',
+  'not_empty', 'any_expiry_today'
+];
 
 export default function SegmentBuilder({ value, onChange, showPreview = true }: SegmentBuilderProps) {
   const t = useTranslations();
@@ -130,6 +133,54 @@ export default function SegmentBuilder({ value, onChange, showPreview = true }: 
 
     const attribute = getAttributeByKey(condition.key);
     if (!attribute) return null;
+
+    // Array operators that need days input
+    const arrayDaysOperators = ['any_expiry_within', 'any_expiry_expired_since'];
+    if (attribute.type === 'array' && arrayDaysOperators.includes(condition.operator)) {
+      return (
+        <input
+          type="number"
+          value={condition.value || ''}
+          onChange={(e) => updateCondition(index, 'value', parseInt(e.target.value) || '')}
+          placeholder={t('smsApi.segments.enterDays')}
+          min="0"
+          className="flex-1 min-w-[120px] px-3 py-2.5 border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+        />
+      );
+    }
+
+    // Array count operator needs number with comparison operator
+    if (attribute.type === 'array' && condition.operator === 'count') {
+      return (
+        <div className="flex items-center gap-2">
+          <select
+            value={typeof condition.value === 'object' ? condition.value.operator || 'equals' : 'equals'}
+            onChange={(e) => updateCondition(index, 'value', {
+              operator: e.target.value,
+              count: typeof condition.value === 'object' ? condition.value.count || 0 : 0
+            })}
+            className="px-3 py-2.5 border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+          >
+            <option value="equals">=</option>
+            <option value="greater_than">&gt;</option>
+            <option value="greater_than_or_equal">≥</option>
+            <option value="less_than">&lt;</option>
+            <option value="less_than_or_equal">≤</option>
+          </select>
+          <input
+            type="number"
+            value={typeof condition.value === 'object' ? condition.value.count || '' : ''}
+            onChange={(e) => updateCondition(index, 'value', {
+              operator: typeof condition.value === 'object' ? condition.value.operator || 'equals' : 'equals',
+              count: parseInt(e.target.value) || 0
+            })}
+            placeholder="0"
+            min="0"
+            className="w-20 px-3 py-2.5 border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+          />
+        </div>
+      );
+    }
 
     if (attribute.type === 'boolean') {
       return (
