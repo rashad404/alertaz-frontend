@@ -706,7 +706,7 @@
         "paused": "Приостановлена"
       },
       "stats": {
-        "target": "Цель",
+        "target": "Запланировано",
         "sent": "Отправлено",
         "delivered": "Доставлено",
         "failed": "Ошибки",
@@ -754,7 +754,7 @@
       "noMatchingContacts": "{count} подходящих контактов",
       "noContactsToSend": "Нет контактов соответствующих текущему фильтру сегмента",
       "smsSegments": "SMS сегментов",
-      "segments": "сегментов",
+      "segments": "SMS",
       "estimatedCost": "Примерная стоимость",
       "details": "Детали кампании",
       "notFound": "Кампания не найдена",

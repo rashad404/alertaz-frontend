@@ -706,7 +706,7 @@
         "paused": "Dayandırılıb"
       },
       "stats": {
-        "target": "Hədəf",
+        "target": "Planlanmış",
         "sent": "Göndərildi",
         "delivered": "Çatdırıldı",
         "failed": "Uğursuz",
@@ -754,7 +754,7 @@
       "sentMessages": "Göndərilmiş Mesajlar",
       "nextRunAt": "Növbəti icra",
       "smsSegments": "SMS Seqmentləri",
-      "segments": "seqment",
+      "segments": "SMS Sayı",
       "estimatedCost": "Təxmini Qiymət",
       "details": "Kampaniya Detalları",
       "notFound": "Kampaniya tapılmadı",

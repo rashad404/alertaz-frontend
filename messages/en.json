@@ -706,7 +706,7 @@
         "paused": "Paused"
       },
       "stats": {
-        "target": "Target",
+        "target": "Planned",
         "sent": "Sent",
         "delivered": "Delivered",
         "failed": "Failed",
@@ -754,7 +754,7 @@
       "noMatchingContacts": "{count} matching contacts",
       "noContactsToSend": "No contacts match the current segment filter",
       "smsSegments": "SMS Segments",
-      "segments": "segments",
+      "segments": "SMS Count",
       "estimatedCost": "Estimated Cost",
       "details": "Campaign Details",
       "notFound": "Campaign not found",

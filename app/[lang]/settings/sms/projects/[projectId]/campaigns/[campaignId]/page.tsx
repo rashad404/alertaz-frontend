@@ -169,7 +169,8 @@ export default function CampaignDetailPage() {
 
     try {
       setIsRefreshing(true);
-      const data = await campaignsApi.previewSegment(c.segment_filter, 1);
+      // Use previewMessages which includes cooldown calculation for accurate planned count
+      const data = await campaignsApi.previewMessages(c.id, 1);
       setCurrentCount(data.total_count);
     } catch (err) {
       console.error('Failed to refresh count:', err);
