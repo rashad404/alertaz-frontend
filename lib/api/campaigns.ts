@@ -37,6 +37,8 @@ export interface Campaign {
   check_interval_minutes: number | null;
   cooldown_days: number | null;
   ends_at: string | null;
+  run_start_hour: number | null;
+  run_end_hour: number | null;
   last_run_at: string | null;
   next_run_at: string | null;
 }
