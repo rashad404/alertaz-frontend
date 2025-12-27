@@ -163,11 +163,12 @@ export default function SegmentBuilder({ value, onChange, showPreview = true }: 
     }
 
     if (attribute.type === 'date') {
-      // Operators that need number input (days from now)
+      // Operators that need number input (days)
       const daysOperators = [
         'expires_within', 'expired_since',
         'expires_in_days_eq', 'expires_in_days_gt', 'expires_in_days_gte',
-        'expires_in_days_lt', 'expires_in_days_lte'
+        'expires_in_days_lt', 'expires_in_days_lte',
+        'days_ago_eq', 'days_ago_gt', 'days_ago_gte', 'days_ago_lt', 'days_ago_lte'
       ];
 
       if (daysOperators.includes(condition.operator)) {
