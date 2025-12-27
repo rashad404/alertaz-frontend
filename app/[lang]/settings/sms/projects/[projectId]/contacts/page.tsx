@@ -8,6 +8,7 @@ import { campaignsApi, setProjectToken, AttributeSchema } from '@/lib/api/campai
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { formatDateInTimezone } from '@/lib/utils/date';
+import { useTimezone } from '@/providers/timezone-provider';
 import {
   Plus,
   Search,
@@ -36,6 +37,7 @@ export default function ProjectContactsPage() {
   const params = useParams();
   const lang = params.lang as string;
   const projectId = params.projectId as string;
+  const { timezone } = useTimezone();
 
   const [project, setProject] = useState<Project | null>(null);
   const [contacts, setContacts] = useState<Contact[]>([]);
@@ -48,7 +50,6 @@ export default function ProjectContactsPage() {
   const [total, setTotal] = useState(0);
   const [lastSyncAt, setLastSyncAt] = useState<string | null>(null);
   const [selectedContacts, setSelectedContacts] = useState<Set<string>>(new Set());
-  const [userTimezone, setUserTimezone] = useState('Asia/Baku');
   const [showModal, setShowModal] = useState(false);
   const [editingContact, setEditingContact] = useState<Contact | null>(null);
   const [showImportModal, setShowImportModal] = useState(false);
@@ -73,23 +74,6 @@ export default function ProjectContactsPage() {
   const [formAttributes, setFormAttributes] = useState<Record<string, any>>({});
   const [formError, setFormError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
-
-  // Load user timezone
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      fetch(`${process.env.NEXT_PUBLIC_API_URL}/user`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      })
-        .then(res => res.json())
-        .then(data => {
-          if (data.status === 'success' && data.data.timezone) {
-            setUserTimezone(data.data.timezone);
-          }
-        })
-        .catch(() => {});
-    }
-  }, []);
 
   useEffect(() => {
     loadProject();
@@ -351,7 +335,7 @@ export default function ProjectContactsPage() {
   };
 
   const formatDate = (dateString: string, includeTime: boolean = false) => {
-    return formatDateInTimezone(dateString, userTimezone, { includeTime, locale: lang });
+    return formatDateInTimezone(dateString, timezone, { includeTime, locale: lang });
   };
 
   const renderAttributeValue = (value: any): string => {

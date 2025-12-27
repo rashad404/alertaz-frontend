@@ -8,6 +8,7 @@ import { campaignsApi, SegmentFilter, AttributeSchema, setProjectToken } from '@
 import SegmentBuilder from '@/components/sms/SegmentBuilder';
 import Link from 'next/link';
 import { convertHourToUTC } from '@/lib/utils/date';
+import { useTimezone } from '@/providers/timezone-provider';
 import {
   ArrowLeft,
   ArrowRight,
@@ -38,6 +39,7 @@ export default function CreateCampaignPage() {
   const params = useParams();
   const lang = params.lang as string;
   const projectId = params.projectId as string;
+  const { timezone } = useTimezone();
 
   const [project, setProject] = useState<Project | null>(null);
   const [isLoadingProject, setIsLoadingProject] = useState(true);
@@ -47,7 +49,6 @@ export default function CreateCampaignPage() {
   const [attributes, setAttributes] = useState<AttributeSchema[]>([]);
   const [availableSenders, setAvailableSenders] = useState<string[]>([]);
   const [previewCount, setPreviewCount] = useState<number | null>(null);
-  const [userTimezone, setUserTimezone] = useState('Asia/Baku');
 
   const [formData, setFormData] = useState({
     name: '',
@@ -73,23 +74,6 @@ export default function CreateCampaignPage() {
   useEffect(() => {
     loadProject();
   }, [projectId]);
-
-  // Load user timezone
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      fetch(`${process.env.NEXT_PUBLIC_API_URL}/user`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      })
-        .then(res => res.json())
-        .then(data => {
-          if (data.status === 'success' && data.data.timezone) {
-            setUserTimezone(data.data.timezone);
-          }
-        })
-        .catch(() => {});
-    }
-  }, []);
 
   const loadProject = async () => {
     try {
@@ -180,8 +164,8 @@ export default function CreateCampaignPage() {
         // Run hours (only if not all day)
         // Convert from user's timezone to UTC for storage
         if (!formData.run_all_day) {
-          payload.run_start_hour = convertHourToUTC(formData.run_start_hour, userTimezone);
-          payload.run_end_hour = convertHourToUTC(formData.run_end_hour, userTimezone);
+          payload.run_start_hour = convertHourToUTC(formData.run_start_hour, timezone);
+          payload.run_end_hour = convertHourToUTC(formData.run_end_hour, timezone);
         }
       } else {
         // One-time campaign fields

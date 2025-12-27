@@ -8,6 +8,7 @@ import { campaignsApi, Campaign, SegmentFilter, AttributeSchema, setProjectToken
 import SegmentBuilder from '@/components/sms/SegmentBuilder';
 import Link from 'next/link';
 import { convertHourToUTC, convertHourFromUTC } from '@/lib/utils/date';
+import { useTimezone } from '@/providers/timezone-provider';
 import {
   ArrowLeft,
   ArrowRight,
@@ -38,6 +39,7 @@ export default function EditCampaignPage() {
   const lang = params.lang as string;
   const projectId = params.projectId as string;
   const campaignId = params.campaignId as string;
+  const { timezone } = useTimezone();
 
   const [project, setProject] = useState<Project | null>(null);
   const [campaign, setCampaign] = useState<Campaign | null>(null);
@@ -48,7 +50,6 @@ export default function EditCampaignPage() {
   const [attributes, setAttributes] = useState<AttributeSchema[]>([]);
   const [availableSenders, setAvailableSenders] = useState<string[]>([]);
   const [previewCount, setPreviewCount] = useState<number | null>(null);
-  const [userTimezone, setUserTimezone] = useState('Asia/Baku');
 
   const [formData, setFormData] = useState({
     name: '',
@@ -77,26 +78,6 @@ export default function EditCampaignPage() {
   const loadData = async () => {
     try {
       setIsLoading(true);
-
-      // Fetch user timezone first for proper hour conversion
-      let timezone = 'Asia/Baku';
-      try {
-        const token = localStorage.getItem('token');
-        if (token) {
-          const tzResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/user`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-          });
-          if (tzResponse.ok) {
-            const tzData = await tzResponse.json();
-            if (tzData.status === 'success' && tzData.data?.timezone) {
-              timezone = tzData.data.timezone;
-              setUserTimezone(timezone);
-            }
-          }
-        }
-      } catch (error) {
-        console.error('Failed to fetch user timezone:', error);
-      }
 
       // Load project first
       const projectData = await projectsApi.get(parseInt(projectId));
@@ -200,8 +181,8 @@ export default function EditCampaignPage() {
           payload.run_start_hour = null;
           payload.run_end_hour = null;
         } else {
-          payload.run_start_hour = convertHourToUTC(formData.run_start_hour, userTimezone);
-          payload.run_end_hour = convertHourToUTC(formData.run_end_hour, userTimezone);
+          payload.run_start_hour = convertHourToUTC(formData.run_start_hour, timezone);
+          payload.run_end_hour = convertHourToUTC(formData.run_end_hour, timezone);
         }
       }
 

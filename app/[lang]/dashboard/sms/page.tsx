@@ -7,6 +7,7 @@ import { MessageSquare, Copy, Check, Code, Filter, X, Search, Eye, EyeOff, Flask
 import Link from 'next/link';
 import axios from 'axios';
 import { formatDateInTimezone } from '@/lib/utils/date';
+import { useTimezone } from '@/providers/timezone-provider';
 
 interface Campaign {
   id: number;
@@ -39,6 +40,7 @@ interface Filters {
 export default function SMSHistoryPage() {
   const t = useTranslations();
   const router = useRouter();
+  const { timezone } = useTimezone();
   const [messages, setMessages] = useState<SMSMessage[]>([]);
   const [loading, setLoading] = useState(true);
   const [apiToken, setApiToken] = useState<string>('');
@@ -55,26 +57,8 @@ export default function SMSHistoryPage() {
     date_from: '',
     date_to: '',
   });
-  const [userTimezone, setUserTimezone] = useState('Asia/Baku');
 
   const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://100.89.150.50:8007/api';
-
-  // Load user timezone
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      fetch(`${API_URL}/user`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      })
-        .then(res => res.json())
-        .then(data => {
-          if (data.status === 'success' && data.data?.timezone) {
-            setUserTimezone(data.data.timezone);
-          }
-        })
-        .catch(() => {});
-    }
-  }, []);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -455,7 +439,7 @@ export default function SMSHistoryPage() {
                           {msg.cost} AZN
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                          {formatDateInTimezone(msg.created_at, userTimezone, { includeTime: true })}
+                          {formatDateInTimezone(msg.created_at, timezone, { includeTime: true })}
                         </td>
                       </tr>
                     ))}

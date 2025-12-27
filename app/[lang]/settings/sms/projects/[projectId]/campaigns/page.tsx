@@ -7,6 +7,7 @@ import { campaignsApi, Campaign, setProjectToken } from '@/lib/api/campaigns';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { formatDateInTimezone, convertRunHoursToTimezone } from '@/lib/utils/date';
+import { useTimezone } from '@/providers/timezone-provider';
 import {
   Plus,
   Send,
@@ -49,6 +50,7 @@ export default function ProjectCampaignsPage() {
   const router = useRouter();
   const lang = params.lang as string;
   const projectId = params.projectId as string;
+  const { timezone } = useTimezone();
 
   const [project, setProject] = useState<Project | null>(null);
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
@@ -57,24 +59,6 @@ export default function ProjectCampaignsPage() {
   const [openMenuId, setOpenMenuId] = useState<number | null>(null);
   const [currentCounts, setCurrentCounts] = useState<Record<number, number | null>>({});
   const [loadingCounts, setLoadingCounts] = useState<Record<number, boolean>>({});
-  const [userTimezone, setUserTimezone] = useState('Asia/Baku');
-
-  // Load user timezone
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      fetch(`${process.env.NEXT_PUBLIC_API_URL}/user`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      })
-        .then(res => res.json())
-        .then(data => {
-          if (data.status === 'success' && data.data.timezone) {
-            setUserTimezone(data.data.timezone);
-          }
-        })
-        .catch(() => {});
-    }
-  }, []);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -202,7 +186,7 @@ export default function ProjectCampaignsPage() {
   };
 
   const formatDate = (dateString: string | null) => {
-    return formatDateInTimezone(dateString, userTimezone, { includeTime: true, locale: lang });
+    return formatDateInTimezone(dateString, timezone, { includeTime: true, locale: lang });
   };
 
   if (isLoading) {
@@ -353,7 +337,7 @@ export default function ProjectCampaignsPage() {
                           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400">
                             <Clock className="w-3 h-3" />
                             {(() => {
-                              const converted = convertRunHoursToTimezone(campaign.run_start_hour, campaign.run_end_hour, userTimezone);
+                              const converted = convertRunHoursToTimezone(campaign.run_start_hour, campaign.run_end_hour, timezone);
                               return converted ? converted.formatted : '24h';
                             })()}
                           </span>

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
 import { Menu, X, Bell, User, Activity, Plus, LogOut } from 'lucide-react';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
+import { TimezoneSelector } from '@/components/ui/timezone-selector';
 import { useTranslations } from 'next-intl';
 import NotificationCenter from '@/components/notifications/NotificationCenter';
 
@@ -108,6 +109,7 @@ export default function Header() {
               </>
             )}
 
+            <TimezoneSelector />
             <ThemeToggle />
 
             {isAuthenticated && <NotificationCenter />}
@@ -148,6 +150,7 @@ export default function Header() {
 
           {/* Mobile menu button */}
           <div className="flex items-center gap-3 md:hidden">
+            <TimezoneSelector />
             <ThemeToggle />
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
