@@ -136,11 +136,11 @@ export default function ProjectCampaignsPage() {
     relevantCampaigns.forEach(c => { loadingState[c.id] = true; });
     setLoadingCounts(loadingState);
 
-    // Fetch counts in parallel
+    // Fetch counts in parallel using previewMessages (considers cooldown)
     const results = await Promise.allSettled(
       relevantCampaigns.map(async (campaign) => {
         try {
-          const result = await campaignsApi.previewSegment(campaign.segment_filter, 0);
+          const result = await campaignsApi.previewMessages(campaign.id, 0);
           return { id: campaign.id, count: result.total_count };
         } catch {
           return { id: campaign.id, count: null };

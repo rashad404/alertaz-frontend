@@ -247,8 +247,8 @@ export const campaignsApi = {
     return response.data.data;
   },
 
-  // Preview campaign messages
-  previewMessages: async (id: number, limit: number = 5): Promise<{ previews: MessagePreview[]; campaign: Campaign }> => {
+  // Preview campaign messages (considers cooldown)
+  previewMessages: async (id: number, limit: number = 5): Promise<{ previews: MessagePreview[]; campaign: Campaign; total_count: number }> => {
     const response = await campaignClient.get(`/campaigns/${id}/preview`, {
       params: { limit },
       headers: getHeaders(),
