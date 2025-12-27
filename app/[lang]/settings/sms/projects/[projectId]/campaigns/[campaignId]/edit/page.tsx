@@ -7,6 +7,7 @@ import { projectsApi, Project } from '@/lib/api/projects';
 import { campaignsApi, Campaign, SegmentFilter, AttributeSchema, setProjectToken } from '@/lib/api/campaigns';
 import SegmentBuilder from '@/components/sms/SegmentBuilder';
 import Link from 'next/link';
+import { convertHourToUTC, convertHourFromUTC } from '@/lib/utils/date';
 import {
   ArrowLeft,
   ArrowRight,
@@ -47,6 +48,7 @@ export default function EditCampaignPage() {
   const [attributes, setAttributes] = useState<AttributeSchema[]>([]);
   const [availableSenders, setAvailableSenders] = useState<string[]>([]);
   const [previewCount, setPreviewCount] = useState<number | null>(null);
+  const [userTimezone, setUserTimezone] = useState('Asia/Baku');
 
   const [formData, setFormData] = useState({
     name: '',
@@ -72,9 +74,42 @@ export default function EditCampaignPage() {
     loadData();
   }, [projectId, campaignId]);
 
+  // Fetch user timezone
+  useEffect(() => {
+    const fetchUserTimezone = async () => {
+      try {
+        const response = await fetch('/api/user/profile');
+        if (response.ok) {
+          const data = await response.json();
+          if (data.user?.timezone) {
+            setUserTimezone(data.user.timezone);
+          }
+        }
+      } catch (error) {
+        console.error('Failed to fetch user timezone:', error);
+      }
+    };
+    fetchUserTimezone();
+  }, []);
+
   const loadData = async () => {
     try {
       setIsLoading(true);
+
+      // Fetch user timezone first for proper hour conversion
+      let timezone = 'Asia/Baku';
+      try {
+        const tzResponse = await fetch('/api/user/profile');
+        if (tzResponse.ok) {
+          const tzData = await tzResponse.json();
+          if (tzData.user?.timezone) {
+            timezone = tzData.user.timezone;
+            setUserTimezone(timezone);
+          }
+        }
+      } catch (error) {
+        console.error('Failed to fetch user timezone:', error);
+      }
 
       // Load project first
       const projectData = await projectsApi.get(parseInt(projectId));
@@ -96,6 +131,12 @@ export default function EditCampaignPage() {
 
       // Populate form with campaign data
       const c = campaignData.campaign;
+
+      // Convert run hours from UTC to user's timezone for display
+      const runAllDay = c.run_start_hour === null && c.run_end_hour === null;
+      const displayStartHour = runAllDay ? 9 : convertHourFromUTC(c.run_start_hour ?? 9, timezone);
+      const displayEndHour = runAllDay ? 18 : convertHourFromUTC(c.run_end_hour ?? 18, timezone);
+
       setFormData({
         name: c.name,
         sender: c.sender,
@@ -108,9 +149,9 @@ export default function EditCampaignPage() {
         check_interval_minutes: c.check_interval_minutes || 1440,
         cooldown_days: c.cooldown_days || 30,
         ends_at: c.ends_at || '',
-        run_start_hour: c.run_start_hour ?? 9,
-        run_end_hour: c.run_end_hour ?? 18,
-        run_all_day: c.run_start_hour === null && c.run_end_hour === null,
+        run_start_hour: displayStartHour,
+        run_end_hour: displayEndHour,
+        run_all_day: runAllDay,
       });
 
     } catch (err: any) {
@@ -167,8 +208,14 @@ export default function EditCampaignPage() {
         payload.check_interval_minutes = formData.check_interval_minutes;
         payload.cooldown_days = formData.cooldown_days;
         payload.ends_at = formData.ends_at || null;
-        payload.run_start_hour = formData.run_all_day ? null : formData.run_start_hour;
-        payload.run_end_hour = formData.run_all_day ? null : formData.run_end_hour;
+        // Convert run hours from user's timezone to UTC for storage
+        if (formData.run_all_day) {
+          payload.run_start_hour = null;
+          payload.run_end_hour = null;
+        } else {
+          payload.run_start_hour = convertHourToUTC(formData.run_start_hour, userTimezone);
+          payload.run_end_hour = convertHourToUTC(formData.run_end_hour, userTimezone);
+        }
       }
 
       await campaignsApi.update(campaign.id, payload);

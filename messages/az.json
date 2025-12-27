@@ -256,7 +256,10 @@
       "onlyImages": "Yalnız şəkil faylları yükləyə bilərsiniz",
       "updateSuccess": "Profil uğurla yeniləndi",
       "fixErrors": "Xahiş edirik, formdakı xətaları düzəldin",
-      "connectionError": "Serverlə əlaqə xətası. Zəhmət olmasa yenidən cəhd edin."
+      "connectionError": "Serverlə əlaqə xətası. Zəhmət olmasa yenidən cəhd edin.",
+      "timezone": "Saat qurşağı",
+      "selectTimezone": "Saat qurşağını seçin",
+      "timezoneHint": "Tarix və vaxtlar bu saat qurşağında göstəriləcək"
     },
     "security": {
       "title": "Təhlükəsizlik",

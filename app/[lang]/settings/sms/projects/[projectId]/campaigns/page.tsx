@@ -6,6 +6,7 @@ import { projectsApi, Project } from '@/lib/api/projects';
 import { campaignsApi, Campaign, setProjectToken } from '@/lib/api/campaigns';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
+import { formatDateInTimezone, convertRunHoursToTimezone } from '@/lib/utils/date';
 import {
   Plus,
   Send,
@@ -56,6 +57,24 @@ export default function ProjectCampaignsPage() {
   const [openMenuId, setOpenMenuId] = useState<number | null>(null);
   const [currentCounts, setCurrentCounts] = useState<Record<number, number | null>>({});
   const [loadingCounts, setLoadingCounts] = useState<Record<number, boolean>>({});
+  const [userTimezone, setUserTimezone] = useState('Asia/Baku');
+
+  // Load user timezone
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      fetch(`${process.env.NEXT_PUBLIC_API_URL}/user`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (data.status === 'success' && data.data.timezone) {
+            setUserTimezone(data.data.timezone);
+          }
+        })
+        .catch(() => {});
+    }
+  }, []);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -183,23 +202,7 @@ export default function ProjectCampaignsPage() {
   };
 
   const formatDate = (dateString: string | null) => {
-    if (!dateString) return '-';
-    const date = new Date(dateString);
-
-    const monthNames: Record<string, string[]> = {
-      az: ['Yan', 'Fev', 'Mar', 'Apr', 'May', 'İyn', 'İyl', 'Avq', 'Sen', 'Okt', 'Noy', 'Dek'],
-      en: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-      ru: ['Янв', 'Фев', 'Мар', 'Апр', 'Май', 'Июн', 'Июл', 'Авг', 'Сен', 'Окт', 'Ноя', 'Дек'],
-    };
-
-    const months = monthNames[lang] || monthNames.en;
-    const month = months[date.getMonth()];
-    const day = date.getDate();
-    const year = date.getFullYear();
-    const hours = date.getHours().toString().padStart(2, '0');
-    const minutes = date.getMinutes().toString().padStart(2, '0');
-
-    return `${day} ${month} ${year}, ${hours}:${minutes}`;
+    return formatDateInTimezone(dateString, userTimezone, { includeTime: true, locale: lang });
   };
 
   if (isLoading) {
@@ -349,9 +352,10 @@ export default function ProjectCampaignsPage() {
                         {campaign.type === 'automated' && (
                           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400">
                             <Clock className="w-3 h-3" />
-                            {campaign.run_start_hour != null && campaign.run_end_hour != null
-                              ? `${String(campaign.run_start_hour).padStart(2, '0')}:00 - ${String(campaign.run_end_hour).padStart(2, '0')}:00`
-                              : '24h'}
+                            {(() => {
+                              const converted = convertRunHoursToTimezone(campaign.run_start_hour, campaign.run_end_hour, userTimezone);
+                              return converted ? converted.formatted : '24h';
+                            })()}
                           </span>
                         )}
                         <span className="text-sm text-gray-500 dark:text-gray-400">

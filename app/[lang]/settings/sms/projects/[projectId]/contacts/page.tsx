@@ -7,6 +7,7 @@ import { contactsApi, Contact, setContactsProjectToken } from '@/lib/api/contact
 import { campaignsApi, setProjectToken, AttributeSchema } from '@/lib/api/campaigns';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
+import { formatDateInTimezone } from '@/lib/utils/date';
 import {
   Plus,
   Search,
@@ -47,6 +48,7 @@ export default function ProjectContactsPage() {
   const [total, setTotal] = useState(0);
   const [lastSyncAt, setLastSyncAt] = useState<string | null>(null);
   const [selectedContacts, setSelectedContacts] = useState<Set<string>>(new Set());
+  const [userTimezone, setUserTimezone] = useState('Asia/Baku');
   const [showModal, setShowModal] = useState(false);
   const [editingContact, setEditingContact] = useState<Contact | null>(null);
   const [showImportModal, setShowImportModal] = useState(false);
@@ -71,6 +73,23 @@ export default function ProjectContactsPage() {
   const [formAttributes, setFormAttributes] = useState<Record<string, any>>({});
   const [formError, setFormError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+
+  // Load user timezone
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      fetch(`${process.env.NEXT_PUBLIC_API_URL}/user`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (data.status === 'success' && data.data.timezone) {
+            setUserTimezone(data.data.timezone);
+          }
+        })
+        .catch(() => {});
+    }
+  }, []);
 
   useEffect(() => {
     loadProject();
@@ -332,20 +351,7 @@ export default function ProjectContactsPage() {
   };
 
   const formatDate = (dateString: string, includeTime: boolean = false) => {
-    const date = new Date(dateString);
-    const monthNames: Record<string, string[]> = {
-      az: ['Yan', 'Fev', 'Mar', 'Apr', 'May', 'İyn', 'İyl', 'Avq', 'Sen', 'Okt', 'Noy', 'Dek'],
-      en: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-      ru: ['Янв', 'Фев', 'Мар', 'Апр', 'Май', 'Июн', 'Июл', 'Авг', 'Сен', 'Окт', 'Ноя', 'Дек'],
-    };
-    const months = monthNames[lang] || monthNames.en;
-    let result = `${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`;
-    if (includeTime) {
-      const hours = date.getHours().toString().padStart(2, '0');
-      const minutes = date.getMinutes().toString().padStart(2, '0');
-      result += ` ${hours}:${minutes}`;
-    }
-    return result;
+    return formatDateInTimezone(dateString, userTimezone, { includeTime, locale: lang });
   };
 
   const renderAttributeValue = (value: any): string => {

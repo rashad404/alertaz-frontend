@@ -6,6 +6,7 @@ import { useParams } from 'next/navigation';
 import { projectsApi, Project } from '@/lib/api/projects';
 import { campaignsApi, Campaign, CampaignMessage, PlannedContact, AttributeSchema, setProjectToken } from '@/lib/api/campaigns';
 import Link from 'next/link';
+import { formatDateInTimezone, convertRunHoursToTimezone } from '@/lib/utils/date';
 import {
   ArrowLeft,
   Send,
@@ -108,6 +109,26 @@ export default function CampaignDetailPage() {
 
   // Retry failed state
   const [retryLoading, setRetryLoading] = useState(false);
+
+  // User timezone
+  const [userTimezone, setUserTimezone] = useState('Asia/Baku');
+
+  useEffect(() => {
+    // Load user timezone
+    const token = localStorage.getItem('token');
+    if (token) {
+      fetch(`${process.env.NEXT_PUBLIC_API_URL}/user`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (data.status === 'success' && data.data.timezone) {
+            setUserTimezone(data.data.timezone);
+          }
+        })
+        .catch(() => {});
+    }
+  }, []);
 
   useEffect(() => {
     loadData();
@@ -452,23 +473,7 @@ export default function CampaignDetailPage() {
   };
 
   const formatDate = (dateString: string | null) => {
-    if (!dateString) return '-';
-    const date = new Date(dateString);
-
-    const monthNames: Record<string, string[]> = {
-      az: ['Yan', 'Fev', 'Mar', 'Apr', 'May', 'İyn', 'İyl', 'Avq', 'Sen', 'Okt', 'Noy', 'Dek'],
-      en: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-      ru: ['Янв', 'Фев', 'Мар', 'Апр', 'Май', 'Июн', 'Июл', 'Авг', 'Сен', 'Окт', 'Ноя', 'Дек'],
-    };
-
-    const months = monthNames[lang] || monthNames.en;
-    const month = months[date.getMonth()];
-    const day = date.getDate();
-    const year = date.getFullYear();
-    const hours = date.getHours().toString().padStart(2, '0');
-    const minutes = date.getMinutes().toString().padStart(2, '0');
-
-    return `${day} ${month} ${year}, ${hours}:${minutes}`;
+    return formatDateInTimezone(dateString, userTimezone, { includeTime: true, locale: lang });
   };
 
   if (isLoading) {
@@ -803,9 +808,10 @@ export default function CampaignDetailPage() {
                   <p className="text-sm text-gray-500 dark:text-gray-400">{t('smsApi.campaigns.runHours')}</p>
                   <p className="text-gray-900 dark:text-white font-medium flex items-center gap-2">
                     <Clock className="w-4 h-4" />
-                    {campaign.run_start_hour != null && campaign.run_end_hour != null
-                      ? `${String(campaign.run_start_hour).padStart(2, '0')}:00 - ${String(campaign.run_end_hour).padStart(2, '0')}:00`
-                      : t('smsApi.campaigns.runAllDay')}
+                    {(() => {
+                      const converted = convertRunHoursToTimezone(campaign.run_start_hour, campaign.run_end_hour, userTimezone);
+                      return converted ? converted.formatted : t('smsApi.campaigns.runAllDay');
+                    })()}
                   </p>
                 </div>
               )}

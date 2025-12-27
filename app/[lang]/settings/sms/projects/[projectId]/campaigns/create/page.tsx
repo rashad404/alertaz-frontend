@@ -7,6 +7,7 @@ import { projectsApi, Project } from '@/lib/api/projects';
 import { campaignsApi, SegmentFilter, AttributeSchema, setProjectToken } from '@/lib/api/campaigns';
 import SegmentBuilder from '@/components/sms/SegmentBuilder';
 import Link from 'next/link';
+import { convertHourToUTC } from '@/lib/utils/date';
 import {
   ArrowLeft,
   ArrowRight,
@@ -46,6 +47,7 @@ export default function CreateCampaignPage() {
   const [attributes, setAttributes] = useState<AttributeSchema[]>([]);
   const [availableSenders, setAvailableSenders] = useState<string[]>([]);
   const [previewCount, setPreviewCount] = useState<number | null>(null);
+  const [userTimezone, setUserTimezone] = useState('Asia/Baku');
 
   const [formData, setFormData] = useState({
     name: '',
@@ -71,6 +73,23 @@ export default function CreateCampaignPage() {
   useEffect(() => {
     loadProject();
   }, [projectId]);
+
+  // Load user timezone
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      fetch(`${process.env.NEXT_PUBLIC_API_URL}/user`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (data.status === 'success' && data.data.timezone) {
+            setUserTimezone(data.data.timezone);
+          }
+        })
+        .catch(() => {});
+    }
+  }, []);
 
   const loadProject = async () => {
     try {
@@ -159,9 +178,10 @@ export default function CreateCampaignPage() {
           payload.ends_at = formData.ends_at;
         }
         // Run hours (only if not all day)
+        // Convert from user's timezone to UTC for storage
         if (!formData.run_all_day) {
-          payload.run_start_hour = formData.run_start_hour;
-          payload.run_end_hour = formData.run_end_hour;
+          payload.run_start_hour = convertHourToUTC(formData.run_start_hour, userTimezone);
+          payload.run_end_hour = convertHourToUTC(formData.run_end_hour, userTimezone);
         }
       } else {
         // One-time campaign fields

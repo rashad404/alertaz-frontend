@@ -10,9 +10,11 @@ import {
   Save,
   Loader2,
   ChevronLeft,
-  Camera
+  Camera,
+  Globe
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import { TIMEZONES } from '@/lib/utils/date';
 
 export default function ProfileSettingsPage() {
   const t = useTranslations();
@@ -30,7 +32,8 @@ export default function ProfileSettingsPage() {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
-    phone: ''
+    phone: '',
+    timezone: 'Asia/Baku'
   });
 
   useEffect(() => {
@@ -52,7 +55,8 @@ export default function ProfileSettingsPage() {
           setFormData({
             name: data.data.name || '',
             email: data.data.email || '',
-            phone: data.data.phone ? String(data.data.phone) : ''
+            phone: data.data.phone ? String(data.data.phone) : '',
+            timezone: data.data.timezone || 'Asia/Baku'
           });
         }
       })
@@ -105,6 +109,7 @@ export default function ProfileSettingsPage() {
       formDataToSend.append('name', String(formData.name));
       formDataToSend.append('email', String(formData.email));
       formDataToSend.append('phone', formData.phone ? String(formData.phone) : '');
+      formDataToSend.append('timezone', formData.timezone);
 
       if (avatarFile) {
         formDataToSend.append('avatar', avatarFile);
@@ -129,7 +134,8 @@ export default function ProfileSettingsPage() {
         setFormData({
           name: updatedUser.name || '',
           email: updatedUser.email || '',
-          phone: updatedUser.phone ? String(updatedUser.phone) : ''
+          phone: updatedUser.phone ? String(updatedUser.phone) : '',
+          timezone: updatedUser.timezone || 'Asia/Baku'
         });
 
         setErrors({});
@@ -332,6 +338,37 @@ export default function ProfileSettingsPage() {
               />
               {errors.phone && (
                 <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.phone}</p>
+              )}
+            </div>
+
+            {/* Timezone */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <div className="flex items-center gap-2">
+                  <Globe className="w-4 h-4" />
+                  {t('settings.profile.timezone')}
+                </div>
+              </label>
+              <select
+                value={formData.timezone}
+                onChange={(e) => setFormData({ ...formData, timezone: e.target.value })}
+                className={`w-full px-4 py-3 rounded-2xl border ${
+                  errors.timezone
+                    ? 'border-red-500 dark:border-red-500'
+                    : 'border-gray-300 dark:border-gray-700'
+                } bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all`}
+              >
+                {TIMEZONES.map((tz) => (
+                  <option key={tz.value} value={tz.value}>
+                    {tz.label}
+                  </option>
+                ))}
+              </select>
+              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                {t('settings.profile.timezoneHint')}
+              </p>
+              {errors.timezone && (
+                <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.timezone}</p>
               )}
             </div>
 

@@ -6,6 +6,7 @@ import { useProject } from '@/contexts/ProjectContext';
 import { campaignsApi, Campaign } from '@/lib/api/campaigns';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
+import { formatDateInTimezone } from '@/lib/utils/date';
 import {
   Plus,
   Send,
@@ -49,6 +50,24 @@ export default function CampaignsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [openMenuId, setOpenMenuId] = useState<number | null>(null);
+  const [userTimezone, setUserTimezone] = useState('Asia/Baku');
+
+  // Load user timezone
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      fetch(`${process.env.NEXT_PUBLIC_API_URL}/user`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (data.status === 'success' && data.data.timezone) {
+            setUserTimezone(data.data.timezone);
+          }
+        })
+        .catch(() => {});
+    }
+  }, []);
 
   useEffect(() => {
     if (selectedProject) {
@@ -104,14 +123,7 @@ export default function CampaignsPage() {
   };
 
   const formatDate = (dateString: string | null) => {
-    if (!dateString) return '-';
-    return new Date(dateString).toLocaleDateString(lang, {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
+    return formatDateInTimezone(dateString, userTimezone, { includeTime: true, locale: lang });
   };
 
   if (!selectedProject) {

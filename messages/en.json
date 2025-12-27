@@ -256,7 +256,10 @@
       "onlyImages": "Only image files can be uploaded",
       "updateSuccess": "Profile updated successfully",
       "fixErrors": "Please fix the errors in the form",
-      "connectionError": "Server connection error. Please try again."
+      "connectionError": "Server connection error. Please try again.",
+      "timezone": "Timezone",
+      "selectTimezone": "Select timezone",
+      "timezoneHint": "Dates and times will be displayed in this timezone"
     },
     "security": {
       "title": "Security",
