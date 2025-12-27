@@ -803,7 +803,7 @@ export default function CampaignDetailPage() {
                   <p className="text-sm text-gray-500 dark:text-gray-400">{t('smsApi.campaigns.runHours')}</p>
                   <p className="text-gray-900 dark:text-white font-medium flex items-center gap-2">
                     <Clock className="w-4 h-4" />
-                    {campaign.run_start_hour !== null && campaign.run_end_hour !== null
+                    {campaign.run_start_hour != null && campaign.run_end_hour != null
                       ? `${String(campaign.run_start_hour).padStart(2, '0')}:00 - ${String(campaign.run_end_hour).padStart(2, '0')}:00`
                       : t('smsApi.campaigns.runAllDay')}
                   </p>

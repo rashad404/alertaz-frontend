@@ -349,7 +349,7 @@ export default function ProjectCampaignsPage() {
                         {campaign.type === 'automated' && (
                           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400">
                             <Clock className="w-3 h-3" />
-                            {campaign.run_start_hour !== null && campaign.run_end_hour !== null
+                            {campaign.run_start_hour != null && campaign.run_end_hour != null
                               ? `${String(campaign.run_start_hour).padStart(2, '0')}:00 - ${String(campaign.run_end_hour).padStart(2, '0')}:00`
                               : '24h'}
                           </span>
