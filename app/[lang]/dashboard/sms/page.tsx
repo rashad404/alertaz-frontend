@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { MessageSquare, Copy, Check, Code, Filter, X, Search, Eye, EyeOff, FlaskConical } from 'lucide-react';
 import Link from 'next/link';
 import axios from 'axios';
+import { formatDateInTimezone } from '@/lib/utils/date';
 
 interface Campaign {
   id: number;
@@ -54,8 +55,26 @@ export default function SMSHistoryPage() {
     date_from: '',
     date_to: '',
   });
+  const [userTimezone, setUserTimezone] = useState('Asia/Baku');
 
   const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://100.89.150.50:8007/api';
+
+  // Load user timezone
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      fetch(`${API_URL}/user`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (data.status === 'success' && data.data?.timezone) {
+            setUserTimezone(data.data.timezone);
+          }
+        })
+        .catch(() => {});
+    }
+  }, []);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -436,7 +455,7 @@ export default function SMSHistoryPage() {
                           {msg.cost} AZN
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                          {new Date(msg.created_at).toLocaleString()}
+                          {formatDateInTimezone(msg.created_at, userTimezone, { includeTime: true })}
                         </td>
                       </tr>
                     ))}
