@@ -341,11 +341,19 @@ export default function ProjectCampaignsPage() {
                       <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                         {campaign.name}
                       </h3>
-                      <div className="flex items-center gap-3 mt-1">
+                      <div className="flex items-center gap-3 mt-1 flex-wrap">
                         <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium ${statusColors[campaign.status]}`}>
                           {statusIcons[campaign.status]}
                           {t(`smsApi.campaigns.statuses.${campaign.status}`)}
                         </span>
+                        {campaign.type === 'automated' && (
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400">
+                            <Clock className="w-3 h-3" />
+                            {campaign.run_start_hour !== null && campaign.run_end_hour !== null
+                              ? `${String(campaign.run_start_hour).padStart(2, '0')}:00 - ${String(campaign.run_end_hour).padStart(2, '0')}:00`
+                              : '24h'}
+                          </span>
+                        )}
                         <span className="text-sm text-gray-500 dark:text-gray-400">
                           {formatDate(campaign.created_at)}
                         </span>

@@ -63,6 +63,9 @@ export default function EditCampaignPage() {
     check_interval_minutes: 1440,
     cooldown_days: 30,
     ends_at: '',
+    run_start_hour: 9,
+    run_end_hour: 18,
+    run_all_day: false,
   });
 
   useEffect(() => {
@@ -105,6 +108,9 @@ export default function EditCampaignPage() {
         check_interval_minutes: c.check_interval_minutes || 1440,
         cooldown_days: c.cooldown_days || 30,
         ends_at: c.ends_at || '',
+        run_start_hour: c.run_start_hour ?? 9,
+        run_end_hour: c.run_end_hour ?? 18,
+        run_all_day: c.run_start_hour === null && c.run_end_hour === null,
       });
 
     } catch (err: any) {
@@ -161,6 +167,8 @@ export default function EditCampaignPage() {
         payload.check_interval_minutes = formData.check_interval_minutes;
         payload.cooldown_days = formData.cooldown_days;
         payload.ends_at = formData.ends_at || null;
+        payload.run_start_hour = formData.run_all_day ? null : formData.run_start_hour;
+        payload.run_end_hour = formData.run_all_day ? null : formData.run_end_hour;
       }
 
       await campaignsApi.update(campaign.id, payload);
@@ -544,6 +552,54 @@ export default function EditCampaignPage() {
                     />
                     <p className="mt-1 text-xs text-gray-500">
                       {t('smsApi.campaigns.endsAtDesc')}
+                    </p>
+                  </div>
+
+                  {/* Run Hours */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      {t('smsApi.campaigns.runHours')}
+                    </label>
+                    <div className="flex items-center gap-3">
+                      <select
+                        value={formData.run_start_hour}
+                        onChange={(e) => setFormData({ ...formData, run_start_hour: parseInt(e.target.value) })}
+                        disabled={formData.run_all_day}
+                        className="flex-1 px-4 py-3 border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all cursor-pointer disabled:opacity-50"
+                      >
+                        {Array.from({ length: 24 }, (_, i) => (
+                          <option key={i} value={i}>
+                            {String(i).padStart(2, '0')}:00
+                          </option>
+                        ))}
+                      </select>
+                      <span className="text-gray-500">-</span>
+                      <select
+                        value={formData.run_end_hour}
+                        onChange={(e) => setFormData({ ...formData, run_end_hour: parseInt(e.target.value) })}
+                        disabled={formData.run_all_day}
+                        className="flex-1 px-4 py-3 border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all cursor-pointer disabled:opacity-50"
+                      >
+                        {Array.from({ length: 24 }, (_, i) => (
+                          <option key={i} value={i}>
+                            {String(i).padStart(2, '0')}:00
+                          </option>
+                        ))}
+                      </select>
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={formData.run_all_day}
+                          onChange={(e) => setFormData({ ...formData, run_all_day: e.target.checked })}
+                          className="w-4 h-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+                        />
+                        <span className="text-sm text-gray-600 dark:text-gray-400 whitespace-nowrap">
+                          {t('smsApi.campaigns.runAllDay')}
+                        </span>
+                      </label>
+                    </div>
+                    <p className="mt-1 text-xs text-gray-500">
+                      {t('smsApi.campaigns.runHoursDesc')}
                     </p>
                   </div>
                 </div>
