@@ -711,6 +711,7 @@
       "stats": {
         "target": "Planlanmış",
         "sent": "Göndərildi",
+        "sentToday": "Bugün",
         "delivered": "Çatdırıldı",
         "failed": "Uğursuz",
         "cost": "Qiymət"

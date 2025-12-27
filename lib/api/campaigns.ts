@@ -25,6 +25,7 @@ export interface Campaign {
   completed_at: string | null;
   target_count: number;
   sent_count: number;
+  sent_today_count: number;
   delivered_count: number;
   failed_count: number;
   total_cost: string;

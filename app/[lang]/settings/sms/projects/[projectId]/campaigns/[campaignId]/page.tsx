@@ -732,6 +732,11 @@ export default function CampaignDetailPage() {
               <div>
                 <p className="text-xs text-gray-500 dark:text-gray-400">{t('smsApi.campaigns.stats.sent')}</p>
                 <p className="text-xl font-bold text-gray-900 dark:text-white">{campaign.sent_count}</p>
+                {campaign.sent_today_count > 0 && (
+                  <p className="text-xs text-blue-600 dark:text-blue-400 mt-0.5">
+                    {t('smsApi.campaigns.stats.sentToday')}: {campaign.sent_today_count}
+                  </p>
+                )}
               </div>
             </div>
           </div>

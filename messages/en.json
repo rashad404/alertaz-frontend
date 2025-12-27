@@ -711,6 +711,7 @@
       "stats": {
         "target": "Planned",
         "sent": "Sent",
+        "sentToday": "Today",
         "delivered": "Delivered",
         "failed": "Failed",
         "cost": "Cost"
