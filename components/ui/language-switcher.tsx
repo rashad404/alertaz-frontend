@@ -27,6 +27,10 @@ export function LanguageSwitcher({ locale }: { locale: string }) {
   }, []);
 
   const handleLanguageChange = (newLocale: Locale) => {
+    // Save language preference in cookie (expires in 1 year)
+    const maxAge = 60 * 60 * 24 * 365; // 1 year in seconds
+    document.cookie = `NEXT_LOCALE=${newLocale}; path=/; max-age=${maxAge}; SameSite=Lax`;
+
     // Remove the current locale prefix from pathname
     let currentPathname = pathname;
 

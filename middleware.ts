@@ -2,11 +2,7 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { i18n } from './i18n-config';
 
-function getLocale(request: NextRequest): string {
-  // For now, return the default locale
-  // Later you can implement Accept-Language header parsing
-  return i18n.defaultLocale;
-}
+const LOCALE_COOKIE = 'NEXT_LOCALE';
 
 export function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
@@ -33,16 +29,25 @@ export function middleware(request: NextRequest) {
   if (hasAzPrefix) {
     const newPathname = pathname.replace(/^\/az(\/|$)/, '/');
     const url = new URL(newPathname || '/', request.url);
-    // Preserve query parameters during redirect
     url.search = request.nextUrl.search;
     return NextResponse.redirect(url);
   }
 
-  // If no locale prefix and not a default locale path, treat as 'az' locale
+  // Get saved locale preference from cookie
+  const savedLocale = request.cookies.get(LOCALE_COOKIE)?.value;
+
+  // If user visits without locale prefix, check their preference
+  if (!hasNonDefaultLocale && savedLocale && savedLocale !== 'az' && i18n.locales.includes(savedLocale as any)) {
+    // Redirect to their preferred locale
+    const newPathname = `/${savedLocale}${pathname === '/' ? '' : pathname}`;
+    const url = new URL(newPathname, request.url);
+    url.search = request.nextUrl.search;
+    return NextResponse.redirect(url);
+  }
+
+  // If no locale prefix, treat as 'az' locale (rewrite internally)
   if (!hasNonDefaultLocale) {
-    // Rewrite to /az path internally (not redirect)
     const newUrl = `/az${pathname === '/' ? '' : pathname}`;
-    // Preserve query parameters
     const url = new URL(newUrl, request.url);
     url.search = request.nextUrl.search;
     return NextResponse.rewrite(url);
