@@ -2,9 +2,9 @@
 
 import React, { useState } from 'react';
 import { User } from '@/lib/api/auth';
+import authService from '@/lib/api/auth';
 import { useTranslations } from 'next-intl';
 import {
-  CheckCircle,
   AlertTriangle,
   XCircle,
   Mail,
@@ -14,10 +14,11 @@ import {
 interface EmailSettingsProps {
   user: User;
   onUpdate: (updates: Partial<User>) => Promise<boolean>;
+  onUserChange?: (user: User) => void;
   lang: string;
 }
 
-const EmailSettings: React.FC<EmailSettingsProps> = ({ user, onUpdate, lang }) => {
+const EmailSettings: React.FC<EmailSettingsProps> = ({ user, onUpdate, onUserChange, lang }) => {
   const t = useTranslations();
   const [email, setEmail] = useState(user.email || '');
   const [isEditing, setIsEditing] = useState(false);
@@ -126,39 +127,24 @@ const EmailSettings: React.FC<EmailSettingsProps> = ({ user, onUpdate, lang }) =
     setVerificationError('');
 
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/email/verify`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          email: user.email || email,
-          code: verificationCode
-        })
+      // Use authenticated endpoint to verify email for current user
+      const response = await authService.verifyEmailForUser({
+        email: user.email || email,
+        code: verificationCode
       });
 
-      const data = await response.json();
+      if (response.status === 'success' && response.data?.user) {
+        // Update local user state with verified user from response
+        if (onUserChange) {
+          onUserChange(response.data.user);
+        }
 
-      console.log('Verification response:', data);
-
-      if (data.status === 'success') {
-        console.log('Email verified successfully, user data:', data.data?.user);
-
-        // Show success and reload to fetch fresh data
         setMessage({ type: 'success', text: t('settings.email.verificationSuccess') });
         setShowVerificationModal(false);
         setVerificationCode('');
         setVerificationError('');
-
-        // Reload page after short delay to show success message
-        setTimeout(() => {
-          window.location.reload();
-        }, 1000);
       } else {
-        console.log('Verification failed:', data.message);
-        setVerificationError(data.message || t('settings.email.codeInvalid'));
+        setVerificationError(response.message || t('settings.email.codeInvalid'));
       }
     } catch (error) {
       console.error('Failed to verify code:', error);
@@ -212,7 +198,9 @@ const EmailSettings: React.FC<EmailSettingsProps> = ({ user, onUpdate, lang }) =
           <div className="flex items-start gap-3">
             <div className="mt-1">
               {isVerified ? (
-                <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400" />
+                <svg className="w-5 h-5 text-green-600 dark:text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                </svg>
               ) : email ? (
                 <AlertTriangle className="w-5 h-5 text-yellow-600 dark:text-yellow-400" />
               ) : (
@@ -430,7 +418,9 @@ const EmailSettings: React.FC<EmailSettingsProps> = ({ user, onUpdate, lang }) =
         </h3>
         <div className="space-y-3">
           <div className="flex items-start gap-3">
-            <CheckCircle className="w-5 h-5 text-indigo-600 dark:text-indigo-400 mt-0.5 flex-shrink-0" />
+            <svg className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+            </svg>
             <div>
               <p className="font-medium text-gray-900 dark:text-white">{t('settings.email.features.instantDelivery')}</p>
               <p className="text-sm text-gray-600 dark:text-gray-400">
@@ -439,7 +429,9 @@ const EmailSettings: React.FC<EmailSettingsProps> = ({ user, onUpdate, lang }) =
             </div>
           </div>
           <div className="flex items-start gap-3">
-            <CheckCircle className="w-5 h-5 text-indigo-600 dark:text-indigo-400 mt-0.5 flex-shrink-0" />
+            <svg className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+            </svg>
             <div>
               <p className="font-medium text-gray-900 dark:text-white">{t('settings.email.features.richFormatting')}</p>
               <p className="text-sm text-gray-600 dark:text-gray-400">
@@ -448,7 +440,9 @@ const EmailSettings: React.FC<EmailSettingsProps> = ({ user, onUpdate, lang }) =
             </div>
           </div>
           <div className="flex items-start gap-3">
-            <CheckCircle className="w-5 h-5 text-indigo-600 dark:text-indigo-400 mt-0.5 flex-shrink-0" />
+            <svg className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+            </svg>
             <div>
               <p className="font-medium text-gray-900 dark:text-white">{t('settings.email.features.noSpam')}</p>
               <p className="text-sm text-gray-600 dark:text-gray-400">
