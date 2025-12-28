@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import Link from "next/link";
+import { Link } from '@/lib/navigation';
 import Image from "next/image";
 import { Calendar, Clock, Eye, Tag, ChevronRight, Search } from "lucide-react";
 import { format } from "date-fns";
@@ -100,7 +100,7 @@ export default function BlogClient({ locale, initialTag, initialPage }: BlogClie
   const { data: featuredBlogs } = useQuery({
     queryKey: ["blogs", "featured", locale],
     queryFn: async () => {
-      const response = await apiClient.get(`/${locale}/blogs/featured`);
+      const response = await apiClient.get(`/blogs/featured`);
       return response.data as BlogPost[];
     },
   });
@@ -122,7 +122,7 @@ export default function BlogClient({ locale, initialTag, initialPage }: BlogClie
         params.append("search", searchQuery);
       }
       
-      const response = await apiClient.get(`/${locale}/blogs?${params}`);
+      const response = await apiClient.get(`/blogs?${params}`);
       return response.data as BlogResponse;
     },
   });
@@ -131,7 +131,7 @@ export default function BlogClient({ locale, initialTag, initialPage }: BlogClie
   const { data: tags } = useQuery({
     queryKey: ["blogs", "tags", locale],
     queryFn: async () => {
-      const response = await apiClient.get(`/${locale}/blogs/tags`);
+      const response = await apiClient.get(`/blogs/tags`);
       return response.data as string[];
     },
   });
@@ -210,7 +210,7 @@ export default function BlogClient({ locale, initialTag, initialPage }: BlogClie
               {featuredBlogs.map((blog) => (
                 <Link
                   key={blog.id}
-                  href={`/${locale}/blog/${blog.slug}`}
+                  href={`/blog/${blog.slug}`}
                   className="group bg-white dark:bg-gray-800 rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow"
                 >
                   {blog.featured_image ? (
@@ -276,7 +276,7 @@ export default function BlogClient({ locale, initialTag, initialPage }: BlogClie
                     key={blog.id}
                     className="bg-white dark:bg-gray-800 rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow"
                   >
-                    <Link href={`/${locale}/blog/${blog.slug}`} className="block">
+                    <Link href={`/blog/${blog.slug}`} className="block">
                       {blog.featured_image ? (
                         <div className="relative h-48 bg-gray-200 dark:bg-gray-700">
                           <Image

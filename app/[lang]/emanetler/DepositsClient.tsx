@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { ChevronDown, ChevronUp, TrendingUp, Calendar, Shield, Percent } from 'lucide-react';
-import Link from 'next/link';
+import { Link } from '@/lib/navigation';
 import axios from 'axios';
 import { BankLogo } from '@/components/ui/bank-logo';
 import { getTranslation } from '@/lib/utils';
@@ -147,7 +147,7 @@ export function DepositsClient({ locale }: DepositsClientProps) {
       }
       
       const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL}/${locale}/offers?${params}`
+        `${process.env.NEXT_PUBLIC_API_URL}/offers?${params}`
       );
       return response.data;
     }
@@ -158,7 +158,7 @@ export function DepositsClient({ locale }: DepositsClientProps) {
     queryKey: ['durations', locale],
     queryFn: async () => {
       const response = await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL}/${locale}/credit-durations`
+        `${process.env.NEXT_PUBLIC_API_URL}/credit-durations`
       );
       return response.data;
     }
@@ -208,7 +208,7 @@ export function DepositsClient({ locale }: DepositsClientProps) {
       <div className="bg-gradient-to-r from-brand-orange to-green-600 text-white py-8 px-4 md:px-8 lg:px-36">
         <div className="max-w-5xl mx-auto">
           <div className="flex items-center gap-2 text-sm mb-4">
-            <Link href={`/${locale}`} className="hover:underline">
+            <Link href={"/" className="hover:underline">
               {t.breadcrumbHome}
             </Link>
             <span>›</span>
@@ -291,7 +291,7 @@ export function DepositsClient({ locale }: DepositsClientProps) {
                           </div>
                         </div>
                         <Link
-                          href={`/${locale}/sirketler/banklar/${bank.bank_slug}`}
+                          href={`/sirketler/banklar/${bank.bank_slug}`}
                           className="text-brand-orange hover:text-brand-orange-dark text-sm font-medium"
                         >
                           {locale === 'az' ? 'Bank haqqında' : locale === 'en' ? 'About bank' : 'О банке'} →
@@ -380,7 +380,7 @@ export function DepositsClient({ locale }: DepositsClientProps) {
 
                             {/* Apply Button */}
                             <Link
-                              href={`/${locale}/deposits/${deposit.slug}`}
+                              href={`/deposits/${deposit.slug}`}
                               className="block w-full text-center px-4 py-2 bg-brand-orange text-white rounded-lg hover:bg-brand-orange-dark transition-colors"
                             >
                               {t.applyNow}

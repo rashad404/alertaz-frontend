@@ -5,7 +5,7 @@ import { projectsApi, Project } from '@/lib/api/projects';
 import { useProject } from '@/contexts/ProjectContext';
 import { useTranslations } from 'next-intl';
 import { Plus, Edit2, RefreshCw, Trash2, Copy, Check, Server, Megaphone, ArrowRight } from 'lucide-react';
-import Link from 'next/link';
+import { Link } from '@/lib/navigation';
 
 export default function ProjectsPage() {
   const [projects, setProjects] = useState<Project[]>([]);

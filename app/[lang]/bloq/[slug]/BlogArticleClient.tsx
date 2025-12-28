@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import Link from "next/link";
+import { Link } from '@/lib/navigation';
 import Image from "next/image";
 import { Calendar, Clock, Eye, User, Tag, ArrowLeft, Share2, Facebook, Twitter } from "lucide-react";
 import { format } from "date-fns";
@@ -71,7 +71,7 @@ export default function BlogArticleClient({ locale, blog, slug }: BlogArticleCli
   const { data: relatedBlogs } = useQuery({
     queryKey: ["blogs", "related", locale, slug],
     queryFn: async () => {
-      const response = await apiClient.get(`/${locale}/blogs/${slug}/related`);
+      const response = await apiClient.get(`/blogs/${slug}/related`);
       return response.data as BlogPost[];
     },
   });
@@ -113,7 +113,7 @@ export default function BlogArticleClient({ locale, blog, slug }: BlogArticleCli
         <div className="max-w-4xl mx-auto">
           {/* Back Button */}
           <Link
-            href={`/${locale}/blog`}
+            href={`/blog`}
             className="inline-flex items-center gap-2 text-brand-orange hover:text-brand-orange/80 transition-colors mb-6"
           >
             <ArrowLeft className="w-5 h-5" />
@@ -149,7 +149,7 @@ export default function BlogArticleClient({ locale, blog, slug }: BlogArticleCli
                 {blog.tags.map((tag) => (
                   <Link
                     key={tag}
-                    href={`/${locale}/blog?tag=${encodeURIComponent(tag)}`}
+                    href={`/blog?tag=${encodeURIComponent(tag)}`}
                     className="inline-flex items-center gap-1 px-3 py-1 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
                   >
                     <Tag className="w-3 h-3" />
@@ -204,7 +204,7 @@ export default function BlogArticleClient({ locale, blog, slug }: BlogArticleCli
                 {relatedBlogs.map((relatedBlog) => (
                   <Link
                     key={relatedBlog.id}
-                    href={`/${locale}/blog/${relatedBlog.slug}`}
+                    href={`/blog/${relatedBlog.slug}`}
                     className="group bg-gray-50 dark:bg-gray-800 rounded-lg overflow-hidden hover:shadow-lg transition-shadow"
                   >
                     {relatedBlog.featured_image ? (

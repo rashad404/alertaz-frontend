@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
+import { Link } from '@/lib/navigation';
 import { Bell, Plus, TrendingUp, Activity, Settings, Bitcoin, Globe, BarChart3, Play, Pause, MessageSquare, CreditCard, Megaphone } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 

@@ -34,10 +34,10 @@ export default async function LangLayout({
   }
 
   // Load messages for the current locale
-  const messages = await getMessages();
+  const messages = await getMessages({ locale: lang });
 
   return (
-    <NextIntlClientProvider messages={messages}>
+    <NextIntlClientProvider locale={lang} messages={messages}>
       <div className="min-h-screen bg-white dark:bg-gray-900 transition-colors flex flex-col">
         <Header />
         <main className="flex-grow">

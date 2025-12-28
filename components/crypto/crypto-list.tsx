@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import Link from 'next/link';
+import { Link } from '@/lib/navigation';
 import Image from 'next/image';
 import { Search, TrendingUp, TrendingDown, DollarSign, Info, RefreshCw } from 'lucide-react';
 import { cryptoApi, formatCryptoPrice, formatMarketCap, formatPercentage, getPercentageColor } from '@/lib/api/crypto';

@@ -1,12 +1,11 @@
 'use client';
 
-import Link from "next/link";
+import { Link } from "@/lib/navigation";
 import { ArrowRight, TrendingUp, ChevronRight } from "lucide-react";
 import { useState } from "react";
 import { getImageUrl, getTranslation } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 import type { Offer } from "@/lib/types";
-import { getLocalizedPath } from "@/lib/utils/locale";
 
 interface OfferCardMinimalProps {
   offer: Offer;
@@ -50,7 +49,7 @@ export function OfferCardMinimal({ offer, locale, index = 0, categorySlug, categ
 
   return (
     <Link 
-      href={getLocalizedPath(locale, `/teklifler/${offer.id}`)}
+      href={`/teklifler/${offer.id}`}
       className="group block"
     >
       <div className={cn(

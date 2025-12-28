@@ -1,13 +1,12 @@
 'use client';
 
-import Link from "next/link";
+import { Link } from "@/lib/navigation";
 import { Check, ChevronRight } from "lucide-react";
 import { useState } from "react";
 import { useDictionary } from "@/providers/dictionary-provider";
 import { getImageUrl, getTranslation, formatCurrency, calculateMonthlyPayment } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 import type { Offer } from "@/lib/types";
-import { getLocalizedPath } from "@/lib/utils/locale";
 
 interface OfferCardProps {
   offer: Offer;
@@ -29,7 +28,7 @@ export function OfferCard({ offer, locale, featured = false, categorySlug, categ
 
   return (
     <Link
-      href={getLocalizedPath(locale, `/teklifler/${offer.id}`)}
+      href={`/teklifler/${offer.id}`}
       className={cn(
         "block bg-gray-100 dark:bg-gray-800 rounded-2xl p-7 hover:shadow-lg transition-shadow cursor-pointer",
         featured && "border-2 border-brand-orange shadow-lg"

@@ -1,6 +1,6 @@
 import { Metadata } from "next";
 import { getDictionary } from "@/get-dictionary";
-import Link from "next/link";
+import { Link } from '@/lib/navigation';
 import { BookOpen, Calculator, CreditCard, TrendingUp, Shield, PiggyBank } from "lucide-react";
 
 export async function generateMetadata({

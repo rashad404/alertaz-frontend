@@ -1,10 +1,9 @@
 'use client';
 
 import React, { useState } from 'react';
-import Link from 'next/link';
+import { Link } from '@/lib/navigation';
 import { ChevronRight, Calculator, FileText, Phone, MapPin, Clock, Check, ArrowLeft, Building2, CreditCard } from 'lucide-react';
 import { getTranslation, getImageUrl, formatCurrency, calculateMonthlyPayment } from '@/lib/utils';
-import { getLocalizedPath } from '@/lib/utils/locale';
 import type { Offer } from '@/lib/types';
 
 interface OfferDetailClientProps {
@@ -146,7 +145,7 @@ const OfferDetailClient = ({ params, offerData }: OfferDetailClientProps) => {
         <div className="w-full max-w-5xl">
         {/* Back button */}
         <Link
-          href={getLocalizedPath(locale, '/credits')}
+          href={'/credits'}
           className="inline-flex items-center text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white mb-6"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
@@ -155,11 +154,11 @@ const OfferDetailClient = ({ params, offerData }: OfferDetailClientProps) => {
 
         {/* Breadcrumb */}
         <nav className="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400 mb-4">
-          <Link href={getLocalizedPath(locale, '/')} className="hover:text-[#FF6021] transition-colors">
+          <Link href={'/'} className="hover:text-[#FF6021] transition-colors">
             {t.breadcrumbHome}
           </Link>
           <ChevronRight className="w-4 h-4 text-gray-400" />
-          <Link href={getLocalizedPath(locale, '/offers')} className="hover:text-[#FF6021] transition-colors">
+          <Link href={'/offers'} className="hover:text-[#FF6021] transition-colors">
             {t.breadcrumbOffers}
           </Link>
           <ChevronRight className="w-4 h-4 text-gray-400" />
@@ -196,7 +195,7 @@ const OfferDetailClient = ({ params, offerData }: OfferDetailClientProps) => {
               </h1>
               <div className="flex items-center gap-2 mb-4">
                 <Link 
-                  href={`/${locale}/sirketler/banklar/${offerData.company?.slug || ''}`}
+                  href={`/sirketler/banklar/${offerData.company?.slug || ''}`}
                   className="text-gray-600 dark:text-gray-400 text-lg hover:text-[#FF6021] transition-colors underline"
                 >
                   {companyName}

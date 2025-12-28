@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import Link from "next/link";
+import { Link } from '@/lib/navigation';
 import Image from "next/image";
 import { useDictionary } from "@/providers/dictionary-provider";
 import { siteApi } from "@/lib/api/endpoints";

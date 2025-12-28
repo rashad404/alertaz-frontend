@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import Link from 'next/link';
+import { Link } from '@/lib/navigation';
 import Script from 'next/script';
 import { Phone, MapPin, Mail, Globe, Share2, ChevronRight, Clock, Building2 } from 'lucide-react';
 import { BankLogo } from '@/components/ui/bank-logo';
@@ -188,13 +188,13 @@ const CompanyDetailClient = ({ params, companyData, companyType }: CompanyDetail
         '@type': 'ListItem',
         position: 2,
         name: t.breadcrumbCompanies,
-        item: `https://kredit.az/${locale}/${companyType}`
+        item: `https://kredit.az/${companyType}`
       },
       {
         '@type': 'ListItem',
         position: 3,
         name: companyName,
-        item: `https://kredit.az/${locale}/${companyType}/${companyData.slug}`
+        item: `https://kredit.az/${companyType}/${companyData.slug}`
       }
     ]
   };
@@ -213,11 +213,11 @@ const CompanyDetailClient = ({ params, companyData, companyType }: CompanyDetail
         <nav className="flex justify-center px-4 sm:px-8 lg:px-36 py-6">
           <div className="w-full max-w-5xl">
             <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-              <Link href={`/${locale}`} className="hover:text-[#FF6021] transition-colors">
+              <Link href={"/" className="hover:text-[#FF6021] transition-colors">
                 {t.breadcrumbHome}
               </Link>
               <ChevronRight className="w-4 h-4" />
-              <Link href={`/${locale}/${companyType}`} className="hover:text-[#FF6021] transition-colors">
+              <Link href={`/${companyType}`} className="hover:text-[#FF6021] transition-colors">
                 {t.breadcrumbCompanies}
               </Link>
               <ChevronRight className="w-4 h-4" />
@@ -445,7 +445,7 @@ const CompanyDetailClient = ({ params, companyData, companyType }: CompanyDetail
                         : 'Discover credit offers from this organization'}
                     </p>
                     <Link 
-                      href={`/${locale}/credits?company=${companyData.id}`}
+                      href={`/credits?company=${companyData.id}`}
                       className="inline-flex items-center text-white font-medium hover:translate-x-1 transition-transform"
                     >
                       {t.viewAllCredits} →

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Link from 'next/link';
+import { Link } from '@/lib/navigation';
 import { useRouter } from 'next/navigation';
 import { 
   Check, X, TrendingUp, TrendingDown, Minus, AlertCircle, 
@@ -162,7 +162,7 @@ export default function EntityComparisonTable({ entities, entityType, locale }: 
       }
       
       // Fetch all entities of the same type
-      const response = await apiClient.get(`/${locale}/entities/credit_loan`);
+      const response = await apiClient.get(`/entities/credit_loan`);
       
       // Filter by loan type and exclude already compared entities
       const comparedIds = entities.map(e => e.entity_id || e.id);
@@ -561,7 +561,7 @@ export default function EntityComparisonTable({ entities, entityType, locale }: 
                     {/* Action Buttons */}
                     <div className="space-y-2">
                       <Link
-                        href={`/${locale}/sirketler/kredit-teskilatlari/nagd-kreditler/${entity.entity_id}`}
+                        href={`/sirketler/kredit-teskilatlari/nagd-kreditler/${entity.entity_id}`}
                         className="block w-full px-4 py-2 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm font-medium rounded-lg transition-colors"
                       >
                         {t.viewDetails}

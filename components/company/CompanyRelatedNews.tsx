@@ -1,6 +1,6 @@
 'use client';
 
-import Link from 'next/link';
+import { Link } from '@/lib/navigation';
 import { NewsCard } from '@/components/ui/news-card';
 import apiClient from '@/lib/api/client';
 import { Newspaper, ChevronRight } from 'lucide-react';
@@ -19,7 +19,7 @@ export default function CompanyRelatedNews({ companyId, locale }: CompanyRelated
     const fetchRelatedNews = async () => {
       try {
         // First try to fetch news by company_id
-        let response = await apiClient.get(`/${locale}/xeberler`, {
+        let response = await apiClient.get(`/xeberler`, {
           params: {
             company_id: companyId,
             per_page: 4
@@ -30,7 +30,7 @@ export default function CompanyRelatedNews({ companyId, locale }: CompanyRelated
         
         // If no news with company_id, fetch latest news as fallback
         if (newsData.length === 0) {
-          response = await apiClient.get(`/${locale}/xeberler`, {
+          response = await apiClient.get(`/xeberler`, {
             params: {
               per_page: 4
             }
@@ -71,7 +71,7 @@ export default function CompanyRelatedNews({ companyId, locale }: CompanyRelated
           {locale === 'az' ? 'Əlaqəli Xəbərlər' : locale === 'ru' ? 'Связанные новости' : 'Related News'}
         </h2>
         <Link 
-          href={`/${locale}/xeberler`}
+          href={`/xeberler`}
           className="text-brand-orange hover:text-brand-orange-dark transition-colors text-sm font-medium flex items-center gap-1"
         >
           {locale === 'az' ? 'Bütün xəbərlər' : locale === 'ru' ? 'Все новости' : 'All news'}

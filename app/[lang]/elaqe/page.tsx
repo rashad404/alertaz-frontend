@@ -5,7 +5,7 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import { Phone, Mail, MapPin, Facebook, Instagram, Linkedin, Twitter, Youtube, Loader2 } from 'lucide-react';
 import { useParams } from 'next/navigation';
 import axios from 'axios';
-import Link from 'next/link';
+import { Link } from '@/lib/navigation';
 
 interface ContactInfo {
   company_name?: string;
@@ -52,7 +52,7 @@ const ContactPage = () => {
   const { data: contactData, isLoading } = useQuery({
     queryKey: ['contactInfo', locale],
     queryFn: async () => {
-      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/${locale}/elaqe/info`);
+      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/elaqe/info`);
       return response.data.data as ContactInfo;
     }
   });
@@ -60,7 +60,7 @@ const ContactPage = () => {
   // Submit contact form mutation
   const submitMutation = useMutation({
     mutationFn: async (data: typeof formData) => {
-      const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/${locale}/elaqe`, data);
+      const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/elaqe`, data);
       return response.data;
     },
     onSuccess: (data) => {
@@ -217,7 +217,7 @@ const ContactPage = () => {
             {t.title}
           </h1>
           <div className="hidden md:flex items-center gap-1">
-            <Link href={`/${locale}`} className="text-black dark:text-gray-300 hover:text-brand-orange dark:hover:text-brand-orange transition-colors">
+            <Link href={"/" className="text-black dark:text-gray-300 hover:text-brand-orange dark:hover:text-brand-orange transition-colors">
               {t.breadcrumbHome}
             </Link>
             <span className="mx-2 text-gray-600 dark:text-gray-400">›</span>

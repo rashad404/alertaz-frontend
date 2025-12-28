@@ -5,7 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Loader2, Search, ChevronUp, ChevronDown, GitCompare } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
 import axios from 'axios';
-import Link from 'next/link';
+import { Link } from '@/lib/navigation';
 import Script from 'next/script';
 
 interface CreditProduct {
@@ -33,7 +33,7 @@ const CreditsClient = ({ params }: { params: { lang: string } }) => {
   const { data: creditsData, isLoading } = useQuery({
     queryKey: ['credits', locale],
     queryFn: async () => {
-      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/${locale}/kreditler`, {
+      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/kreditler`, {
         params: { per_page: 100 } // Get all credits
       });
       return response.data;
@@ -81,7 +81,7 @@ const CreditsClient = ({ params }: { params: { lang: string } }) => {
 
   const goToCompare = () => {
     if (selectedForCompare.length >= 2) {
-      router.push(`/${locale}/credits/compare?ids=${selectedForCompare.join(',')}`);
+      router.push(`/credits/compare?ids=${selectedForCompare.join(',')}`);
     }
   };
 
@@ -152,7 +152,7 @@ const CreditsClient = ({ params }: { params: { lang: string } }) => {
           '@type': 'BankOrCreditUnion',
           name: bank.bank_name
         },
-        url: `https://kredit.az/${locale}/credits/${credit.slug}`
+        url: `https://kredit.az/credits/${credit.slug}`
       }))
     )
   };
@@ -171,7 +171,7 @@ const CreditsClient = ({ params }: { params: { lang: string } }) => {
         '@type': 'ListItem',
         position: 2,
         name: t.breadcrumbCurrent,
-        item: `https://kredit.az/${locale}/credits`
+        item: `https://kredit.az/credits`
       }
     ]
   };
@@ -206,7 +206,7 @@ const CreditsClient = ({ params }: { params: { lang: string } }) => {
               </h1>
             </div>
             <nav className="hidden md:flex justify-center items-center gap-1" aria-label="Breadcrumb">
-              <Link href={`/${locale}`} className="text-[#09121F] dark:text-gray-300 hover:text-[#FF6021] dark:hover:text-[#FF6021] text-center text-base font-normal leading-6 transition-colors">
+              <Link href={"/" className="text-[#09121F] dark:text-gray-300 hover:text-[#FF6021] dark:hover:text-[#FF6021] text-center text-base font-normal leading-6 transition-colors">
                 {t.breadcrumbHome}
               </Link>
               <span className="text-gray-600 dark:text-gray-400">&gt;</span>
@@ -303,7 +303,7 @@ const CreditsClient = ({ params }: { params: { lang: string } }) => {
                                         title={t.selectForCompare}
                                       />
                                       <Link 
-                                        href={`/${locale}/credits/${credit1.slug}`}
+                                        href={`/credits/${credit1.slug}`}
                                         className="flex flex-col gap-2 p-3 rounded-[12px] transition-all hover:scale-105 bg-[#E9F2EE] border border-[#FF6021] dark:bg-gray-700 dark:border-gray-600 block"
                                       >
                                       <div className="flex justify-between items-center">
@@ -343,7 +343,7 @@ const CreditsClient = ({ params }: { params: { lang: string } }) => {
                                         title={t.selectForCompare}
                                       />
                                       <Link 
-                                        href={`/${locale}/credits/${credit2.slug}`}
+                                        href={`/credits/${credit2.slug}`}
                                         className="flex flex-col gap-2 p-3 rounded-[12px] bg-[#E9F2EE] border border-[#FF6021] dark:bg-gray-700 dark:border-gray-600 transition-all hover:scale-105 block"
                                       >
                                       <div className="flex justify-between items-center">

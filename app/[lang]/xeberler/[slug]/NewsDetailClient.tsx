@@ -5,11 +5,10 @@ import { useQuery } from '@tanstack/react-query';
 import { Calendar, Eye, Clock, ArrowLeft, Facebook, Linkedin, Loader2, Tag } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
-import Link from 'next/link';
+import { Link } from '@/lib/navigation';
 import Script from 'next/script';
 import { UnifiedNewsCard } from '@/components/ui/unified-news-card';
 import { getImageUrl } from '@/lib/utils';
-import { getLocalizedPath } from '@/lib/utils/locale';
 
 interface NewsDetail {
   id: number;
@@ -326,7 +325,7 @@ const NewsDetailClient = ({ params, initialData }: NewsDetailClientProps) => {
           {error ? t.error : t.notFound}
         </h1>
         <Link
-          href={getLocalizedPath(locale, '/xeberler')}
+          href={'/xeberler'}
           className="text-brand-orange hover:text-brand-orange-dark transition-colors"
         >
           {t.back}
@@ -444,11 +443,11 @@ const NewsDetailClient = ({ params, initialData }: NewsDetailClientProps) => {
                 <span>{t.back}</span>
               </button>
               <div className="hidden md:flex items-center gap-1">
-                <Link href={getLocalizedPath(locale, '/')} className="text-black dark:text-gray-300 hover:text-[#FF6021] dark:hover:text-[#FF6021] transition-colors">
+                <Link href={'/'} className="text-black dark:text-gray-300 hover:text-[#FF6021] dark:hover:text-[#FF6021] transition-colors">
                   {t.breadcrumbHome}
                 </Link>
                 <span className="mx-2 text-gray-600 dark:text-gray-400">›</span>
-                <Link href={getLocalizedPath(locale, '/xeberler')} className="text-black dark:text-gray-300 hover:text-[#FF6021] dark:hover:text-[#FF6021] transition-colors">
+                <Link href={'/xeberler'} className="text-black dark:text-gray-300 hover:text-[#FF6021] dark:hover:text-[#FF6021] transition-colors">
                   {t.breadcrumbNews}
                 </Link>
                 <span className="mx-2 text-gray-600 dark:text-gray-400">›</span>
@@ -477,7 +476,7 @@ const NewsDetailClient = ({ params, initialData }: NewsDetailClientProps) => {
                   <div className="absolute top-4 left-4 right-4 flex justify-between items-start z-10">
                     {news.category && (
                       <Link
-                        href={getLocalizedPath(locale, `/xeberler/kat/${news.category.slug}`)}
+                        href={`/xeberler/kat/${news.category.slug}`}
                         className="inline-block px-3 py-1 bg-[#FF6021] text-white text-sm font-medium rounded-full hover:bg-brand-orange-dark transition-colors"
                       >
                         {news.category.title}
@@ -544,7 +543,7 @@ const NewsDetailClient = ({ params, initialData }: NewsDetailClientProps) => {
                     {news.hashtags.map((tag, index) => (
                       <Link
                         key={index}
-                        href={getLocalizedPath(locale, `/xeberler?tag=${encodeURIComponent(tag)}`)}
+                        href={`/xeberler?tag=${encodeURIComponent(tag}`)}
                         className="px-3 py-1 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 rounded-full text-sm hover:bg-[#FF6021] hover:text-white transition-colors flex items-center gap-1"
                       >
                         <Tag className="w-3 h-3" />
@@ -645,7 +644,7 @@ const NewsDetailClient = ({ params, initialData }: NewsDetailClientProps) => {
                       {latestNews.map((item: any) => (
                         <Link
                           key={item.id}
-                          href={getLocalizedPath(locale, `/xeberler/${item.slug}`)}
+                          href={`/xeberler/${item.slug}`}
                           className="block group"
                         >
                           <div className="bg-white dark:bg-gray-800 rounded-lg p-3 border border-gray-200 dark:border-gray-700 hover:border-[#FF6021] transition-colors">
@@ -674,7 +673,7 @@ const NewsDetailClient = ({ params, initialData }: NewsDetailClientProps) => {
 
                     {/* Load More Button */}
                     <Link
-                      href={getLocalizedPath(locale, '/xeberler')}
+                      href={'/xeberler'}
                       className="mt-4 block w-full text-center px-4 py-2 bg-[#FF6021] text-white rounded-lg hover:bg-brand-orange-dark transition-colors font-medium"
                     >
                       {t.loadMore}
@@ -710,7 +709,8 @@ const NewsDetailClient = ({ params, initialData }: NewsDetailClientProps) => {
                       {relatedByTags.slice(0, 5).map((item: any) => (
                         <Link
                           key={item.id}
-                          href={getLocalizedPath(item.language || locale, `/xeberler/${item.slug}`)}
+                          href={`/xeberler/${item.slug}`}
+                          locale={item.language || locale}
                           className="block group"
                         >
                           <div className="bg-white dark:bg-gray-800 rounded-lg p-3 border border-gray-200 dark:border-gray-700 hover:border-[#FF6021] transition-colors">

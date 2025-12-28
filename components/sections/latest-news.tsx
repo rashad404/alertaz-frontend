@@ -3,12 +3,11 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { ChevronRight } from "lucide-react";
-import Link from "next/link";
+import { Link } from '@/lib/navigation';
 import { useDictionary } from "@/providers/dictionary-provider";
 import { newsApi } from "@/lib/api/endpoints";
 import { UnifiedNewsCard } from "@/components/ui/unified-news-card";
 import { Pagination } from "@/components/ui/pagination";
-import { getLocalizedPath } from "@/lib/utils/locale";
 import { getTranslation } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 
@@ -56,7 +55,7 @@ export function LatestNews({ locale }: LatestNewsProps) {
           {t.latestNews}
         </h2>
         <Link
-          href={getLocalizedPath(locale, '/xeberler')}
+          href={'/xeberler'}
           className="flex items-center space-x-1 border border-black/50 dark:border-gray-600 text-black dark:text-white px-3 py-2 rounded-lg text-sm opacity-50 hover:opacity-100 transition-opacity"
         >
           <span>{t.moreNews}</span>

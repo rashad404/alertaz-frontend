@@ -1,11 +1,9 @@
 "use client";
 
-import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { Link, useRouter } from "@/lib/navigation";
 import { Calendar, Eye } from "lucide-react";
 import { useState } from "react";
 import { getImageUrl } from "@/lib/utils";
-import { getLocalizedPath } from "@/lib/utils/locale";
 
 interface NewsCardProps {
   news: {
@@ -155,7 +153,7 @@ export function UnifiedNewsCard({ news, locale, variant = 'default' }: NewsCardP
   if (variant === 'compact') {
     return (
       <div className="bg-gray-100 dark:bg-gray-800 rounded-xl overflow-hidden group">
-        <Link href={getLocalizedPath(locale, `/xeberler/${newsSlug}`)} className="block">
+        <Link href={`/xeberler/${newsSlug}`} className="block">
           <div className="relative h-48 md:h-64 overflow-hidden">
             <img
               src={imageUrl}
@@ -170,7 +168,7 @@ export function UnifiedNewsCard({ news, locale, variant = 'default' }: NewsCardP
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
-                    router.push(getLocalizedPath(locale, `/xeberler/kat/${news.category.slug}`));
+                    router.push(`/xeberler/kat/${news.category.slug}`);
                   }}
                   className={`${categoryColor} text-white px-2 py-1 rounded text-xs hover:opacity-90 transition-opacity cursor-pointer`}
                 >
@@ -184,7 +182,7 @@ export function UnifiedNewsCard({ news, locale, variant = 'default' }: NewsCardP
           </div>
         </Link>
         <div className="p-3">
-          <Link href={getLocalizedPath(locale, `/xeberler/${newsSlug}`)}>
+          <Link href={`/xeberler/${newsSlug}`}>
             <h4 className="text-lg font-bold text-black dark:text-white leading-tight hover:text-brand-orange transition-colors line-clamp-2">
               {title}{news.sub_title && <span className="text-[#FF6021]"> - {news.sub_title}</span>}
             </h4>
@@ -197,7 +195,7 @@ export function UnifiedNewsCard({ news, locale, variant = 'default' }: NewsCardP
   return (
     <article className="bg-white dark:bg-gray-800 rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow">
       {/* Thumbnail */}
-      <Link href={getLocalizedPath(locale, `/xeberler/${newsSlug}`)}>
+      <Link href={`/xeberler/${newsSlug}`}>
         <div className="relative h-48 bg-gray-200 dark:bg-gray-700 overflow-hidden">
           <img
             src={imageUrl}
@@ -210,7 +208,7 @@ export function UnifiedNewsCard({ news, locale, variant = 'default' }: NewsCardP
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                router.push(getLocalizedPath(locale, `/xeberler/kat/${news.category.slug}`));
+                router.push(`/xeberler/kat/${news.category.slug}`);
               }}
               className={`absolute top-3 left-3 ${categoryColor} text-white px-3 py-1 text-xs font-medium rounded-full hover:opacity-90 transition-opacity cursor-pointer`}
             >
@@ -237,7 +235,7 @@ export function UnifiedNewsCard({ news, locale, variant = 'default' }: NewsCardP
         </div>
 
         {/* Title */}
-        <Link href={getLocalizedPath(locale, `/xeberler/${newsSlug}`)}>
+        <Link href={`/xeberler/${newsSlug}`}>
           <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-3 line-clamp-2 hover:text-brand-orange transition-colors">
             {title}{news.sub_title && <span className="text-[#FF6021]"> - {news.sub_title}</span>}
           </h2>
@@ -258,7 +256,7 @@ export function UnifiedNewsCard({ news, locale, variant = 'default' }: NewsCardP
             </span>
           )}
           <Link
-            href={getLocalizedPath(locale, `/xeberler/${newsSlug}`)}
+            href={`/xeberler/${newsSlug}`}
             className="inline-flex items-center gap-1 text-brand-orange hover:text-brand-orange-dark transition-colors font-medium"
           >
             {t.readMore}

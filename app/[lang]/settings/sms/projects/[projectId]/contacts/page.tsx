@@ -5,7 +5,7 @@ import { useTranslations } from 'next-intl';
 import { projectsApi, Project } from '@/lib/api/projects';
 import { contactsApi, Contact, setContactsProjectToken } from '@/lib/api/contacts';
 import { campaignsApi, setProjectToken, AttributeSchema } from '@/lib/api/campaigns';
-import Link from 'next/link';
+import { Link } from '@/lib/navigation';
 import { useParams } from 'next/navigation';
 import { formatDateInTimezone } from '@/lib/utils/date';
 import { useTimezone } from '@/providers/timezone-provider';
@@ -354,7 +354,7 @@ export default function ProjectContactsPage() {
             {t('smsApi.projects.notFound')}
           </h3>
           <Link
-            href={`/${lang}/settings/sms/projects`}
+            href={`/settings/sms/projects`}
             className="cursor-pointer px-8 py-3 rounded-2xl font-medium text-white bg-gradient-to-r from-indigo-500 to-purple-500 hover:shadow-lg transition-all duration-300 hover:scale-105 inline-block"
           >
             {t('common.back')}
@@ -370,7 +370,7 @@ export default function ProjectContactsPage() {
         {/* Header Navigation */}
         <div className="mb-6">
           <Link
-            href={`/${lang}/settings/sms/projects/${projectId}/campaigns`}
+            href={`/settings/sms/projects/${projectId}/campaigns`}
             className="inline-flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors cursor-pointer mb-4"
           >
             <ArrowLeft className="w-4 h-4" />
@@ -485,7 +485,7 @@ export default function ProjectContactsPage() {
                 </div>
                 <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">{t('smsApi.contacts.quickStart.step2Desc')}</p>
                 <Link
-                  href={`/${lang}/docs/sms-api`}
+                  href={`/docs/sms-api`}
                   className="text-sm text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-1"
                 >
                   <Settings className="w-3 h-3" />
@@ -513,7 +513,7 @@ export default function ProjectContactsPage() {
                 </div>
                 <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">{t('smsApi.contacts.quickStart.step4Desc')}</p>
                 <Link
-                  href={`/${lang}/settings/sms/projects/${projectId}/campaigns/create`}
+                  href={`/settings/sms/projects/${projectId}/campaigns/create`}
                   className="text-sm text-indigo-600 dark:text-indigo-400 hover:underline"
                 >
                   {t('smsApi.campaigns.createCampaign')} →

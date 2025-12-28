@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import Link from 'next/link';
+import { Link } from '@/lib/navigation';
 import Script from 'next/script';
 import { ChevronRight, Calculator, FileText, Phone, MapPin, Clock, Check } from 'lucide-react';
 
@@ -138,7 +138,7 @@ const CreditDetailClient = ({ params, creditData }: CreditDetailClientProps) => 
     interestRate: creditData.interest_rate,
     annualPercentageRate: creditData.interest_rate,
     feesAndCommissionsSpecification: creditData.commission_rate ? `${creditData.commission_rate}%` : '0%',
-    url: `https://kredit.az/${locale}/credits/${creditData.slug}`
+    url: `https://kredit.az/credits/${creditData.slug}`
   };
 
   const breadcrumbSchema = {
@@ -155,13 +155,13 @@ const CreditDetailClient = ({ params, creditData }: CreditDetailClientProps) => 
         '@type': 'ListItem',
         position: 2,
         name: t.breadcrumbCredits,
-        item: `https://kredit.az/${locale}/credits`
+        item: `https://kredit.az/credits`
       },
       {
         '@type': 'ListItem',
         position: 3,
         name: creditData.credit_name,
-        item: `https://kredit.az/${locale}/credits/${creditData.slug}`
+        item: `https://kredit.az/credits/${creditData.slug}`
       }
     ]
   };
@@ -179,11 +179,11 @@ const CreditDetailClient = ({ params, creditData }: CreditDetailClientProps) => 
         {/* Breadcrumb */}
         <nav className="flex w-full justify-center px-4 sm:px-8 lg:px-36 py-4" aria-label="Breadcrumb">
           <div className="flex w-full max-w-5xl items-center gap-2 text-sm">
-            <Link href={`/${locale}`} className="text-gray-600 dark:text-gray-400 hover:text-[#FF6021] transition-colors">
+            <Link href={"/" className="text-gray-600 dark:text-gray-400 hover:text-[#FF6021] transition-colors">
               {t.breadcrumbHome}
             </Link>
             <ChevronRight className="w-4 h-4 text-gray-400" />
-            <Link href={`/${locale}/credits`} className="text-gray-600 dark:text-gray-400 hover:text-[#FF6021] transition-colors">
+            <Link href={`/credits`} className="text-gray-600 dark:text-gray-400 hover:text-[#FF6021] transition-colors">
               {t.breadcrumbCredits}
             </Link>
             <ChevronRight className="w-4 h-4 text-gray-400" />

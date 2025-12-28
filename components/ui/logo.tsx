@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { Link } from "@/lib/navigation";
 import Image from "next/image";
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
@@ -16,8 +16,8 @@ export function Logo({ locale = 'az' }: { locale?: string }) {
     setMounted(true);
   }, []);
 
-  // For 'az' locale, use root path. For others, maintain the locale
-  const homePath = locale === 'az' ? '/' : `/${locale}`;
+  // With locale-aware Link, just use root path
+  const homePath = '/';
 
   const handleLogoClick = (e: React.MouseEvent) => {
     const isHomePage = pathname === '/' || pathname === `/${locale}` || pathname === '/az' || pathname === '/en' || pathname === '/ru';

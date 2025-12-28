@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import Link from 'next/link';
+import { Link } from '@/lib/navigation';
 import { Bell, TrendingUp, Bitcoin, Globe, Cloud, DollarSign, Plane, Check, ArrowRight, ArrowLeft, Sparkles, Edit3, Mail, Send, MessageCircle, Smartphone, Info } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import alertsService from '@/lib/api/alerts';

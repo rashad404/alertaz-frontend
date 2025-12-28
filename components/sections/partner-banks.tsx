@@ -2,13 +2,12 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { ChevronRight } from "lucide-react";
-import Link from "next/link";
+import { Link } from '@/lib/navigation';
 import { useState } from "react";
 import { useDictionary } from "@/providers/dictionary-provider";
 import { companyApi } from "@/lib/api/endpoints";
 import { getImageUrl } from "@/lib/utils";
 import { parseTranslatedContent } from "@/lib/utils/translation";
-import { getLocalizedPath } from "@/lib/utils/locale";
 
 interface PartnerBanksProps {
   locale: string;
@@ -43,7 +42,7 @@ export function PartnerBanks({ locale }: PartnerBanksProps) {
           {t.partnerBanks}
         </h2>
         <Link
-          href={getLocalizedPath(locale, '/sirketler/banklar')}
+          href={'/sirketler/banklar'}
           className="flex items-center space-x-1 border border-black/50 dark:border-gray-600 text-black dark:text-white px-3 py-2 rounded-lg text-sm opacity-50 hover:opacity-100 transition-opacity"
         >
           <span>{t.moreBanks}</span>

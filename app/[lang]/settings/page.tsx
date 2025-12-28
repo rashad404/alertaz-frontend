@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import Link from 'next/link';
+import { Link } from '@/lib/navigation';
 import {
   User,
   Bell,
@@ -28,7 +28,7 @@ export default function SettingsPage() {
     const token = localStorage.getItem('token');
 
     if (!token) {
-      router.push(`/${locale}/login`);
+      router.push(`/login`);
       return;
     }
 
@@ -70,7 +70,7 @@ export default function SettingsPage() {
       title: t('settings.profile.title'),
       description: t('settings.profile.description'),
       icon: User,
-      href: `/${locale}/settings/profile`,
+      href: `/settings/profile`,
       color: 'text-indigo-600 dark:text-indigo-400',
       bgColor: 'bg-indigo-100 dark:bg-indigo-900/30'
     },
@@ -79,7 +79,7 @@ export default function SettingsPage() {
       title: t('settings.notifications'),
       description: t('settings.notificationsDescription'),
       icon: Bell,
-      href: `/${locale}/settings/notifications`,
+      href: `/settings/notifications`,
       color: 'text-yellow-600 dark:text-yellow-400',
       bgColor: 'bg-yellow-100 dark:bg-yellow-900/30'
     },
@@ -88,7 +88,7 @@ export default function SettingsPage() {
       title: t('settings.security.title'),
       description: t('settings.security.description'),
       icon: Shield,
-      href: `/${locale}/settings/security`,
+      href: `/settings/security`,
       color: 'text-green-600 dark:text-green-400',
       bgColor: 'bg-green-100 dark:bg-green-900/30'
     }
@@ -152,7 +152,7 @@ export default function SettingsPage() {
 
               {/* Edit Profile Button */}
               <Link
-                href={`/${locale}/settings/profile`}
+                href={`/settings/profile`}
                 className="w-full px-4 py-2.5 bg-gradient-to-r from-indigo-500 to-purple-500 text-white rounded-2xl hover:shadow-lg hover:scale-105 transition-all duration-300 text-center font-medium text-sm flex items-center justify-center gap-2"
               >
                 <Edit2 className="w-4 h-4" />

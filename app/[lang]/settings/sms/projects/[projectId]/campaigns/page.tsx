@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { projectsApi, Project } from '@/lib/api/projects';
 import { campaignsApi, Campaign, setProjectToken } from '@/lib/api/campaigns';
-import Link from 'next/link';
+import { Link } from '@/lib/navigation';
 import { useParams, useRouter } from 'next/navigation';
 import { formatDateInTimezone, convertRunHoursToTimezone } from '@/lib/utils/date';
 import { useTimezone } from '@/providers/timezone-provider';
@@ -178,7 +178,7 @@ export default function ProjectCampaignsPage() {
   const handleDuplicate = async (id: number) => {
     try {
       const result = await campaignsApi.duplicate(id);
-      router.push(`/${lang}/settings/sms/projects/${projectId}/campaigns/${result.campaign.id}`);
+      router.push(`/settings/sms/projects/${projectId}/campaigns/${result.campaign.id}`);
     } catch (err: any) {
       setError(err.response?.data?.message || 'Failed to duplicate campaign');
     }
@@ -220,7 +220,7 @@ export default function ProjectCampaignsPage() {
               {error || 'The project you are looking for does not exist.'}
             </p>
             <Link
-              href={`/${lang}/settings/sms/projects`}
+              href={`/settings/sms/projects`}
               className="cursor-pointer px-8 py-3 rounded-2xl font-medium text-white bg-gradient-to-r from-indigo-500 to-purple-500 hover:shadow-lg transition-all duration-300 hover:scale-105 inline-block"
             >
               {t('common.back')}
@@ -237,7 +237,7 @@ export default function ProjectCampaignsPage() {
         {/* Back Button & Project Info */}
         <div className="mb-6">
           <Link
-            href={`/${lang}/settings/sms/projects`}
+            href={`/settings/sms/projects`}
             className="inline-flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors cursor-pointer mb-4"
           >
             <ArrowLeft className="w-4 h-4" />
@@ -265,14 +265,14 @@ export default function ProjectCampaignsPage() {
           </div>
           <div className="flex items-center gap-3">
             <Link
-              href={`/${lang}/settings/sms/projects/${projectId}/contacts`}
+              href={`/settings/sms/projects/${projectId}/contacts`}
               className="cursor-pointer px-6 py-3 rounded-2xl font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 transition-all duration-300 hover:shadow-lg hover:scale-105 flex items-center gap-2"
             >
               <Users className="w-5 h-5" />
               {t('smsApi.contacts.title')}
             </Link>
             <Link
-              href={`/${lang}/settings/sms/projects/${projectId}/campaigns/create`}
+              href={`/settings/sms/projects/${projectId}/campaigns/create`}
               className="cursor-pointer group relative px-6 py-3 rounded-2xl font-medium text-white bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 transition-all duration-300 hover:shadow-lg hover:scale-105 overflow-hidden"
             >
               <span className="absolute inset-0 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
@@ -304,7 +304,7 @@ export default function ProjectCampaignsPage() {
               {t('smsApi.campaigns.noCampaignsDesc')}
             </p>
             <Link
-              href={`/${lang}/settings/sms/projects/${projectId}/campaigns/create`}
+              href={`/settings/sms/projects/${projectId}/campaigns/create`}
               className="cursor-pointer px-8 py-3 rounded-2xl font-medium text-white bg-gradient-to-r from-indigo-500 to-purple-500 hover:shadow-lg transition-all duration-300 hover:scale-105 inline-block"
             >
               {t('smsApi.campaigns.createCampaign')}
@@ -315,7 +315,7 @@ export default function ProjectCampaignsPage() {
             {campaigns.map((campaign) => (
               <div
                 key={campaign.id}
-                onClick={() => router.push(`/${lang}/settings/sms/projects/${projectId}/campaigns/${campaign.id}`)}
+                onClick={() => router.push(`/settings/sms/projects/${projectId}/campaigns/${campaign.id}`)}
                 className={`block relative rounded-2xl p-6 bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50 transition-all duration-300 hover:shadow-xl hover:shadow-indigo-500/10 cursor-pointer ${openMenuId === campaign.id ? 'z-50' : 'z-0'}`}
               >
                 <div className="flex items-center justify-between">
@@ -414,7 +414,7 @@ export default function ProjectCampaignsPage() {
                           {campaign.status === 'draft' && (
                             <>
                               <Link
-                                href={`/${lang}/settings/sms/projects/${projectId}/campaigns/${campaign.id}/edit`}
+                                href={`/settings/sms/projects/${projectId}/campaigns/${campaign.id}/edit`}
                                 className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                                 onClick={(e) => {
                                   e.stopPropagation();
@@ -451,7 +451,7 @@ export default function ProjectCampaignsPage() {
                             </button>
                           )}
                           <Link
-                            href={`/${lang}/settings/sms/projects/${projectId}/campaigns/${campaign.id}`}
+                            href={`/settings/sms/projects/${projectId}/campaigns/${campaign.id}`}
                             className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                             onClick={(e) => {
                               e.stopPropagation();

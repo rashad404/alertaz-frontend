@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import Link from 'next/link';
+import { Link } from '@/lib/navigation';
 import { Scale, X, ChevronRight } from 'lucide-react';
 import { useComparison } from '@/contexts/comparison-context';
 import { getTranslation } from '@/lib/utils';
@@ -143,7 +143,7 @@ export function ComparisonIcon({ locale }: ComparisonIconProps) {
                       </div>
                       {items.length >= 2 && (
                         <Link
-                          href={`/${locale}/kreditler/muqayise?category=${categorySlug}&ids=${items.map(i => i.offer.id).join(',')}`}
+                          href={`/kreditler/muqayise?category=${categorySlug}&ids=${items.map(i => i.offer.id).join(',')}`}
                           className="mt-2 flex items-center justify-center gap-1 w-full px-3 py-2 bg-brand-orange hover:bg-brand-orange-dark text-white text-sm font-medium rounded-lg transition-colors"
                           onClick={() => setIsOpen(false)}
                         >

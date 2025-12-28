@@ -5,7 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 import { ChevronDown, Search, Loader2 } from 'lucide-react';
 import { useParams } from 'next/navigation';
 import axios from 'axios';
-import Link from 'next/link';
+import { Link } from '@/lib/navigation';
 
 interface FaqItem {
   id: number;
@@ -31,7 +31,7 @@ const FaqPage = () => {
   const { data: faqData, isLoading: faqLoading } = useQuery({
     queryKey: ['faqs', locale],
     queryFn: async () => {
-      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/${locale}/faq`);
+      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/faq`);
       return response.data.data as FaqItem[];
     }
   });
@@ -40,7 +40,7 @@ const FaqPage = () => {
   const { data: pageContent, isLoading: pageLoading } = useQuery({
     queryKey: ['faqPageContent', locale],
     queryFn: async () => {
-      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/${locale}/faq/page-content`);
+      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/faq/page-content`);
       return response.data.data as FaqPageContent;
     }
   });
@@ -139,7 +139,7 @@ const FaqPage = () => {
               )}
             </div>
             <div className="hidden md:flex items-center gap-1">
-              <Link href={`/${locale}`} className="text-black dark:text-gray-300 hover:text-brand-orange dark:hover:text-brand-orange transition-colors">
+              <Link href={"/" className="text-black dark:text-gray-300 hover:text-brand-orange dark:hover:text-brand-orange transition-colors">
                 {t.breadcrumbHome}
               </Link>
               <span className="mx-2 text-gray-600 dark:text-gray-400">›</span>
@@ -239,7 +239,7 @@ const FaqPage = () => {
           <div className="mt-12 p-8 bg-gray-50 dark:bg-gray-800 rounded-2xl text-center">
             <h3 className="text-2xl font-bold mb-4 text-gray-900 dark:text-white">{t.contactPrompt}</h3>
             <Link
-              href={`/${locale}/elaqe`}
+              href={`/elaqe`}
               className="inline-flex items-center px-8 py-3 bg-brand-orange text-white rounded-lg hover:bg-brand-orange-dark transition-colors"
             >
               {t.contactButton}

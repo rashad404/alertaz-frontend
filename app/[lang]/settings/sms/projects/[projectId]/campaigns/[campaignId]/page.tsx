@@ -5,7 +5,7 @@ import { useTranslations } from 'next-intl';
 import { useParams } from 'next/navigation';
 import { projectsApi, Project } from '@/lib/api/projects';
 import { campaignsApi, Campaign, CampaignMessage, PlannedContact, AttributeSchema, setProjectToken } from '@/lib/api/campaigns';
-import Link from 'next/link';
+import { Link } from '@/lib/navigation';
 import { formatDateInTimezone, convertRunHoursToTimezone } from '@/lib/utils/date';
 import { useTimezone } from '@/providers/timezone-provider';
 import {
@@ -296,7 +296,7 @@ export default function CampaignDetailPage() {
 
     try {
       await campaignsApi.delete(campaign.id);
-      window.location.href = `/${lang}/settings/sms/projects/${projectId}/campaigns`;
+      window.location.href = `/settings/sms/projects/${projectId}/campaigns`;
     } catch (err: any) {
       setError(err.response?.data?.message || 'Failed to delete campaign');
     }
@@ -320,7 +320,7 @@ export default function CampaignDetailPage() {
     try {
       const result = await campaignsApi.duplicate(campaign.id);
       // Redirect to the new campaign
-      window.location.href = `/${lang}/settings/sms/projects/${projectId}/campaigns/${result.campaign.id}`;
+      window.location.href = `/settings/sms/projects/${projectId}/campaigns/${result.campaign.id}`;
     } catch (err: any) {
       setError(err.response?.data?.message || 'Failed to duplicate campaign');
     }
@@ -486,7 +486,7 @@ export default function CampaignDetailPage() {
           </h3>
           <p className="text-gray-600 dark:text-gray-400 mb-8">{error}</p>
           <Link
-            href={`/${lang}/settings/sms/projects/${projectId}/campaigns`}
+            href={`/settings/sms/projects/${projectId}/campaigns`}
             className="cursor-pointer px-8 py-3 rounded-2xl font-medium text-white bg-gradient-to-r from-indigo-500 to-purple-500 hover:shadow-lg transition-all duration-300 hover:scale-105 inline-block"
           >
             {t('common.back')}
@@ -502,7 +502,7 @@ export default function CampaignDetailPage() {
         {/* Header */}
         <div className="mb-8">
           <Link
-            href={`/${lang}/settings/sms/projects/${projectId}/campaigns`}
+            href={`/settings/sms/projects/${projectId}/campaigns`}
             className="inline-flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors cursor-pointer mb-4"
           >
             <ArrowLeft className="w-4 h-4" />
@@ -539,7 +539,7 @@ export default function CampaignDetailPage() {
             {campaign.status === 'draft' && (
               <>
                 <Link
-                  href={`/${lang}/settings/sms/projects/${projectId}/campaigns/${campaignId}/edit`}
+                  href={`/settings/sms/projects/${projectId}/campaigns/${campaignId}/edit`}
                   className="cursor-pointer flex items-center gap-2 px-5 py-2.5 rounded-xl font-medium bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all text-sm"
                 >
                   <Pencil className="w-4 h-4" />
@@ -578,7 +578,7 @@ export default function CampaignDetailPage() {
             {campaign.status === 'paused' && campaign.type === 'automated' && (
               <>
                 <Link
-                  href={`/${lang}/settings/sms/projects/${projectId}/campaigns/${campaignId}/edit`}
+                  href={`/settings/sms/projects/${projectId}/campaigns/${campaignId}/edit`}
                   className="cursor-pointer flex items-center gap-2 px-5 py-2.5 rounded-xl font-medium bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all text-sm"
                 >
                   <Pencil className="w-4 h-4" />

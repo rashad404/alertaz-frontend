@@ -1,6 +1,6 @@
 'use client';
 
-import Link from 'next/link';
+import { Link } from '@/lib/navigation';
 import { ChevronRight, TrendingUp, Clock, DollarSign, Percent, Calendar, Building2 } from 'lucide-react';
 
 interface CompanyProductCardsProps {

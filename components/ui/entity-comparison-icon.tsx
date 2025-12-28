@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import Link from 'next/link';
+import { Link } from '@/lib/navigation';
 import { Scale, X, ChevronRight, CreditCard, Home, Shield, Banknote, Building2, GraduationCap, Briefcase, Car, Zap, MapPin, DollarSign, Circle } from 'lucide-react';
 import { useEntityComparison } from '@/contexts/entity-comparison-context';
 import { cn } from '@/lib/utils';
@@ -213,7 +213,7 @@ export function EntityComparisonIcon({ locale }: EntityComparisonIconProps) {
                     <div key={entityType} className="group">
                       {/* Entity Type Card - Clickable */}
                       <Link
-                        href={typeItems.length >= 2 ? `/${locale}/muqayise/${entityType}` : '#'}
+                        href={typeItems.length >= 2 ? `/muqayise/${entityType}` : '#'}
                         className={cn(
                           "block p-4 rounded-xl border transition-all duration-200",
                           typeItems.length >= 2

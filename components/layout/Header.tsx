@@ -1,11 +1,12 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Link from 'next/link';
+import { Link } from '@/lib/navigation';
 import { useRouter, usePathname } from 'next/navigation';
 import { Menu, X, Bell, User, Activity, Plus, LogOut } from 'lucide-react';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
 import { TimezoneSelector } from '@/components/ui/timezone-selector';
+import { LanguageSwitcher } from '@/components/ui/language-switcher';
 import { useTranslations } from 'next-intl';
 import NotificationCenter from '@/components/notifications/NotificationCenter';
 
@@ -17,6 +18,17 @@ export default function Header() {
   const [isMounted, setIsMounted] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
+
+  // Extract locale from pathname
+  const getLocale = () => {
+    const segments = pathname.split('/');
+    const possibleLocale = segments[1];
+    if (['en', 'ru'].includes(possibleLocale)) {
+      return possibleLocale;
+    }
+    return 'az'; // default
+  };
+  const locale = getLocale();
 
   useEffect(() => {
     // Check authentication status
@@ -109,6 +121,7 @@ export default function Header() {
               </>
             )}
 
+            <LanguageSwitcher locale={locale} />
             <TimezoneSelector />
             <ThemeToggle />
 
@@ -150,6 +163,7 @@ export default function Header() {
 
           {/* Mobile menu button */}
           <div className="flex items-center gap-3 md:hidden">
+            <LanguageSwitcher locale={locale} />
             <TimezoneSelector />
             <ThemeToggle />
             <button

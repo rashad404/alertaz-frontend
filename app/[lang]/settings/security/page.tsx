@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import Link from 'next/link';
+import { Link } from '@/lib/navigation';
 import {
   Shield,
   Lock,
@@ -68,7 +68,7 @@ export default function SecuritySettingsPage() {
       const token = localStorage.getItem('token');
 
       if (!token) {
-        router.push(`/${locale}/login`);
+        router.push(`/login`);
         return;
       }
 
@@ -115,7 +115,7 @@ export default function SecuritySettingsPage() {
       <div className="max-w-4xl mx-auto">
         {/* Back Button */}
         <Link
-          href={`/${locale}/settings`}
+          href={`/settings`}
           className="inline-flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white mb-6 transition-colors"
         >
           <ChevronLeft className="w-5 h-5" />
@@ -260,7 +260,7 @@ export default function SecuritySettingsPage() {
             {/* Submit Button */}
             <div className="flex gap-4 pt-4">
               <Link
-                href={`/${locale}/settings`}
+                href={`/settings`}
                 className="flex-1 px-6 py-3 rounded-2xl border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-center"
               >
                 {t('common.cancel')}

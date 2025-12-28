@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, use } from "react";
-import Link from "next/link";
+import { Link } from '@/lib/navigation';
 import { BookOpen, CreditCard, Shield, PiggyBank, FileText, CheckCircle, Clock, Loader2 } from "lucide-react";
 import { useDictionary } from "@/providers/dictionary-provider";
 

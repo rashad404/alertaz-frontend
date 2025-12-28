@@ -6,7 +6,7 @@ import { useRouter, useParams } from 'next/navigation';
 import { projectsApi, Project } from '@/lib/api/projects';
 import { campaignsApi, Campaign, SegmentFilter, AttributeSchema, setProjectToken } from '@/lib/api/campaigns';
 import SegmentBuilder from '@/components/sms/SegmentBuilder';
-import Link from 'next/link';
+import { Link } from '@/lib/navigation';
 import { convertHourToUTC, convertHourFromUTC } from '@/lib/utils/date';
 import { useTimezone } from '@/providers/timezone-provider';
 import {
@@ -187,7 +187,7 @@ export default function EditCampaignPage() {
       }
 
       await campaignsApi.update(campaign.id, payload);
-      router.push(`/${lang}/settings/sms/projects/${projectId}/campaigns/${campaignId}`);
+      router.push(`/settings/sms/projects/${projectId}/campaigns/${campaignId}`);
     } catch (err: any) {
       setError(err.response?.data?.message || 'Failed to update campaign');
     } finally {
@@ -252,7 +252,7 @@ export default function EditCampaignPage() {
           </h3>
           <p className="text-gray-600 dark:text-gray-400 mb-8">{error}</p>
           <Link
-            href={`/${lang}/settings/sms/projects/${projectId}/campaigns`}
+            href={`/settings/sms/projects/${projectId}/campaigns`}
             className="cursor-pointer px-8 py-3 rounded-2xl font-medium text-white bg-gradient-to-r from-indigo-500 to-purple-500 hover:shadow-lg transition-all duration-300 hover:scale-105 inline-block"
           >
             {t('common.back')}
@@ -277,7 +277,7 @@ export default function EditCampaignPage() {
             {t('smsApi.campaigns.cannotEditNonDraftDesc')}
           </p>
           <Link
-            href={`/${lang}/settings/sms/projects/${projectId}/campaigns/${campaignId}`}
+            href={`/settings/sms/projects/${projectId}/campaigns/${campaignId}`}
             className="cursor-pointer px-8 py-3 rounded-2xl font-medium text-white bg-gradient-to-r from-indigo-500 to-purple-500 hover:shadow-lg transition-all duration-300 hover:scale-105 inline-block"
           >
             {t('common.back')}
@@ -293,7 +293,7 @@ export default function EditCampaignPage() {
         {/* Header */}
         <div className="mb-8">
           <Link
-            href={`/${lang}/settings/sms/projects/${projectId}/campaigns/${campaignId}`}
+            href={`/settings/sms/projects/${projectId}/campaigns/${campaignId}`}
             className="inline-flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors cursor-pointer mb-4"
           >
             <ArrowLeft className="w-4 h-4" />

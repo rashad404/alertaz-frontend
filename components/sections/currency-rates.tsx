@@ -2,10 +2,9 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { ArrowUp, ChevronRight } from "lucide-react";
-import Link from "next/link";
+import { Link } from '@/lib/navigation';
 import { useDictionary } from "@/providers/dictionary-provider";
 import { currencyApi } from "@/lib/api/endpoints";
-import { getLocalizedPath } from "@/lib/utils/locale";
 import { cn } from "@/lib/utils";
 
 interface CurrencyRatesProps {
@@ -79,7 +78,7 @@ export function CurrencyRates({ locale }: CurrencyRatesProps) {
         </div>
         
         <Link
-          href={getLocalizedPath(locale, '/kalkulyator/valyuta')}
+          href={'/kalkulyator/valyuta'}
           className="hidden sm:flex items-center space-x-1 border border-black/50 dark:border-gray-600 text-black dark:text-white px-3 py-2 rounded-lg text-sm opacity-50 hover:opacity-100 transition-opacity"
         >
           <span>{t.exchangeRates}</span>

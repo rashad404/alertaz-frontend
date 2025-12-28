@@ -2,11 +2,10 @@
 
 import React, { useEffect, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import Link from 'next/link';
+import { Link } from '@/lib/navigation';
 import { ChevronLeft, X, Plus, Loader2 } from 'lucide-react';
 import { useComparison } from '@/contexts/comparison-context';
 import { getTranslation, formatCurrency } from '@/lib/utils';
-import { getLocalizedPath } from '@/lib/utils/locale';
 import { useQuery } from '@tanstack/react-query';
 import apiClient from '@/lib/api/client';
 import type { Offer } from '@/lib/types';
@@ -190,7 +189,7 @@ export default function CompareClientNew({ params }: CompareClientNewProps) {
   const handleClearAll = () => {
     if (selectedCategory) {
       clearComparison(selectedCategory);
-      router.push(getLocalizedPath(lang, '/credits'));
+      router.push('/credits');
     }
   };
 
@@ -225,7 +224,7 @@ export default function CompareClientNew({ params }: CompareClientNewProps) {
         <div className="text-center">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">{t.noItems}</h1>
           <Link
-            href={getLocalizedPath(lang, '/credits')}
+            href={'/credits'}
             className="inline-flex items-center gap-2 px-6 py-3 bg-brand-orange hover:bg-brand-orange-dark text-white font-medium rounded-lg transition-colors"
           >
             <ChevronLeft className="w-5 h-5" />
@@ -247,7 +246,7 @@ export default function CompareClientNew({ params }: CompareClientNewProps) {
               {selectedCategory ? t.noItems : t.selectCategory}
             </h1>
             <Link
-              href={getLocalizedPath(lang, '/credits')}
+              href={'/credits'}
               className="inline-flex items-center gap-2 px-6 py-3 bg-brand-orange hover:bg-brand-orange-dark text-white font-medium rounded-lg transition-colors"
             >
               <ChevronLeft className="w-5 h-5" />
@@ -269,7 +268,7 @@ export default function CompareClientNew({ params }: CompareClientNewProps) {
           <div className="px-4 py-4" suppressHydrationWarning>
             <div className="flex items-center justify-between mb-3">
               <Link
-                href={getLocalizedPath(lang, '/credits')}
+                href={'/credits'}
                 className="p-2 -ml-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
               >
                 <ChevronLeft className="w-5 h-5" />
@@ -379,7 +378,7 @@ export default function CompareClientNew({ params }: CompareClientNewProps) {
                   {t.apply}
                 </a>
                 <Link
-                  href={getLocalizedPath(lang, `/offers/${comparisonItems[mobileSelectedIndex].offer.id}`)}
+                  href={`/offers/${comparisonItems[mobileSelectedIndex].offer.id}`}
                   className="block w-full px-4 py-3 border border-brand-orange text-brand-orange hover:bg-brand-orange/10 text-center font-medium rounded-lg transition-colors"
                 >
                   {t.details}
@@ -404,7 +403,7 @@ export default function CompareClientNew({ params }: CompareClientNewProps) {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
                 <Link
-                  href={getLocalizedPath(lang, '/credits')}
+                  href={'/credits'}
                   className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
                 >
                   <ChevronLeft className="w-5 h-5" />
@@ -562,7 +561,7 @@ export default function CompareClientNew({ params }: CompareClientNewProps) {
                             {t.apply}
                           </a>
                           <Link
-                            href={getLocalizedPath(lang, `/offers/${item.offer.id}`)}
+                            href={`/offers/${item.offer.id}`}
                             className="block w-full px-4 py-2 border border-brand-orange text-brand-orange hover:bg-brand-orange/10 text-center font-medium rounded-lg transition-colors"
                           >
                             {t.details}

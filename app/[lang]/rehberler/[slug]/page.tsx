@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, use } from "react";
-import Link from "next/link";
+import { Link } from '@/lib/navigation';
 import { Clock, Eye, ArrowLeft, BookOpen, Loader2 } from "lucide-react";
 import { useDictionary } from "@/providers/dictionary-provider";
 import { notFound } from "next/navigation";

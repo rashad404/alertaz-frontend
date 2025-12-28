@@ -1,18 +1,17 @@
 "use client";
 
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { ChevronDown } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { i18n, type Locale } from "@/i18n-config";
 
 const languageNames: Record<Locale, string> = {
-  az: "AZE",
-  en: "ENG",
-  ru: "RUS",
+  az: "AZ",
+  en: "EN",
+  ru: "RU",
 };
 
 export function LanguageSwitcher({ locale }: { locale: string }) {
-  const router = useRouter();
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -30,13 +29,12 @@ export function LanguageSwitcher({ locale }: { locale: string }) {
   const handleLanguageChange = (newLocale: Locale) => {
     // Remove the current locale prefix from pathname
     let currentPathname = pathname;
-    
+
     // If current locale is not 'az', remove the locale prefix
     if (locale !== 'az') {
-      currentPathname = pathname.replace(`/${locale}`, "");
+      currentPathname = pathname.replace(`/${locale}`, "") || '/';
     }
-    // If current locale is 'az' (no prefix), pathname is already correct
-    
+
     // Build new path based on target locale
     let newPath: string;
     if (newLocale === 'az') {
@@ -44,10 +42,16 @@ export function LanguageSwitcher({ locale }: { locale: string }) {
       newPath = currentPathname || '/';
     } else {
       // For other locales, add the prefix
-      newPath = `/${newLocale}${currentPathname}`;
+      // Handle root path specially to avoid '/en/'
+      if (currentPathname === '/') {
+        newPath = `/${newLocale}`;
+      } else {
+        newPath = `/${newLocale}${currentPathname}`;
+      }
     }
-    
-    router.push(newPath);
+
+    // Use full page reload to ensure NextIntlClientProvider loads new locale messages
+    window.location.href = newPath;
     setIsOpen(false);
   };
 

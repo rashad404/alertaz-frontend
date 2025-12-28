@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import Link from 'next/link';
+import { Link } from '@/lib/navigation';
 import { ArrowRight, Code, Megaphone, Zap, Users, Clock, Shield, BarChart3 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import Link from 'next/link';
+import { Link } from '@/lib/navigation';
 import CompanyProductCards from '@/components/company/CompanyProductCards';
 import { 
   Phone, 
@@ -318,15 +318,15 @@ export default function CompanyDetailWithEntities({ params, companyData }: Compa
           <div className="w-full max-w-5xl">
             {/* Breadcrumbs */}
             <div className="flex items-center gap-2 mb-6 text-sm">
-              <Link href={`/${lang}`} className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+              <Link href={"/" className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
                 {breadcrumbLabels.home}
               </Link>
               <span className="text-gray-400">›</span>
-              <Link href={`/${lang}/sirketler`} className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+              <Link href={`/sirketler`} className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
                 {breadcrumbLabels.companies}
               </Link>
               <span className="text-gray-400">›</span>
-              <Link href={`/${lang}/sirketler/${companyType}`} className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+              <Link href={`/sirketler/${companyType}`} className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
                 {breadcrumbLabels[companyType] || companyType}
               </Link>
               <span className="text-gray-400">›</span>

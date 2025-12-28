@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Loader2, Plus, X, Check, ChevronLeft } from 'lucide-react';
-import Link from 'next/link';
+import { Link } from '@/lib/navigation';
 import axios from 'axios';
 import Script from 'next/script';
 import { useRouter } from 'next/navigation';
@@ -51,7 +51,7 @@ const CompareClient = ({ params, initialIds }: CompareClientProps) => {
   const { data: allCreditsData, isLoading: isLoadingAll } = useQuery({
     queryKey: ['all-credits', locale],
     queryFn: async () => {
-      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/${locale}/kreditler`, {
+      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/kreditler`, {
         params: { per_page: 100 }
       });
       return response.data;
@@ -63,7 +63,7 @@ const CompareClient = ({ params, initialIds }: CompareClientProps) => {
     queryKey: ['credit-comparison', selectedCredits, locale],
     queryFn: async () => {
       if (selectedCredits.length < 2) return null;
-      const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/${locale}/kreditler/compare`, {
+      const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/kreditler/compare`, {
         ids: selectedCredits
       });
       return response.data;
@@ -74,7 +74,7 @@ const CompareClient = ({ params, initialIds }: CompareClientProps) => {
   // Update URL when credits change
   useEffect(() => {
     if (selectedCredits.length > 0) {
-      const newUrl = `/${locale}/credits/compare?ids=${selectedCredits.join(',')}`;
+      const newUrl = `/credits/compare?ids=${selectedCredits.join(',')}`;
       window.history.replaceState(null, '', newUrl);
     }
   }, [selectedCredits, locale]);
@@ -201,7 +201,7 @@ const CompareClient = ({ params, initialIds }: CompareClientProps) => {
         name: credit.bank_name
       },
       interestRate: credit.interest_rate,
-      url: `https://kredit.az/${locale}/credits/${credit.slug}`
+      url: `https://kredit.az/credits/${credit.slug}`
     })) || []
   };
 
@@ -228,11 +228,11 @@ const CompareClient = ({ params, initialIds }: CompareClientProps) => {
         {/* Breadcrumb */}
         <nav className="flex w-full justify-center px-4 sm:px-8 lg:px-36 py-4" aria-label="Breadcrumb">
           <div className="flex w-full max-w-5xl items-center gap-2 text-sm">
-            <Link href={`/${locale}`} className="text-gray-600 dark:text-gray-400 hover:text-[#FF6021] transition-colors">
+            <Link href={"/" className="text-gray-600 dark:text-gray-400 hover:text-[#FF6021] transition-colors">
               {t.breadcrumbHome}
             </Link>
             <span className="text-gray-400">&gt;</span>
-            <Link href={`/${locale}/credits`} className="text-gray-600 dark:text-gray-400 hover:text-[#FF6021] transition-colors">
+            <Link href={`/credits`} className="text-gray-600 dark:text-gray-400 hover:text-[#FF6021] transition-colors">
               {t.breadcrumbCredits}
             </Link>
             <span className="text-gray-400">&gt;</span>
@@ -247,7 +247,7 @@ const CompareClient = ({ params, initialIds }: CompareClientProps) => {
               {t.title}
             </h1>
             <Link 
-              href={`/${locale}/credits`}
+              href={`/credits`}
               className="flex items-center gap-2 px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-[#FF6021] transition-colors"
             >
               <ChevronLeft className="w-5 h-5" />
@@ -263,7 +263,7 @@ const CompareClient = ({ params, initialIds }: CompareClientProps) => {
               <div className="text-center py-12 bg-[#F6F6F6] dark:bg-gray-800 rounded-2xl">
                 <p className="text-gray-600 dark:text-gray-400 text-lg mb-6">{t.minCredits}</p>
                 <button
-                  onClick={() => router.push(`/${locale}/credits`)}
+                  onClick={() => router.push(`/credits`)}
                   className="px-6 py-3 bg-[#FF6021] hover:bg-[#E54500] text-white font-bold rounded-xl transition-colors"
                 >
                   {t.selectCredits}
@@ -451,7 +451,7 @@ const CompareClient = ({ params, initialIds }: CompareClientProps) => {
                         {credits.map((credit: Credit) => (
                           <div key={`apply-${credit.id}`} className="col-span-1">
                             <Link
-                              href={`/${locale}/credits/${credit.slug}`}
+                              href={`/credits/${credit.slug}`}
                               className="block w-full text-center py-3 px-4 bg-[#FF6021] hover:bg-[#E54500] text-white font-bold rounded-xl transition-colors"
                             >
                               {t.applyNow}

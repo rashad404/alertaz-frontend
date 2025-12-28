@@ -5,7 +5,7 @@ import { Scale, Plus, Grid3X3, List, Search, SlidersHorizontal, ChevronRight, Tr
 import { useEntityComparison } from '@/contexts/entity-comparison-context';
 import { getEntityTypeDisplayName } from '@/lib/entity-types';
 import { cn } from '@/lib/utils';
-import Link from 'next/link';
+import { Link } from '@/lib/navigation';
 
 interface CreditProduct {
   id: number;
@@ -388,7 +388,7 @@ export default function CreditProductsList({
 
                   {/* Action Button */}
                   <Link
-                    href={`/${locale}/sirketler/kredit-teskilatlari/${creditType}/${product.entity_id}`}
+                    href={`/sirketler/kredit-teskilatlari/${creditType}/${product.entity_id}`}
                     className="block w-full px-4 py-3 bg-gray-900 dark:bg-gray-700 text-white rounded-xl font-medium hover:bg-black dark:hover:bg-gray-600 transition-all duration-300 text-center group-hover:shadow-lg"
                   >
                     {t.viewDetails}
@@ -507,7 +507,7 @@ export default function CreditProductsList({
                     </button>
 
                     <Link
-                      href={`/${locale}/sirketler/kredit-teskilatlari/${creditType}/${product.entity_id}`}
+                      href={`/sirketler/kredit-teskilatlari/${creditType}/${product.entity_id}`}
                       className="px-4 py-2.5 bg-gray-900 dark:bg-gray-700 text-white rounded-xl font-medium hover:bg-black dark:hover:bg-gray-600 transition-all duration-300 flex items-center justify-center gap-2"
                     >
                       {t.viewDetails}

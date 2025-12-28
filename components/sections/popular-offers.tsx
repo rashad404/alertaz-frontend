@@ -3,13 +3,12 @@
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { ChevronRight } from "lucide-react";
-import Link from "next/link";
+import { Link } from '@/lib/navigation';
 import { useDictionary } from "@/providers/dictionary-provider";
 import { offersApi } from "@/lib/api/endpoints";
 import { OfferCard } from "@/components/ui/offer-card";
 import { getTranslation } from "@/lib/utils";
 import { cn } from "@/lib/utils";
-import { getLocalizedPath } from "@/lib/utils/locale";
 
 interface PopularOffersProps {
   locale: string;
@@ -65,7 +64,7 @@ export function PopularOffers({ locale }: PopularOffersProps) {
           {t.popularOffers}
         </h2>
         <Link
-          href={getLocalizedPath(locale, '/sirketler/kredit-teskilatlari')}
+          href={'/sirketler/kredit-teskilatlari'}
           className="flex items-center space-x-1 border border-black/50 dark:border-gray-600 text-black dark:text-white px-3 py-2 rounded-lg text-sm opacity-50 hover:opacity-100 transition-opacity"
         >
           <span>{t.moreOffers}</span>

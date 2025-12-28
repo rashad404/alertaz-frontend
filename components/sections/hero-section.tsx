@@ -3,12 +3,11 @@
 import { useQuery } from "@tanstack/react-query";
 import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
-import Link from "next/link";
+import { Link } from '@/lib/navigation';
 import Image from "next/image";
 import { homeApi, newsApi } from "@/lib/api/endpoints";
 import { getTranslation, getImageUrl } from "@/lib/utils";
 import { cn } from "@/lib/utils";
-import { getLocalizedPath } from "@/lib/utils/locale";
 
 interface HeroSectionProps {
   locale: string;
@@ -368,7 +367,7 @@ export function HeroSection({ locale }: HeroSectionProps) {
         {/* Featured News */}
         <div className={mainAd ? 'lg:col-span-8' : ''}>
           {currentNews ? (
-            <Link href={getLocalizedPath(locale, `/xeberler/${currentNews.slug}`)} className="block">
+            <Link href={`/xeberler/${currentNews.slug}`} className="block">
               <div 
                 className="relative rounded-xl overflow-hidden bg-gray-100 h-80 cursor-pointer group select-none"
                 onTouchStart={onNewsTouchStart}

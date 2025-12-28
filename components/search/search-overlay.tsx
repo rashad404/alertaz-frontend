@@ -1,12 +1,11 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import Link from "next/link";
+import { Link } from '@/lib/navigation';
 import { Search, X, Loader2 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import apiClient from "@/lib/api/client";
 import { cn } from "@/lib/utils";
-import { getLocalizedPath } from "@/lib/utils/locale";
 import { useDictionary } from "@/providers/dictionary-provider";
 
 interface SearchResult {
@@ -176,7 +175,7 @@ export function SearchOverlay({ isOpen, onClose, locale }: SearchOverlayProps) {
                           {category.items.map((item) => (
                             <Link
                               key={`${key}-${item.id}`}
-                              href={getLocalizedPath(locale, item.url)}
+                              href={item.url}
                               onClick={onClose}
                               className="block group"
                             >

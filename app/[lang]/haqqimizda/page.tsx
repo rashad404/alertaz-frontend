@@ -5,7 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Play } from 'lucide-react';
 import { useParams } from 'next/navigation';
 import axios from 'axios';
-import Link from 'next/link';
+import { Link } from '@/lib/navigation';
 
 const ArrowUpRightIcon = () => (
   <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -28,7 +28,7 @@ const AboutPage = () => {
   const { data: aboutData, isLoading: isLoadingAbout } = useQuery({
     queryKey: ['about', locale],
     queryFn: async () => {
-      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/${locale}/haqqimizda`);
+      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/haqqimizda`);
       return response.data.data;
     }
   });
@@ -37,7 +37,7 @@ const AboutPage = () => {
   const { data: missions, isLoading: isLoadingMissions } = useQuery({
     queryKey: ['missions', locale],
     queryFn: async () => {
-      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/${locale}/haqqimizda/missions`);
+      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/haqqimizda/missions`);
       return response.data.data;
     }
   });
@@ -46,7 +46,7 @@ const AboutPage = () => {
   const { data: dynamicSections } = useQuery({
     queryKey: ['dynamicSections', locale],
     queryFn: async () => {
-      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/${locale}/haqqimizda/dynamic-sections`);
+      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/haqqimizda/dynamic-sections`);
       return response.data.data;
     }
   });
@@ -70,7 +70,7 @@ const AboutPage = () => {
             </h1>
           </div>
           <div className="hidden md:flex justify-center items-center gap-1">
-            <Link href={`/${locale}`} className="text-black dark:text-gray-300 hover:text-brand-orange dark:hover:text-brand-orange transition-colors text-base font-normal leading-6">
+            <Link href={"/" className="text-black dark:text-gray-300 hover:text-brand-orange dark:hover:text-brand-orange transition-colors text-base font-normal leading-6">
               {locale === 'az' ? 'Ana səhifə' : locale === 'en' ? 'Home' : 'Главная'} 
             </Link>
             <span className="mx-2 text-gray-600 dark:text-gray-400">›</span>

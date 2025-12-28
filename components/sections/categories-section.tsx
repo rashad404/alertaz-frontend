@@ -2,11 +2,10 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { ArrowRight, Building2, Shield, CreditCard } from "lucide-react";
-import Link from "next/link";
+import { Link } from '@/lib/navigation';
 import { useDictionary } from "@/providers/dictionary-provider";
 import { companyApi } from "@/lib/api/endpoints";
 import { getTranslation } from "@/lib/utils";
-import { getLocalizedPath } from "@/lib/utils/locale";
 
 interface CategoriesSectionProps {
   locale: string;
@@ -62,7 +61,7 @@ export function CategoriesSection({ locale }: CategoriesSectionProps) {
                   type.companies.slice(0, 3).map((company: any, index: number) => (
                     <Link
                       key={`${type.id}-company-${company.id || index}`}
-                      href={getLocalizedPath(locale, `/sirketler/${type.slug}/${company.slug}`)}
+                      href={`/sirketler/${type.slug}/${company.slug}`}
                       className="block text-gray-600 text-sm hover:underline first:underline"
                     >
                       {getTranslation(company.name || company.title, locale)}
@@ -73,7 +72,7 @@ export function CategoriesSection({ locale }: CategoriesSectionProps) {
                 )}
               </div>
               <Link
-                href={getLocalizedPath(locale, `/sirketler/${type.slug}`)}
+                href={`/sirketler/${type.slug}`}
                 className={`inline-flex items-center space-x-1 px-3 py-2 rounded-lg text-sm transition-colors ${
                   index === 0 
                     ? 'bg-brand-orange text-white hover:bg-brand-orange-dark' 

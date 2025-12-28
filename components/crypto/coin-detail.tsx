@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import Link from 'next/link';
+import { Link } from '@/lib/navigation';
 import { 
   ArrowLeft, 
   TrendingUp, 

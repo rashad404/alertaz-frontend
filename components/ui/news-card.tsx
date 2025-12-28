@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { Link } from "@/lib/navigation";
 import Image from "next/image";
 import { formatShortDate, getImageUrl, getTranslation } from "@/lib/utils";
 import type { News } from "@/lib/types";
@@ -25,7 +25,7 @@ export function NewsCard({ news, locale }: NewsCardProps) {
 
   return (
     <div className="bg-gray-100 dark:bg-gray-800 rounded-xl overflow-hidden group">
-      <Link href={`/${locale}/xeberler/${news.slug}`} className="block">
+      <Link href={`/xeberler/${news.slug}`} className="block">
         <div className="relative h-64 overflow-hidden">
           <img
             src={imageError ? "/news-placeholder.svg" : getImageUrl(news.thumbnail_image)}
@@ -47,7 +47,7 @@ export function NewsCard({ news, locale }: NewsCardProps) {
         </div>
       </Link>
       <div className="p-3">
-        <Link href={`/${locale}/xeberler/${news.slug}`}>
+        <Link href={`/xeberler/${news.slug}`}>
           <h4 className="text-lg font-bold text-black dark:text-white leading-tight hover:text-brand-orange transition-colors">
             {getTranslation(news.title, locale)}
           </h4>

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import apiClient from "@/lib/api/client";
-import Link from "next/link";
+import { Link } from '@/lib/navigation';
 import { ChevronRight, Filter, X } from "lucide-react";
 import { useDictionary } from "@/providers/dictionary-provider";
 

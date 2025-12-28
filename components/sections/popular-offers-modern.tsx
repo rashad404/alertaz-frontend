@@ -3,13 +3,12 @@
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowRight, Sparkles } from "lucide-react";
-import Link from "next/link";
+import { Link } from '@/lib/navigation';
 import { useDictionary } from "@/providers/dictionary-provider";
 import { offersApi } from "@/lib/api/endpoints";
 import { OfferCardMinimal } from "@/components/ui/offer-card-minimal";
 import { getTranslation } from "@/lib/utils";
 import { cn } from "@/lib/utils";
-import { getLocalizedPath } from "@/lib/utils/locale";
 
 interface PopularOffersProps {
   locale: string;
@@ -81,7 +80,7 @@ export function PopularOffersModern({ locale }: PopularOffersProps) {
         </div>
         
         <Link
-          href={getLocalizedPath(locale, '/sirketler/kredit-teskilatlari')}
+          href={'/sirketler/kredit-teskilatlari'}
           className="group flex items-center gap-2 px-4 py-2.5 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-xl hover:bg-gray-800 dark:hover:bg-gray-100 transition-all duration-300"
         >
           <span className="text-sm font-medium">{t.moreOffers}</span>
@@ -168,7 +167,7 @@ export function PopularOffersModern({ locale }: PopularOffersProps) {
               </p>
             </div>
             <Link
-              href={getLocalizedPath(locale, '/kalkulyator/kredit')}
+              href={'/kalkulyator/kredit'}
               className="px-4 py-2 bg-white dark:bg-gray-900 text-gray-900 dark:text-white rounded-lg text-sm font-medium hover:shadow-lg transition-all duration-300"
             >
               {locale === 'az' ? 'Kalkulyator' : locale === 'ru' ? 'Калькулятор' : 'Calculator'}

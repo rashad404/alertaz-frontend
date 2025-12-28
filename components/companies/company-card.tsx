@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { Link } from '@/lib/navigation';
 import Image from "next/image";
 import { Building2, Phone, Globe, MapPin } from "lucide-react";
 import { parseTranslatedContent } from "@/lib/utils/translation";
@@ -43,7 +43,7 @@ export function CompanyCard({ company, locale, type }: CompanyCardProps) {
   
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-lg transition-shadow p-6">
-      <Link href={`/${locale}/sirketler/${type}/${company.slug}`}>
+      <Link href={`/sirketler/${type}/${company.slug}`}>
         <div className="flex flex-col h-full">
           {/* Logo */}
           {company.logo && (

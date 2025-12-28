@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Calculator, ChevronLeft, Download, TrendingUp, Calendar, DollarSign } from 'lucide-react';
-import Link from 'next/link';
+import { Link } from '@/lib/navigation';
 import Script from 'next/script';
 import axios from 'axios';
 
@@ -36,7 +36,7 @@ const CalculatorClient = ({ params }: CalculatorClientProps) => {
   const calculatePayment = async () => {
     setIsCalculating(true);
     try {
-      const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/${locale}/kreditler/calculate`, {
+      const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/kreditler/calculate`, {
         amount,
         rate: interestRate,
         term: termMonths
@@ -173,7 +173,7 @@ const CalculatorClient = ({ params }: CalculatorClientProps) => {
     '@type': 'WebApplication',
     name: t.title,
     description: t.description,
-    url: `https://kredit.az/${locale}/credits/calculator`,
+    url: `https://kredit.az/credits/calculator`,
     applicationCategory: 'FinanceApplication',
     operatingSystem: 'All',
     offers: {
@@ -193,11 +193,11 @@ const CalculatorClient = ({ params }: CalculatorClientProps) => {
         {/* Breadcrumb */}
         <nav className="flex w-full justify-center px-4 sm:px-8 lg:px-36 py-4" aria-label="Breadcrumb">
           <div className="flex w-full max-w-5xl items-center gap-2 text-sm">
-            <Link href={`/${locale}`} className="text-gray-600 dark:text-gray-400 hover:text-[#FF6021] transition-colors">
+            <Link href={"/" className="text-gray-600 dark:text-gray-400 hover:text-[#FF6021] transition-colors">
               {t.breadcrumbHome}
             </Link>
             <span className="text-gray-400">&gt;</span>
-            <Link href={`/${locale}/credits`} className="text-gray-600 dark:text-gray-400 hover:text-[#FF6021] transition-colors">
+            <Link href={`/credits`} className="text-gray-600 dark:text-gray-400 hover:text-[#FF6021] transition-colors">
               {t.breadcrumbCredits}
             </Link>
             <span className="text-gray-400">&gt;</span>
@@ -408,13 +408,13 @@ const CalculatorClient = ({ params }: CalculatorClientProps) => {
               {/* Action Buttons */}
               <div className="space-y-3">
                 <Link
-                  href={`/${locale}/credits`}
+                  href={`/credits`}
                   className="block w-full text-center py-3 px-4 bg-[#FF6021] hover:bg-[#E54500] text-white font-bold rounded-xl transition-colors"
                 >
                   {t.viewCredits}
                 </Link>
                 <Link
-                  href={`/${locale}/credits/compare`}
+                  href={`/credits/compare`}
                   className="block w-full text-center py-3 px-4 bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 text-[#09121F] dark:text-white font-bold rounded-xl border border-gray-300 dark:border-gray-600 transition-colors"
                 >
                   {t.compareCredits}

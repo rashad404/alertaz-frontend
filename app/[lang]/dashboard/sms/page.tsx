@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { MessageSquare, Copy, Check, Code, Filter, X, Search, Eye, EyeOff, FlaskConical } from 'lucide-react';
-import Link from 'next/link';
+import { Link } from '@/lib/navigation';
 import axios from 'axios';
 import { formatDateInTimezone } from '@/lib/utils/date';
 import { useTimezone } from '@/providers/timezone-provider';

@@ -1,7 +1,7 @@
 "use client";
 
 import { ArrowRight } from "lucide-react";
-import Link from "next/link";
+import { Link } from '@/lib/navigation';
 import { useDictionary } from "@/providers/dictionary-provider";
 
 interface CategoryCardsProps {

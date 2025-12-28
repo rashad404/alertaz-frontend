@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Search, Phone, MapPin, Loader2 } from 'lucide-react';
 import axios from 'axios';
-import Link from 'next/link';
+import { Link } from '@/lib/navigation';
 import { useDebounce } from '@/hooks/useDebounce';
 import { BankLogo } from '@/components/ui/bank-logo';
 import { parseTranslatedContent } from '@/lib/utils/translation';
@@ -36,7 +36,7 @@ const InsuranceCompaniesClient = ({ params }: InsuranceCompaniesClientProps) => 
   const { data, isLoading, isError } = useQuery({
     queryKey: ['insurance-companies', locale, debouncedSearch],
     queryFn: async () => {
-      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/${locale}/company-types/sigorta/sirketler`, {
+      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/company-types/sigorta/sirketler`, {
         params: {
           search: debouncedSearch,
           per_page: 50
@@ -109,7 +109,7 @@ const InsuranceCompaniesClient = ({ params }: InsuranceCompaniesClientProps) => 
       item: {
         '@type': 'InsuranceAgency',
         name: parseTranslatedContent(company.name, locale),
-        url: `https://kredit.az/${locale}/insurance-companies/${company.slug}`,
+        url: `https://kredit.az/insurance-companies/${company.slug}`,
         telephone: (() => {
           try {
             const phones = typeof company.phones === 'string' ? JSON.parse(company.phones) : company.phones;
@@ -144,7 +144,7 @@ const InsuranceCompaniesClient = ({ params }: InsuranceCompaniesClientProps) => 
         '@type': 'ListItem',
         position: 2,
         name: t.breadcrumbCurrent,
-        item: `https://kredit.az/${locale}/insurance-companies`
+        item: `https://kredit.az/insurance-companies`
       }
     ]
   };
@@ -185,7 +185,7 @@ const InsuranceCompaniesClient = ({ params }: InsuranceCompaniesClientProps) => 
               {t.title}
             </h1>
             <nav className="hidden md:flex items-center gap-1 text-base text-[#09121F] dark:text-gray-400" aria-label="Breadcrumb">
-              <Link href={`/${locale}`} className="hover:text-[#FF6021] transition-colors">
+              <Link href={"/" className="hover:text-[#FF6021] transition-colors">
                 {t.breadcrumbHome}
               </Link>
               <span className="mx-2">›</span>
@@ -235,7 +235,7 @@ const InsuranceCompaniesClient = ({ params }: InsuranceCompaniesClientProps) => 
                   {companies.map((company: InsuranceCompany) => (
                     <Link
                       key={company.id}
-                      href={`/${locale}/sigorta-sirketleri/${company.slug}`}
+                      href={`/sigorta-sirketleri/${company.slug}`}
                       className="flex items-center gap-4 sm:gap-11 p-4 sm:p-7 bg-[#F6F6F6] dark:bg-gray-800 rounded-2xl shadow-[0px_4px_4px_-1px_rgba(12,12,13,0.1),0px_4px_4px_-1px_rgba(12,12,13,0.05)] hover:shadow-lg transition-shadow cursor-pointer"
                     >
                       {/* Company Info */}
@@ -300,7 +300,7 @@ const InsuranceCompaniesClient = ({ params }: InsuranceCompaniesClientProps) => 
             <div className="flex flex-col gap-5 lg:w-[304px]">
               {/* Green Card - Insurance Comparison */}
               <Link 
-                href={`/${locale}/insurance`}
+                href={`/insurance`}
                 className="relative w-full h-[275px] bg-gradient-to-br from-[#1DC37D] to-[#17A366] rounded-xl p-6 overflow-hidden group hover:shadow-xl transition-all duration-300 cursor-pointer"
               >
                 <div className="relative z-10">
@@ -323,7 +323,7 @@ const InsuranceCompaniesClient = ({ params }: InsuranceCompaniesClientProps) => 
 
               {/* Blue Card - Online Insurance */}
               <Link 
-                href={`/${locale}/insurance`}
+                href={`/insurance`}
                 className="relative w-full h-[275px] bg-gradient-to-br from-[#0040FF] to-[#0030CC] rounded-xl p-6 overflow-hidden group hover:shadow-xl transition-all duration-300 cursor-pointer"
               >
                 <div className="relative z-10">

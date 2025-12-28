@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Loader2 } from 'lucide-react';
 import axios from 'axios';
-import Link from 'next/link';
+import { Link } from '@/lib/navigation';
 import Script from 'next/script';
 import { useSearchParams } from 'next/navigation';
 import { UnifiedNewsCard } from '@/components/ui/unified-news-card';
@@ -54,7 +54,7 @@ const NewsClient = ({ params, initialCategory, initialPage, initialTag }: NewsCl
   const { data: categories } = useQuery({
     queryKey: ['newsCategories', locale],
     queryFn: async () => {
-      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/${locale}/xeberler/kategoriler`);
+      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/xeberler/kategoriler`);
       return response.data as Category[];
     }
   });
@@ -63,7 +63,7 @@ const NewsClient = ({ params, initialCategory, initialPage, initialTag }: NewsCl
   const { data: newsData, isLoading } = useQuery({
     queryKey: ['news', locale, selectedCategory, currentPage, selectedTag],
     queryFn: async () => {
-      const endpoint = `${process.env.NEXT_PUBLIC_API_URL}/${locale}/xeberler`;
+      const endpoint = `${process.env.NEXT_PUBLIC_API_URL}/xeberler`;
 
       const params: any = {
         page: currentPage,
@@ -135,7 +135,7 @@ const NewsClient = ({ params, initialCategory, initialPage, initialTag }: NewsCl
       item: {
         '@type': 'NewsArticle',
         headline: item.title,
-        url: `https://kredit.az/${locale}/xeberler/${item.slug}`,
+        url: `https://kredit.az/xeberler/${item.slug}`,
         datePublished: item.publish_date,
         author: {
           '@type': 'Person',
@@ -159,7 +159,7 @@ const NewsClient = ({ params, initialCategory, initialPage, initialTag }: NewsCl
         '@type': 'ListItem',
         position: 2,
         name: t.breadcrumbCurrent,
-        item: `https://kredit.az/${locale}/news`
+        item: `https://kredit.az/news`
       }
     ]
   };
@@ -196,7 +196,7 @@ const NewsClient = ({ params, initialCategory, initialPage, initialTag }: NewsCl
                 {t.title}
               </h1>
               <nav className="hidden md:flex items-center gap-1" aria-label="Breadcrumb">
-                <Link href={`/${locale}`} className="text-[#09121F] dark:text-gray-300 hover:text-[#FF6021] transition-colors">
+                <Link href={"/" className="text-[#09121F] dark:text-gray-300 hover:text-[#FF6021] transition-colors">
                   {t.breadcrumbHome}
                 </Link>
                 <span className="mx-2 text-gray-600 dark:text-gray-400">›</span>
@@ -216,7 +216,7 @@ const NewsClient = ({ params, initialCategory, initialPage, initialTag }: NewsCl
             {categories && categories.length > 0 && (
               <div className="mb-8 flex flex-wrap gap-2">
                 <Link
-                  href={`/${locale}/xeberler`}
+                  href={`/xeberler`}
                   className={`px-4 py-2 rounded-lg transition-colors ${
                     selectedCategory === 'all'
                       ? 'bg-[#FF6021] text-white'
@@ -228,7 +228,7 @@ const NewsClient = ({ params, initialCategory, initialPage, initialTag }: NewsCl
                 {categories.map((category) => (
                   <Link
                     key={category.id}
-                    href={`/${locale}/xeberler/kat/${category.slug}`}
+                    href={`/xeberler/kat/${category.slug}`}
                     className={`px-4 py-2 rounded-lg transition-colors ${
                       selectedCategory === category.slug
                         ? 'bg-[#FF6021] text-white'
@@ -249,7 +249,7 @@ const NewsClient = ({ params, initialCategory, initialPage, initialTag }: NewsCl
                   {selectedTag}
                 </span>
                 <Link
-                  href={`/${locale}/xeberler`}
+                  href={`/xeberler`}
                   className="ml-auto text-sm text-red-600 dark:text-red-400 hover:underline"
                 >
                   {t.clearFilter}
@@ -281,8 +281,8 @@ const NewsClient = ({ params, initialCategory, initialPage, initialTag }: NewsCl
               totalPages={totalPages}
               locale={locale}
               baseUrl={selectedCategory && selectedCategory !== 'all'
-                ? `/${locale}/xeberler/kat/${selectedCategory}`
-                : `/${locale}/xeberler`}
+                ? `/xeberler/kat/${selectedCategory}`
+                : `/xeberler`}
               scrollToId="news-list"
               className="mt-12"
             />

@@ -1,6 +1,6 @@
 'use client';
 
-import Link from 'next/link';
+import { Link } from '@/lib/navigation';
 import { Mail, Phone, Shield, HelpCircle, FileText, Megaphone } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 

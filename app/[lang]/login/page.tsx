@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
+import { Link } from '@/lib/navigation';
 import { Bell, Mail, Lock, ArrowRight, Sparkles } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
