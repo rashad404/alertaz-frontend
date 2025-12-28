@@ -80,7 +80,7 @@ const NotificationSettingsClient: React.FC<NotificationSettingsClientProps> = ({
       component: EmailSettings
     },
     {
-      id: 'phone',
+      id: 'sms',
       name: t('settings.notificationSettings.channels.phone'),
       icon: Smartphone,
       component: PhoneSettings
@@ -254,6 +254,7 @@ const NotificationSettingsClient: React.FC<NotificationSettingsClientProps> = ({
                 <ActiveComponent
                   user={user}
                   onUpdate={handleUpdateUser}
+                  onUserChange={setUser}
                   lang={lang}
                 />
               )}

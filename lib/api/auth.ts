@@ -82,6 +82,12 @@ class AuthService {
     return response.data;
   }
 
+  // Verify phone for authenticated user (settings page)
+  async verifyPhoneForUser(data: { phone: string; code: string }): Promise<AuthResponse> {
+    const response = await apiClient.post('/user/verify-phone', data);
+    return response.data;
+  }
+
   // OAuth Authentication
   redirectToOAuth(provider: 'google' | 'facebook', returnUrl?: string) {
     const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://100.89.150.50:8007/api';

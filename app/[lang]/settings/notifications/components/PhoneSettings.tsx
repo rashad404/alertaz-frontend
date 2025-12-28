@@ -7,10 +7,11 @@ import authService from '@/lib/api/auth';
 interface PhoneSettingsProps {
   user: User;
   onUpdate: (updates: Partial<User>) => Promise<boolean>;
+  onUserChange?: (user: User) => void;
   lang: string;
 }
 
-const PhoneSettings: React.FC<PhoneSettingsProps> = ({ user, onUpdate }) => {
+const PhoneSettings: React.FC<PhoneSettingsProps> = ({ user, onUpdate, onUserChange }) => {
   const [phone, setPhone] = useState(user.phone || '+994');
   const [isEditing, setIsEditing] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
@@ -69,13 +70,17 @@ const PhoneSettings: React.FC<PhoneSettingsProps> = ({ user, onUpdate }) => {
     const cleanPhone = phone.replace(/\s/g, '');
 
     try {
-      const response = await authService.verifyOTP({
+      // Use authenticated endpoint to update current user's phone
+      const response = await authService.verifyPhoneForUser({
         phone: cleanPhone,
         code: otpCode,
       });
 
-      if (response.status === 'success') {
-        await onUpdate({ phone: cleanPhone });
+      if (response.status === 'success' && response.data?.user) {
+        // Update local user state with verified user from response
+        if (onUserChange) {
+          onUserChange(response.data.user);
+        }
         setIsEditing(false);
         setIsVerifying(false);
         setOtpCode('');
