@@ -217,7 +217,7 @@ const ContactPage = () => {
             {t.title}
           </h1>
           <div className="hidden md:flex items-center gap-1">
-            <Link href={"/" className="text-black dark:text-gray-300 hover:text-brand-orange dark:hover:text-brand-orange transition-colors">
+            <Link href="/" className="text-black dark:text-gray-300 hover:text-brand-orange dark:hover:text-brand-orange transition-colors">
               {t.breadcrumbHome}
             </Link>
             <span className="mx-2 text-gray-600 dark:text-gray-400">›</span>
