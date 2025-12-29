@@ -87,12 +87,9 @@ self.addEventListener('notificationclick', (event) => {
     event.notification.close();
 
     const data = event.notification.data || {};
-    let url = '/alerts';
 
-    // Use URL from backend payload, or default to /alerts
-    if (data.url) {
-        url = data.url;
-    }
+    // Use clickUrl from backend payload, or default to /alerts
+    let url = data.clickUrl || '/alerts';
 
     event.waitUntil(
         clients.matchAll({ type: 'window', includeUncontrolled: true })
