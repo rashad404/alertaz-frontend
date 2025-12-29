@@ -87,13 +87,10 @@ self.addEventListener('notificationclick', (event) => {
     event.notification.close();
 
     const data = event.notification.data || {};
-    let url = '/';
+    let url = '/alerts';
 
-    if (event.action === 'view' && data.url) {
-        url = data.url;
-    } else if (data.alertId) {
-        url = `/dashboard/alerts/${data.alertId}`;
-    } else if (data.url) {
+    // Use URL from backend payload, or default to /alerts
+    if (data.url) {
         url = data.url;
     }
 
