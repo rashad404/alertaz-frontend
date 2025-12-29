@@ -1,7 +1,8 @@
 // Service Worker for Alert.az Push Notifications
+// Version: 2.0.0 - Force update
 
 self.addEventListener('install', (event) => {
-    console.log('Service Worker installed');
+    console.log('Service Worker v2.0.0 installed');
     self.skipWaiting();
 });
 
