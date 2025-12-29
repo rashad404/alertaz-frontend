@@ -82,6 +82,12 @@ class AuthService {
     return response.data;
   }
 
+  // Send phone verification SMS for authenticated user (settings page, with billing)
+  async sendPhoneVerificationForUser(phone: string): Promise<any> {
+    const response = await apiClient.post('/user/send-phone-verification', { phone });
+    return response.data;
+  }
+
   // Verify phone for authenticated user (settings page)
   async verifyPhoneForUser(data: { phone: string; code: string }): Promise<AuthResponse> {
     const response = await apiClient.post('/user/verify-phone', data);

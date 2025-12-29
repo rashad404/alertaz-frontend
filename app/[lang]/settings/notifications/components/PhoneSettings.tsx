@@ -55,11 +55,19 @@ const PhoneSettings: React.FC<PhoneSettingsProps> = ({ user, onUpdate, onUserCha
 
     setIsSending(true);
     try {
-      await authService.sendOTP({ phone: cleanPhone, purpose: 'verify' });
+      // Use authenticated endpoint with billing
+      await authService.sendPhoneVerificationForUser(cleanPhone);
       setIsVerifying(true);
       setCountdown(60);
-    } catch (err) {
-      setError('Failed to send verification code');
+    } catch (err: any) {
+      // Handle insufficient balance error (402 status)
+      if (err?.response?.status === 402 || err?.response?.data?.error_code === 'insufficient_balance') {
+        const balance = err?.response?.data?.data?.current_balance ?? 0;
+        const required = err?.response?.data?.data?.required_amount ?? 0.04;
+        setError(`Insufficient balance to send SMS. Your balance: ${balance} AZN. Required: ${required} AZN. Please add funds to continue.`);
+      } else {
+        setError('Failed to send verification code');
+      }
     } finally {
       setIsSending(false);
     }
