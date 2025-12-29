@@ -61,16 +61,39 @@ const PushSettings: React.FC<PushSettingsProps> = ({ user, onUpdate }) => {
           applicationServerKey: urlBase64ToUint8Array(vapidPublicKey),
         });
 
-        // Save push token to user profile
-        const pushToken = JSON.stringify(subscription);
-        const success = await onUpdate({ push_token: pushToken });
+        const subscriptionJson = subscription.toJSON();
 
-        if (success) {
+        // Save subscription to backend push_subscriptions table
+        const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://100.89.150.50:8007/api';
+        const token = localStorage.getItem('token');
+
+        const response = await fetch(`${API_URL}/notifications/subscribe`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            endpoint: subscriptionJson.endpoint,
+            keys: {
+              p256dh: subscriptionJson.keys?.p256dh,
+              auth: subscriptionJson.keys?.auth,
+            },
+          }),
+        });
+
+        if (response.ok) {
+          // Also update user's push_token for backwards compatibility
+          const pushToken = JSON.stringify(subscription);
+          await onUpdate({ push_token: pushToken });
+
           // Show test notification
           new Notification('Alert.az', {
             body: 'Push notifications enabled successfully!',
             icon: '/icon-192.png',
           });
+        } else {
+          console.error('Failed to save subscription to backend');
         }
       }
     } catch (error) {
@@ -89,6 +112,23 @@ const PushSettings: React.FC<PushSettingsProps> = ({ user, onUpdate }) => {
       const subscription = await registration.pushManager.getSubscription();
 
       if (subscription) {
+        const subscriptionJson = subscription.toJSON();
+
+        // Remove subscription from backend push_subscriptions table
+        const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://100.89.150.50:8007/api';
+        const token = localStorage.getItem('token');
+
+        await fetch(`${API_URL}/notifications/unsubscribe`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            endpoint: subscriptionJson.endpoint,
+          }),
+        });
+
         await subscription.unsubscribe();
       }
 
