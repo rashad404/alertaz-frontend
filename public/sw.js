@@ -35,7 +35,7 @@ self.addEventListener('push', (event) => {
         timestamp: data.timestamp || Date.now(),
         tag: data.tag || 'alert-' + Date.now(),
         renotify: data.renotify !== false,
-        silent: data.silent || false,
+        silent: false, // Allow system sound
         requireInteraction: data.requireInteraction || false,
         data: data.data || {},
         actions: data.actions || [
@@ -52,8 +52,18 @@ self.addEventListener('push', (event) => {
         ],
     };
 
+    // Play notification sound
     event.waitUntil(
-        self.registration.showNotification(data.title || 'Alert.az', options)
+        Promise.all([
+            // Show the notification
+            self.registration.showNotification(data.title || 'Alert.az', options),
+            // Play sound by sending message to any open client
+            self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(clients => {
+                clients.forEach(client => {
+                    client.postMessage({ type: 'PLAY_NOTIFICATION_SOUND' });
+                });
+            })
+        ])
             .then(() => {
                 // Notify all open tabs/windows to refresh their notification count
                 return self.clients.matchAll({ type: 'window', includeUncontrolled: true });
