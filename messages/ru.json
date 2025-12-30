@@ -57,11 +57,12 @@
     "smsApi": "SMS API",
     "smsApiDescription": "Отправка SMS и просмотр истории",
     "smsCampaigns": "SMS Кампании",
-    "smsCampaignsDescription": "Создание и управление массовыми SMS-кампаниями"
+    "smsCampaignsDescription": "Создание и управление массовыми SMS-кампаниями",
+    "emailApi": "Email API",
+    "emailApiDescription": "Отправка email и просмотр истории"
   },
   "alerts": {
     "createNew": "Создать новое уведомление",
-    "quickSetup": "Быстрая настройка",
     "title": "Заголовок",
     "type": "Тип",
     "status": "Статус",
@@ -331,6 +332,8 @@
     "close": "Закрыть",
     "search": "Поиск",
     "all": "Все",
+    "yes": "Да",
+    "no": "Нет",
     "copy": "Копировать",
     "copied": "Скопировано!",
     "pageOf": "Страница {current} из {total}",
@@ -384,7 +387,8 @@
   "footer": {
     "allRightsReserved": "Все права защищены.",
     "help": "Помощь",
-    "apiDocs": "Документация API",
+    "smsApi": "SMS API",
+    "emailApi": "Email API",
     "smsCampaigns": "SMS Кампании",
     "privacy": "Конфиденциальность",
     "terms": "Условия"
@@ -465,7 +469,8 @@
     "subtitle": "Отправляйте SMS-сообщения вашим пользователям с помощью простого API",
     "apiDocs": "Документация API",
     "apiToken": "API Токен",
-    "apiTokenDescription": "Используйте этот токен для аутентификации ваших API-запросов",
+    "apiTokenDescription": "Используйте этот токен для аутентификации ваших API-запросов. При необходимости вы можете перегенерировать его в настройках проекта.",
+    "manageProjects": "Управление проектами",
     "history": "История SMS",
     "historyDescription": "Последние сообщения, отправленные через API",
     "noMessages": "Пока нет отправленных SMS",
@@ -948,6 +953,86 @@
         "example1": "city равно \"Баку\" → Клиенты в Баку",
         "example2": "is_active равно true → Только активные клиенты",
         "example3": "balance больше 100 → Клиенты с высоким балансом"
+      }
+    }
+  },
+  "emailApi": {
+    "title": "Документация Email API",
+    "subtitle": "Отправляйте email вашим пользователям с помощью простого API",
+    "apiDocs": "Документация API",
+    "apiToken": "API Токен",
+    "apiTokenDescription": "Используйте этот токен для аутентификации ваших API-запросов. При необходимости вы можете перегенерировать его в настройках проекта.",
+    "manageProjects": "Управление проектами",
+    "history": "История Email",
+    "historyDescription": "Последние email, отправленные через API",
+    "noMessages": "Пока нет отправленных email",
+    "viewDocsToStart": "Просмотрите документацию API, чтобы начать",
+    "messageHistory": "История сообщений",
+    "email": "Email",
+    "recipient": "Получатель",
+    "subject": "Тема",
+    "from": "От",
+    "status": "Статус",
+    "cost": "Стоимость",
+    "date": "Дата",
+    "source": "Источник",
+    "sourceApi": "API",
+    "sourceCampaign": "Кампания",
+    "testMode": "Тест",
+    "filterByDate": "Фильтр по дате",
+    "allSources": "Все источники",
+    "allStatuses": "Все статусы",
+    "docs": {
+      "title": "Документация Email API",
+      "subtitle": "Отправляйте профессиональные email через наш надёжный API",
+      "overview": {
+        "title": "Обзор",
+        "description": "Email API Alert.az позволяет программно отправлять транзакционные и маркетинговые email. Идеально подходит для кодов верификации, уведомлений и автоматизированных коммуникаций."
+      },
+      "authentication": {
+        "title": "Аутентификация",
+        "description": "Все API-запросы требуют заголовок Authorization с вашим токеном проекта:",
+        "getToken": "Получите токен на странице Проекты."
+      },
+      "sendEmail": {
+        "title": "Отправить Email",
+        "description": "Отправьте email получателю с HTML и/или текстовым содержимым.",
+        "parameters": "Параметры запроса",
+        "param": "Параметр",
+        "type": "Тип",
+        "required": "Обязательный",
+        "descriptionCol": "Описание",
+        "toDesc": "Email адрес получателя",
+        "toNameDesc": "Отображаемое имя получателя",
+        "subjectDesc": "Тема письма (макс 500 символов)",
+        "bodyHtmlDesc": "HTML содержимое письма",
+        "bodyTextDesc": "Текстовое содержимое письма",
+        "fromDesc": "Email адрес отправителя (по умолчанию: noreply@alert.az)",
+        "fromNameDesc": "Отображаемое имя отправителя (по умолчанию: Alert.az)",
+        "bodyNote": "Требуется как минимум body_html или body_text",
+        "response": "Ответ"
+      },
+      "codeExamples": {
+        "title": "Примеры кода",
+        "curl": "cURL",
+        "javascript": "JavaScript",
+        "php": "PHP",
+        "python": "Python"
+      },
+      "balance": {
+        "title": "Проверить баланс",
+        "description": "Получите информацию о текущем балансе email и ценах."
+      },
+      "errorCodes": {
+        "title": "Коды ошибок",
+        "code": "Код",
+        "description": "Описание",
+        "400": "Ошибка валидации - проверьте формат запроса",
+        "401": "Не авторизован - неверный или отсутствующий токен",
+        "402": "Недостаточно средств - пополните счёт",
+        "422": "Необрабатываемый объект - неверный формат email",
+        "429": "Слишком много запросов - превышен лимит",
+        "500": "Ошибка сервера - попробуйте позже"
       }
     }
   }

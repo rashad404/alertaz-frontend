@@ -30,11 +30,18 @@ export default function Footer() {
               <span>{t('footer.help')}</span>
             </Link>
             <Link
-              href="/sms-api"
+              href="/docs/sms-api"
               className="text-gray-600 dark:text-gray-400 hover:text-[rgb(81,91,195)] transition-colors flex items-center gap-1"
             >
               <FileText className="w-3.5 h-3.5" />
-              <span>{t('footer.apiDocs')}</span>
+              <span>{t('footer.smsApi')}</span>
+            </Link>
+            <Link
+              href="/docs/email-api"
+              className="text-gray-600 dark:text-gray-400 hover:text-[rgb(81,91,195)] transition-colors flex items-center gap-1"
+            >
+              <Mail className="w-3.5 h-3.5" />
+              <span>{t('footer.emailApi')}</span>
             </Link>
             <Link
               href="/settings/sms/projects"

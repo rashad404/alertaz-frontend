@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Link } from '@/lib/navigation';
-import { Bell, Plus, TrendingUp, Activity, Settings, Bitcoin, Globe, BarChart3, Play, Pause, MessageSquare, CreditCard, Megaphone } from 'lucide-react';
+import { Bell, Plus, TrendingUp, Activity, Settings, Bitcoin, Globe, BarChart3, Play, Pause, MessageSquare, CreditCard, Megaphone, Mail } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 type AlertService = 'crypto' | 'stocks' | 'website' | 'weather' | 'currency' | 'flight';
@@ -383,6 +383,25 @@ export default function DashboardPage() {
                 </h3>
                 <p className="text-sm text-gray-600 dark:text-gray-400">
                   {t('dashboard.smsApiDescription')}
+                </p>
+              </div>
+            </div>
+          </Link>
+
+          <Link
+            href="/dashboard/email"
+            className="card-glass rounded-3xl p-6 hover:scale-105 transition-transform duration-300"
+          >
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-500 to-indigo-500 flex items-center justify-center">
+                <Mail className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-1">
+                  {t('dashboard.emailApi')}
+                </h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  {t('dashboard.emailApiDescription')}
                 </p>
               </div>
             </div>

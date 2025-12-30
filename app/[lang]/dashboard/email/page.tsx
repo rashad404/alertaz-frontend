@@ -3,45 +3,41 @@
 import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
-import { MessageSquare, Copy, Check, Code, Filter, X, Search, Eye, EyeOff, FlaskConical } from 'lucide-react';
+import { Mail, Copy, Check, Code, Filter, X, Search, Eye, EyeOff, FlaskConical } from 'lucide-react';
 import { Link } from '@/lib/navigation';
 import axios from 'axios';
 import { formatDateInTimezone } from '@/lib/utils/date';
 import { useTimezone } from '@/providers/timezone-provider';
 
-interface Campaign {
-  id: number;
-  name: string;
-}
-
-interface SMSMessage {
+interface EmailMessage {
   id: number;
   source: 'api' | 'campaign';
-  phone: string;
-  message: string;
-  sender: string;
+  to_email: string;
+  to_name: string | null;
+  subject: string;
+  from_email: string;
+  from_name: string | null;
   cost: number;
   status: string;
   is_test: boolean;
   created_at: string;
   sent_at: string | null;
   delivered_at: string | null;
-  campaign?: Campaign | null;
 }
 
 interface Filters {
   source: string;
-  phone: string;
+  email: string;
   status: string;
   date_from: string;
   date_to: string;
 }
 
-export default function SMSHistoryPage() {
+export default function EmailHistoryPage() {
   const t = useTranslations();
   const router = useRouter();
   const { timezone } = useTimezone();
-  const [messages, setMessages] = useState<SMSMessage[]>([]);
+  const [messages, setMessages] = useState<EmailMessage[]>([]);
   const [loading, setLoading] = useState(true);
   const [apiToken, setApiToken] = useState<string>('');
   const [tokenCopied, setTokenCopied] = useState(false);
@@ -52,7 +48,7 @@ export default function SMSHistoryPage() {
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState<Filters>({
     source: '',
-    phone: '',
+    email: '',
     status: '',
     date_from: '',
     date_to: '',
@@ -84,7 +80,6 @@ export default function SMSHistoryPage() {
         setApiToken(tokenRes.data.data.api_token);
       } catch (err) {
         console.error('Failed to fetch API token:', err);
-        // Fallback to session token if fetch fails
         setApiToken(token);
       }
 
@@ -94,12 +89,12 @@ export default function SMSHistoryPage() {
       params.append('page', currentPage.toString());
 
       if (filters.source) params.append('source', filters.source);
-      if (filters.phone) params.append('phone', filters.phone);
+      if (filters.email) params.append('email', filters.email);
       if (filters.status) params.append('status', filters.status);
       if (filters.date_from) params.append('date_from', filters.date_from);
       if (filters.date_to) params.append('date_to', filters.date_to);
 
-      const historyRes = await axios.get(`${API_URL}/sms/history?${params.toString()}`, {
+      const historyRes = await axios.get(`${API_URL}/email/history?${params.toString()}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setMessages(historyRes.data.data.messages);
@@ -108,7 +103,7 @@ export default function SMSHistoryPage() {
 
       setLoading(false);
     } catch (error: any) {
-      console.error('Failed to fetch SMS data:', error);
+      console.error('Failed to fetch Email data:', error);
       if (error.response?.status === 401) {
         router.push('/login');
       }
@@ -121,7 +116,6 @@ export default function SMSHistoryPage() {
       if (navigator.clipboard && navigator.clipboard.writeText) {
         await navigator.clipboard.writeText(apiToken);
       } else {
-        // Fallback for non-secure contexts
         const textArea = document.createElement('textarea');
         textArea.value = apiToken;
         textArea.style.position = 'fixed';
@@ -157,13 +151,13 @@ export default function SMSHistoryPage() {
     if (source === 'campaign') {
       return (
         <span className="px-2 py-1 text-xs font-semibold rounded-full bg-purple-100 text-purple-600 dark:bg-purple-900/20">
-          {t('smsApi.sourceCampaign')}
+          {t('emailApi.sourceCampaign')}
         </span>
       );
     }
     return (
       <span className="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-600 dark:bg-blue-900/20">
-        {t('smsApi.sourceApi')}
+        {t('emailApi.sourceApi')}
       </span>
     );
   };
@@ -171,7 +165,7 @@ export default function SMSHistoryPage() {
   const clearFilters = () => {
     setFilters({
       source: '',
-      phone: '',
+      email: '',
       status: '',
       date_from: '',
       date_to: '',
@@ -198,18 +192,18 @@ export default function SMSHistoryPage() {
         <div className="mb-8 flex items-start justify-between">
           <div>
             <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-              {t('smsApi.messageHistory')}
+              {t('emailApi.messageHistory')}
             </h1>
             <p className="text-gray-600 dark:text-gray-400">
-              {t('smsApi.historyDescription')}
+              {t('emailApi.historyDescription')}
             </p>
           </div>
           <Link
-            href="/sms-api"
+            href="/docs/email-api"
             className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-500 text-white rounded-xl hover:shadow-lg transition-all"
           >
             <Code className="w-5 h-5" />
-            {t('smsApi.apiDocs')}
+            {t('emailApi.apiDocs')}
           </Link>
         </div>
 
@@ -217,17 +211,17 @@ export default function SMSHistoryPage() {
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 mb-8">
           <div className="flex items-start justify-between mb-2">
             <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-              {t('smsApi.apiToken')}
+              {t('emailApi.apiToken')}
             </h2>
             <Link
               href="/settings/sms/projects"
               className="text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
             >
-              {t('smsApi.manageProjects')}
+              {t('emailApi.manageProjects')}
             </Link>
           </div>
           <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-            {t('smsApi.apiTokenDescription')}
+            {t('emailApi.apiTokenDescription')}
           </p>
           <div className="flex items-center gap-2">
             <div className="flex-1 relative">
@@ -263,13 +257,13 @@ export default function SMSHistoryPage() {
           </div>
         </div>
 
-        {/* SMS History */}
+        {/* Email History */}
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
           <div className="p-6 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
             <div>
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white">{t('smsApi.history')}</h2>
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white">{t('emailApi.history')}</h2>
               <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                {total} {t('smsApi.message').toLowerCase()}
+                {total} {t('emailApi.email').toLowerCase()}
               </p>
             </div>
             <button
@@ -292,31 +286,31 @@ export default function SMSHistoryPage() {
                 {/* Source Filter */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    {t('smsApi.source')}
+                    {t('emailApi.source')}
                   </label>
                   <select
                     value={filters.source}
                     onChange={(e) => setFilters({ ...filters, source: e.target.value })}
                     className="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-white"
                   >
-                    <option value="">{t('smsApi.allSources')}</option>
-                    <option value="api">{t('smsApi.sourceApi')}</option>
-                    <option value="campaign">{t('smsApi.sourceCampaign')}</option>
+                    <option value="">{t('emailApi.allSources')}</option>
+                    <option value="api">{t('emailApi.sourceApi')}</option>
+                    <option value="campaign">{t('emailApi.sourceCampaign')}</option>
                   </select>
                 </div>
 
-                {/* Phone Filter */}
+                {/* Email Filter */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    {t('smsApi.phone')}
+                    {t('emailApi.recipient')}
                   </label>
                   <div className="relative">
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
                     <input
                       type="text"
-                      value={filters.phone}
-                      onChange={(e) => setFilters({ ...filters, phone: e.target.value })}
-                      placeholder="994..."
+                      value={filters.email}
+                      onChange={(e) => setFilters({ ...filters, email: e.target.value })}
+                      placeholder="email@..."
                       className="w-full pl-10 pr-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-white"
                     />
                   </div>
@@ -325,14 +319,14 @@ export default function SMSHistoryPage() {
                 {/* Status Filter */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    {t('smsApi.status')}
+                    {t('emailApi.status')}
                   </label>
                   <select
                     value={filters.status}
                     onChange={(e) => setFilters({ ...filters, status: e.target.value })}
                     className="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-white"
                   >
-                    <option value="">{t('smsApi.allStatuses')}</option>
+                    <option value="">{t('emailApi.allStatuses')}</option>
                     <option value="pending">Pending</option>
                     <option value="sent">Sent</option>
                     <option value="delivered">Delivered</option>
@@ -343,7 +337,7 @@ export default function SMSHistoryPage() {
                 {/* Date From */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    {t('smsApi.filterByDate')}
+                    {t('emailApi.filterByDate')}
                   </label>
                   <input
                     type="date"
@@ -383,10 +377,10 @@ export default function SMSHistoryPage() {
 
           {messages.length === 0 ? (
             <div className="p-12 text-center">
-              <MessageSquare className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-600 dark:text-gray-400">{t('smsApi.noMessages')}</p>
-              <Link href="/sms-api" className="text-blue-600 hover:underline text-sm mt-2 inline-block">
-                {t('smsApi.viewDocsToStart')}
+              <Mail className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+              <p className="text-gray-600 dark:text-gray-400">{t('emailApi.noMessages')}</p>
+              <Link href="/docs/email-api" className="text-blue-600 hover:underline text-sm mt-2 inline-block">
+                {t('emailApi.viewDocsToStart')}
               </Link>
             </div>
           ) : (
@@ -396,25 +390,25 @@ export default function SMSHistoryPage() {
                   <thead className="bg-gray-50 dark:bg-gray-900/50">
                     <tr>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                        {t('smsApi.source')}
+                        {t('emailApi.source')}
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                        {t('smsApi.phone')}
+                        {t('emailApi.recipient')}
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                        {t('smsApi.message')}
+                        {t('emailApi.subject')}
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                        {t('smsApi.sender')}
+                        {t('emailApi.from')}
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                        {t('smsApi.status')}
+                        {t('emailApi.status')}
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                        {t('smsApi.cost')}
+                        {t('emailApi.cost')}
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                        {t('smsApi.date')}
+                        {t('emailApi.date')}
                       </th>
                     </tr>
                   </thead>
@@ -422,23 +416,26 @@ export default function SMSHistoryPage() {
                     {messages.map((msg) => (
                       <tr key={msg.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="flex flex-col gap-1">
-                            {getSourceBadge(msg.source)}
-                            {msg.campaign && (
-                              <span className="text-xs text-gray-500 dark:text-gray-400">
-                                {msg.campaign.name}
-                              </span>
+                          {getSourceBadge(msg.source)}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
+                          <div>
+                            {msg.to_email}
+                            {msg.to_name && (
+                              <div className="text-xs text-gray-500 dark:text-gray-400">{msg.to_name}</div>
                             )}
                           </div>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
-                          {msg.phone}
-                        </td>
                         <td className="px-6 py-4 text-sm text-gray-700 dark:text-gray-300 max-w-xs truncate">
-                          {msg.message}
+                          {msg.subject}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">
-                          {msg.sender}
+                          <div>
+                            {msg.from_email}
+                            {msg.from_name && (
+                              <div className="text-xs text-gray-500 dark:text-gray-400">{msg.from_name}</div>
+                            )}
+                          </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex items-center gap-2">
@@ -448,7 +445,7 @@ export default function SMSHistoryPage() {
                             {msg.is_test && (
                               <span className="inline-flex items-center gap-1 px-2 py-1 text-xs font-semibold rounded-full bg-amber-100 text-amber-700 dark:bg-amber-900/20 dark:text-amber-400">
                                 <FlaskConical className="w-3 h-3" />
-                                {t('smsApi.testMode')}
+                                {t('emailApi.testMode')}
                               </span>
                             )}
                           </div>

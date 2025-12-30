@@ -57,11 +57,12 @@
     "smsApi": "SMS API",
     "smsApiDescription": "SMS göndərin və tarixçəyə baxın",
     "smsCampaigns": "SMS Kampaniyalar",
-    "smsCampaignsDescription": "Toplu SMS kampaniyaları yaradın və idarə edin"
+    "smsCampaignsDescription": "Toplu SMS kampaniyaları yaradın və idarə edin",
+    "emailApi": "Email API",
+    "emailApiDescription": "Email göndərin və tarixçəyə baxın"
   },
   "alerts": {
     "createNew": "Yeni Bildiriş Yarat",
-    "quickSetup": "Sürətli Quraşdırma",
     "title": "Başlıq",
     "type": "Növ",
     "status": "Status",
@@ -331,6 +332,8 @@
     "close": "Bağla",
     "search": "Axtar",
     "all": "Hamısı",
+    "yes": "Bəli",
+    "no": "Xeyr",
     "copy": "Kopyala",
     "copied": "Kopyalandı!",
     "pageOf": "Səhifə {current} / {total}",
@@ -384,7 +387,8 @@
   "footer": {
     "allRightsReserved": "Bütün hüquqlar qorunur.",
     "help": "Kömək",
-    "apiDocs": "API Sənədləri",
+    "smsApi": "SMS API",
+    "emailApi": "Email API",
     "smsCampaigns": "SMS Kampaniyalar",
     "privacy": "Məxfilik",
     "terms": "Şərtlər"
@@ -465,7 +469,8 @@
     "subtitle": "Sadə API ilə istifadəçilərinizə SMS göndərin",
     "apiDocs": "API Sənədləri",
     "apiToken": "API Tokeni",
-    "apiTokenDescription": "API sorğularınızı autentifikasiya etmək üçün bu tokeni istifadə edin",
+    "apiTokenDescription": "API sorğularınızı autentifikasiya etmək üçün bu tokeni istifadə edin. Lazım olduqda layihə parametrlərindən yenidən yarada bilərsiniz.",
+    "manageProjects": "Layihələri İdarə Et",
     "history": "SMS Tarixçəsi",
     "historyDescription": "API vasitəsilə göndərilən son mesajlar",
     "noMessages": "Hələ SMS mesajı göndərilməyib",
@@ -944,6 +949,86 @@
         "example1": "city bərabərdir \"Bakı\" → Bakıdakı müştərilər",
         "example2": "is_active bərabərdir true → Yalnız aktiv müştərilər",
         "example3": "balance böyükdür 100 → Yüksək balanslı müştərilər"
+      }
+    }
+  },
+  "emailApi": {
+    "title": "Email API Sənədləşməsi",
+    "subtitle": "Sadə API ilə istifadəçilərinizə email göndərin",
+    "apiDocs": "API Sənədləri",
+    "apiToken": "API Tokeni",
+    "apiTokenDescription": "API sorğularınızı autentifikasiya etmək üçün bu tokeni istifadə edin. Lazım olduqda layihə parametrlərindən yenidən yarada bilərsiniz.",
+    "manageProjects": "Layihələri İdarə Et",
+    "history": "Email Tarixçəsi",
+    "historyDescription": "API vasitəsilə göndərilən son emaillər",
+    "noMessages": "Hələ email göndərilməyib",
+    "viewDocsToStart": "Başlamaq üçün API sənədlərinə baxın",
+    "messageHistory": "Mesaj Tarixçəsi",
+    "email": "Email",
+    "recipient": "Alıcı",
+    "subject": "Mövzu",
+    "from": "Göndərən",
+    "status": "Status",
+    "cost": "Qiymət",
+    "date": "Tarix",
+    "source": "Mənbə",
+    "sourceApi": "API",
+    "sourceCampaign": "Kampaniya",
+    "testMode": "Test",
+    "filterByDate": "Tarixə görə filtr",
+    "allSources": "Bütün mənbələr",
+    "allStatuses": "Bütün statuslar",
+    "docs": {
+      "title": "Email API Sənədləşməsi",
+      "subtitle": "Etibarlı API vasitəsilə peşəkar emaillər göndərin",
+      "overview": {
+        "title": "Ümumi Baxış",
+        "description": "Alert.az Email API-sı tranzaksiya və marketinq emaillərini proqramlı şəkildə göndərməyə imkan verir. Doğrulama kodları, bildirişlər və avtomatlaşdırılmış kommunikasiyalar üçün idealdır."
+      },
+      "authentication": {
+        "title": "Autentifikasiya",
+        "description": "Bütün API sorğuları layihə tokeninizlə Authorization başlığı tələb edir:",
+        "getToken": "Tokeninizi Layihələr səhifəsindən əldə edin."
+      },
+      "sendEmail": {
+        "title": "Email Göndər",
+        "description": "HTML və/və ya düz mətn məzmunlu alıcıya email göndərin.",
+        "parameters": "Sorğu Parametrləri",
+        "param": "Parametr",
+        "type": "Tip",
+        "required": "Tələb olunur",
+        "descriptionCol": "Təsvir",
+        "toDesc": "Alıcı email ünvanı",
+        "toNameDesc": "Alıcı göstərilən adı",
+        "subjectDesc": "Email mövzu sətri (maks 500 simvol)",
+        "bodyHtmlDesc": "Emailin HTML məzmunu",
+        "bodyTextDesc": "Emailin düz mətn məzmunu",
+        "fromDesc": "Göndərən email ünvanı (standart: noreply@alert.az)",
+        "fromNameDesc": "Göndərən göstərilən adı (standart: Alert.az)",
+        "bodyNote": "body_html və ya body_text-dən ən azı biri tələb olunur",
+        "response": "Cavab"
+      },
+      "codeExamples": {
+        "title": "Kod Nümunələri",
+        "curl": "cURL",
+        "javascript": "JavaScript",
+        "php": "PHP",
+        "python": "Python"
+      },
+      "balance": {
+        "title": "Balansı Yoxla",
+        "description": "Cari email balansınızı və qiymət məlumatlarını əldə edin."
+      },
+      "errorCodes": {
+        "title": "Xəta Kodları",
+        "code": "Kod",
+        "description": "Təsvir",
+        "400": "Doğrulama xətası - sorğu formatını yoxlayın",
+        "401": "İcazəsiz - yanlış və ya çatışmayan token",
+        "402": "Kifayət qədər balans yoxdur - hesabınızı artırın",
+        "422": "İşlənə bilməyən obyekt - yanlış email formatı",
+        "429": "Çox sayda sorğu - limit aşılıb",
+        "500": "Server xətası - sonra yenidən cəhd edin"
       }
     }
   }

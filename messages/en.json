@@ -57,11 +57,12 @@
     "smsApi": "SMS API",
     "smsApiDescription": "Send SMS and view history",
     "smsCampaigns": "SMS Campaigns",
-    "smsCampaignsDescription": "Create and manage bulk SMS campaigns"
+    "smsCampaignsDescription": "Create and manage bulk SMS campaigns",
+    "emailApi": "Email API",
+    "emailApiDescription": "Send emails and view history"
   },
   "alerts": {
     "createNew": "Create New Alert",
-    "quickSetup": "Quick Setup",
     "title": "Title",
     "type": "Type",
     "status": "Status",
@@ -331,6 +332,8 @@
     "close": "Close",
     "search": "Search",
     "all": "All",
+    "yes": "Yes",
+    "no": "No",
     "copy": "Copy",
     "copied": "Copied!",
     "pageOf": "Page {current} of {total}",
@@ -384,7 +387,8 @@
   "footer": {
     "allRightsReserved": "All rights reserved.",
     "help": "Help",
-    "apiDocs": "API Docs",
+    "smsApi": "SMS API",
+    "emailApi": "Email API",
     "smsCampaigns": "SMS Campaigns",
     "privacy": "Privacy",
     "terms": "Terms"
@@ -465,7 +469,8 @@
     "subtitle": "Send SMS messages to your users with our simple API",
     "apiDocs": "API Docs",
     "apiToken": "API Token",
-    "apiTokenDescription": "Use this token to authenticate your API requests",
+    "apiTokenDescription": "Use this token to authenticate your API requests. You can regenerate it in project settings if needed.",
+    "manageProjects": "Manage Projects",
     "history": "SMS History",
     "historyDescription": "Recent messages sent through the API",
     "noMessages": "No SMS messages sent yet",
@@ -944,6 +949,86 @@
         "example1": "city equals \"Baku\" → Target customers in Baku",
         "example2": "is_active equals true → Active customers only",
         "example3": "balance greater than 100 → High balance customers"
+      }
+    }
+  },
+  "emailApi": {
+    "title": "Email API Documentation",
+    "subtitle": "Send emails to your users with our simple API",
+    "apiDocs": "API Docs",
+    "apiToken": "API Token",
+    "apiTokenDescription": "Use this token to authenticate your API requests. You can regenerate it in project settings if needed.",
+    "manageProjects": "Manage Projects",
+    "history": "Email History",
+    "historyDescription": "Recent emails sent through the API",
+    "noMessages": "No emails sent yet",
+    "viewDocsToStart": "View API documentation to get started",
+    "messageHistory": "Message History",
+    "email": "Email",
+    "recipient": "Recipient",
+    "subject": "Subject",
+    "from": "From",
+    "status": "Status",
+    "cost": "Cost",
+    "date": "Date",
+    "source": "Source",
+    "sourceApi": "API",
+    "sourceCampaign": "Campaign",
+    "testMode": "Test",
+    "filterByDate": "Filter by date",
+    "allSources": "All sources",
+    "allStatuses": "All statuses",
+    "docs": {
+      "title": "Email API Documentation",
+      "subtitle": "Send professional emails through our reliable API",
+      "overview": {
+        "title": "Overview",
+        "description": "The Alert.az Email API allows you to send transactional and marketing emails programmatically. Perfect for verification codes, notifications, and automated communications."
+      },
+      "authentication": {
+        "title": "Authentication",
+        "description": "All API requests require an Authorization header with your project token:",
+        "getToken": "Get your token from the Projects page."
+      },
+      "sendEmail": {
+        "title": "Send Email",
+        "description": "Send an email to a recipient with HTML and/or plain text content.",
+        "parameters": "Request Parameters",
+        "param": "Parameter",
+        "type": "Type",
+        "required": "Required",
+        "descriptionCol": "Description",
+        "toDesc": "Recipient email address",
+        "toNameDesc": "Recipient display name",
+        "subjectDesc": "Email subject line (max 500 characters)",
+        "bodyHtmlDesc": "HTML content of the email",
+        "bodyTextDesc": "Plain text content of the email",
+        "fromDesc": "Sender email address (default: noreply@alert.az)",
+        "fromNameDesc": "Sender display name (default: Alert.az)",
+        "bodyNote": "At least one of body_html or body_text is required",
+        "response": "Response"
+      },
+      "codeExamples": {
+        "title": "Code Examples",
+        "curl": "cURL",
+        "javascript": "JavaScript",
+        "php": "PHP",
+        "python": "Python"
+      },
+      "balance": {
+        "title": "Check Balance",
+        "description": "Get your current email balance and pricing information."
+      },
+      "errorCodes": {
+        "title": "Error Codes",
+        "code": "Code",
+        "description": "Description",
+        "400": "Validation error - check request format",
+        "401": "Unauthorized - invalid or missing token",
+        "402": "Insufficient balance - top up your account",
+        "422": "Unprocessable entity - invalid email format",
+        "429": "Too many requests - rate limit exceeded",
+        "500": "Server error - try again later"
       }
     }
   }
