@@ -437,7 +437,18 @@
     "signUp": "Qeydiyyat",
     "invalidCredentials": "Yanlış e-poçt və ya şifrə",
     "emailPlaceholder": "siz@sayt.az",
-    "passwordPlaceholder": "••••••••"
+    "passwordPlaceholder": "••••••••",
+    "loginWithWallet": "Wallet.az ilə daxil ol",
+    "connecting": "Qoşulur...",
+    "walletAuthFailed": "Wallet autentifikasiyası uğursuz oldu",
+    "walletAuthSuccess": "Uğurla daxil oldunuz!",
+    "noAuthCode": "Avtorizasiya kodu alınmadı",
+    "invalidState": "Yanlış state parametri",
+    "noTokenReceived": "Token alınmadı",
+    "processingWallet": "Wallet girişi emal edilir",
+    "pleaseWait": "Hesabınız yoxlanılır, zəhmət olmasa gözləyin...",
+    "redirecting": "İdarə panelinə yönləndirilir...",
+    "backToLogin": "Geri qayıt"
   },
   "register": {
     "createAccount": "Hesab Yaradın",

@@ -437,7 +437,18 @@
     "signUp": "Sign up",
     "invalidCredentials": "Invalid email or password",
     "emailPlaceholder": "you@example.com",
-    "passwordPlaceholder": "••••••••"
+    "passwordPlaceholder": "••••••••",
+    "loginWithWallet": "Login with Wallet.az",
+    "connecting": "Connecting...",
+    "walletAuthFailed": "Wallet authentication failed",
+    "walletAuthSuccess": "Login successful!",
+    "noAuthCode": "No authorization code received",
+    "invalidState": "Invalid state parameter",
+    "noTokenReceived": "No token received",
+    "processingWallet": "Processing Wallet Login",
+    "pleaseWait": "Please wait while we verify your account...",
+    "redirecting": "Redirecting to dashboard...",
+    "backToLogin": "Back to Login"
   },
   "register": {
     "createAccount": "Create Account",

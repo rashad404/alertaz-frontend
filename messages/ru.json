@@ -437,7 +437,18 @@
     "signUp": "Регистрация",
     "invalidCredentials": "Неверный email или пароль",
     "emailPlaceholder": "you@example.com",
-    "passwordPlaceholder": "••••••••"
+    "passwordPlaceholder": "••••••••",
+    "loginWithWallet": "Войти через Wallet.az",
+    "connecting": "Подключение...",
+    "walletAuthFailed": "Ошибка аутентификации Wallet",
+    "walletAuthSuccess": "Вход выполнен успешно!",
+    "noAuthCode": "Код авторизации не получен",
+    "invalidState": "Неверный параметр state",
+    "noTokenReceived": "Токен не получен",
+    "processingWallet": "Обработка входа через Wallet",
+    "pleaseWait": "Пожалуйста, подождите, пока мы проверяем вашу учетную запись...",
+    "redirecting": "Перенаправление на панель управления...",
+    "backToLogin": "Вернуться к входу"
   },
   "register": {
     "createAccount": "Создать учетную запись",
