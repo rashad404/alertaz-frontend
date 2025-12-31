@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { Link } from '@/lib/navigation';
 import {
@@ -10,7 +10,9 @@ import {
   Loader2,
   Eye,
   EyeOff,
-  CheckCircle
+  CheckCircle,
+  Wallet,
+  ExternalLink
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
@@ -20,8 +22,33 @@ export default function SecuritySettingsPage() {
   const params = useParams();
   const locale = (params?.lang as string) || 'az';
 
+  const [user, setUser] = useState<any>(null);
+  const [userLoading, setUserLoading] = useState(true);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState({ type: '', text: '' });
+
+  // Check if user is OAuth (Wallet.az) user
+  const isWalletUser = !!user?.wallet_id;
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      router.push(`/login`);
+      return;
+    }
+
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/user`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.status === 'success') {
+          setUser(data.data);
+        }
+      })
+      .catch(err => console.error('Failed to fetch user:', err))
+      .finally(() => setUserLoading(false));
+  }, [router]);
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -110,6 +137,14 @@ export default function SecuritySettingsPage() {
     }
   };
 
+  if (userLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-white dark:bg-gray-900">
+        <Loader2 className="w-8 h-8 animate-spin text-indigo-600" />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen py-8 px-4 sm:px-6 bg-white dark:bg-gray-900">
       <div className="max-w-4xl mx-auto">
@@ -166,6 +201,27 @@ export default function SecuritySettingsPage() {
             </h2>
           </div>
 
+          {/* Wallet.az users cannot change password here */}
+          {isWalletUser ? (
+            <div className="text-center py-8">
+              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
+                <Wallet className="w-8 h-8 text-emerald-600 dark:text-emerald-400" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                {t('settings.connectedViaWallet')}
+              </h3>
+              <p className="text-gray-600 dark:text-gray-400 mb-6 max-w-md mx-auto">
+                {t('settings.passwordNotAvailable')}
+              </p>
+              <a
+                href={`${process.env.NEXT_PUBLIC_WALLET_URL || 'https://wallet.az'}/settings/security`}
+                className="inline-flex items-center gap-2 px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-2xl transition-colors"
+              >
+                <ExternalLink className="w-5 h-5" />
+                {t('settings.changePasswordOnWallet')}
+              </a>
+            </div>
+          ) : (
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Current Password */}
             <div>
@@ -284,6 +340,7 @@ export default function SecuritySettingsPage() {
               </button>
             </div>
           </form>
+          )}
         </div>
 
         {/* Security Tips */}

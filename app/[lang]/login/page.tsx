@@ -119,7 +119,7 @@ export default function LoginPage() {
       const params = new URLSearchParams({
         client_id: CLIENT_ID,
         redirect_uri: REDIRECT_URI,
-        scope: 'profile:read verification:read',
+        scope: 'profile:read verification:read wallet:charge',
         state: state,
         code_challenge: codeChallenge,
         code_challenge_method: codeChallengeMethod,

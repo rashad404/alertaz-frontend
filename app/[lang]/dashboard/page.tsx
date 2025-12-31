@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Link } from '@/lib/navigation';
-import { Bell, Plus, TrendingUp, Activity, Settings, Bitcoin, Globe, BarChart3, Play, Pause, MessageSquare, CreditCard, Megaphone, Mail } from 'lucide-react';
+import { Bell, Plus, TrendingUp, Activity, Settings, Bitcoin, Globe, BarChart3, Play, Pause, MessageSquare, CreditCard, Megaphone, Mail, Wallet, Loader2, ArrowUpRight } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
 type AlertService = 'crypto' | 'stocks' | 'website' | 'weather' | 'currency' | 'flight';
@@ -62,6 +62,9 @@ export default function DashboardPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [balance, setBalance] = useState<number | null>(null);
   const [totalSpent, setTotalSpent] = useState<number>(0);
+  const [isTopupLoading, setIsTopupLoading] = useState(false);
+  const [showTopupModal, setShowTopupModal] = useState(false);
+  const [topupAmount, setTopupAmount] = useState<number>(10);
 
   const activeAlertsCount = alerts.filter(a => a.status === 'active').length;
   const triggeredCount = alerts.filter(a => a.lastTriggered).length;
@@ -149,6 +152,72 @@ export default function DashboardPage() {
     fetchData();
   }, [router]);
 
+  const handleWalletTopup = async () => {
+    if (!user?.wallet_id) return;
+
+    setIsTopupLoading(true);
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/wallet/topup`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify({ amount: topupAmount }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        if (data.reconnect_required) {
+          // Redirect to reconnect Wallet.az
+          alert(t('dashboard.walletReconnectRequired'));
+          return;
+        }
+        throw new Error(data.message || 'Topup failed');
+      }
+
+      // Check if approval is needed
+      if (data.data?.status === 'pending_approval' && data.data?.approval_url) {
+        // Open Wallet.az approval popup
+        const walletUrl = process.env.NEXT_PUBLIC_WALLET_URL || 'http://100.89.150.50:3011';
+        const approvalUrl = `${walletUrl}/oauth/approve/${data.data.charge_id}`;
+
+        const popup = window.open(approvalUrl, 'wallet_approve', 'width=500,height=700');
+
+        // Listen for approval result
+        const handleMessage = (event: MessageEvent) => {
+          if (event.data?.type === 'charge_approved') {
+            window.removeEventListener('message', handleMessage);
+            popup?.close();
+            // Refresh balance after a short delay
+            setTimeout(() => {
+              window.location.reload();
+            }, 1500);
+          } else if (event.data?.type === 'charge_rejected') {
+            window.removeEventListener('message', handleMessage);
+            popup?.close();
+          }
+        };
+        window.addEventListener('message', handleMessage);
+      } else if (data.data?.status === 'approved') {
+        // Auto-approved, refresh balance
+        setTimeout(() => {
+          window.location.reload();
+        }, 1000);
+      }
+
+      setShowTopupModal(false);
+    } catch (error: any) {
+      console.error('Topup error:', error);
+      alert(error.message || t('dashboard.topupError'));
+    } finally {
+      setIsTopupLoading(false);
+    }
+  };
+
   if (!user) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -219,7 +288,15 @@ export default function DashboardPage() {
               <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center">
                 <CreditCard className="w-6 h-6 text-white" />
               </div>
-              <TrendingUp className="w-5 h-5 text-green-500" />
+              {user?.wallet_id && (
+                <button
+                  onClick={() => setShowTopupModal(true)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 text-sm font-medium hover:bg-emerald-200 dark:hover:bg-emerald-900/50 transition-colors"
+                >
+                  <Wallet className="w-4 h-4" />
+                  {t('dashboard.topup')}
+                </button>
+              )}
             </div>
             <div className="text-3xl font-bold text-gray-900 dark:text-white mb-1">
               {balance !== null ? `${Number(balance).toFixed(2)} AZN` : '0.00 AZN'}
@@ -229,6 +306,88 @@ export default function DashboardPage() {
             </div>
           </div>
         </div>
+
+        {/* Topup Modal */}
+        {showTopupModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+            <div className="rounded-3xl p-6 w-full max-w-md bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 shadow-2xl">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-12 h-12 rounded-2xl bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
+                  <Wallet className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-gray-900 dark:text-white">
+                    {t('dashboard.topupFromWallet')}
+                  </h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    {t('dashboard.topupDescription')}
+                  </p>
+                </div>
+              </div>
+
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  {t('dashboard.amount')}
+                </label>
+                <div className="grid grid-cols-4 gap-2 mb-3">
+                  {[5, 10, 20, 50].map((amount) => (
+                    <button
+                      key={amount}
+                      onClick={() => setTopupAmount(amount)}
+                      className={`py-2 rounded-xl font-medium transition-colors ${
+                        topupAmount === amount
+                          ? 'bg-emerald-500 text-white'
+                          : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+                      }`}
+                    >
+                      {amount} AZN
+                    </button>
+                  ))}
+                </div>
+                <input
+                  type="number"
+                  value={topupAmount || ''}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    if (val === '') {
+                      setTopupAmount(0);
+                    } else {
+                      setTopupAmount(Math.min(1000, parseInt(val) || 0));
+                    }
+                  }}
+                  min="1"
+                  max="1000"
+                  className="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  placeholder={t('dashboard.enterAmount')}
+                />
+              </div>
+
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowTopupModal(false)}
+                  disabled={isTopupLoading}
+                  className="flex-1 px-4 py-3 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
+                >
+                  {t('common.cancel')}
+                </button>
+                <button
+                  onClick={handleWalletTopup}
+                  disabled={isTopupLoading || topupAmount < 1}
+                  className="flex-1 px-4 py-3 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-medium transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                >
+                  {isTopupLoading ? (
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                  ) : (
+                    <>
+                      <ArrowUpRight className="w-5 h-5" />
+                      {t('dashboard.topupNow')}
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Recent Alerts */}
         <div className="card-glass rounded-3xl p-8 mb-12">

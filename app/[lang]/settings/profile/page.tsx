@@ -11,7 +11,9 @@ import {
   Loader2,
   ChevronLeft,
   Camera,
-  Globe
+  Globe,
+  Wallet,
+  ExternalLink
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { TIMEZONES } from '@/lib/utils/date';
@@ -181,6 +183,10 @@ export default function ProfileSettingsPage() {
     return null;
   }
 
+  // Check if user logged in via Wallet.az OAuth
+  const isWalletUser = !!user.wallet_id;
+  const walletProfileUrl = `${process.env.NEXT_PUBLIC_WALLET_URL || 'https://wallet.az'}/settings/profile?return_url=${encodeURIComponent(typeof window !== 'undefined' ? window.location.origin + '/settings' : '')}`;
+
   return (
     <div className="min-h-screen py-8 px-4 sm:px-6 bg-white dark:bg-gray-900">
       <div className="max-w-4xl mx-auto">
@@ -199,9 +205,30 @@ export default function ProfileSettingsPage() {
             {t('settings.profile.title')}
           </h1>
           <p className="text-gray-600 dark:text-gray-400">
-            {t('settings.profile.subtitle')}
+            {isWalletUser ? t('settings.profileManagedByWallet') : t('settings.profile.subtitle')}
           </p>
         </div>
+
+        {/* Wallet.az Info Banner for OAuth users */}
+        {isWalletUser && (
+          <div className="mb-6 p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800">
+            <div className="flex items-start gap-3">
+              <Wallet className="w-5 h-5 text-emerald-600 dark:text-emerald-400 flex-shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <p className="text-sm text-emerald-700 dark:text-emerald-300 mb-3">
+                  {t('settings.profileManagedByWalletDesc')}
+                </p>
+                <a
+                  href={walletProfileUrl}
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-xl transition-colors"
+                >
+                  <ExternalLink className="w-4 h-4" />
+                  {t('settings.editOnWallet')}
+                </a>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Success/Error Message */}
         {message.text && (
@@ -220,53 +247,114 @@ export default function ProfileSettingsPage() {
           </div>
         )}
 
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="rounded-3xl p-8 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border border-white/30 dark:border-gray-700/30">
-          {/* Profile Photo Section */}
-          <div className="mb-8 flex flex-col items-center">
-            <div className="relative">
-              {/* Avatar Display */}
-              <div className="w-32 h-32 rounded-full overflow-hidden bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center">
-                {avatarPreview || user.avatar ? (
-                  <img
-                    src={avatarPreview || user.avatar}
-                    alt={user.name}
-                    className="w-full h-full object-cover"
-                  />
+        {/* Read-only Profile for OAuth users */}
+        {isWalletUser ? (
+          <div className="rounded-3xl p-8 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border border-white/30 dark:border-gray-700/30">
+            {/* Profile Photo (read-only) */}
+            <div className="mb-8 flex flex-col items-center">
+              <div className="w-32 h-32 rounded-full overflow-hidden bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center">
+                {user.avatar ? (
+                  <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
                 ) : (
-                  <span className="text-white text-4xl font-bold">
-                    {user.name?.charAt(0)?.toUpperCase()}
-                  </span>
+                  <span className="text-white text-4xl font-bold">{user.name?.charAt(0)?.toUpperCase()}</span>
                 )}
               </div>
-
-              {/* Upload Button Overlay */}
-              <label
-                htmlFor="avatar-upload"
-                className="absolute bottom-0 right-0 w-10 h-10 bg-indigo-600 hover:bg-indigo-700 rounded-full flex items-center justify-center cursor-pointer shadow-lg transition-colors"
-              >
-                <Camera className="w-5 h-5 text-white" />
-                <input
-                  id="avatar-upload"
-                  type="file"
-                  accept="image/*"
-                  onChange={handleAvatarChange}
-                  className="hidden"
-                />
-              </label>
             </div>
 
-            <div className="mt-4 text-center">
-              <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                {t('settings.profile.profilePhoto')}
-              </p>
-              <p className="text-xs text-gray-500 dark:text-gray-400">
-                {t('settings.profile.photoHint')}
-              </p>
+            {/* Read-only fields */}
+            <div className="space-y-4">
+              <div className="flex items-center gap-3 p-4 rounded-2xl bg-gray-50 dark:bg-gray-800/50">
+                <User className="w-5 h-5 text-gray-500" />
+                <div>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">{t('settings.profile.name')}</p>
+                  <p className="text-gray-900 dark:text-white font-medium">{user.name}</p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3 p-4 rounded-2xl bg-gray-50 dark:bg-gray-800/50">
+                <Mail className="w-5 h-5 text-gray-500" />
+                <div>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">{t('auth.email')}</p>
+                  <p className="text-gray-900 dark:text-white font-medium">{user.email}</p>
+                </div>
+              </div>
+
+              {user.phone && (
+                <div className="flex items-center gap-3 p-4 rounded-2xl bg-gray-50 dark:bg-gray-800/50">
+                  <Phone className="w-5 h-5 text-gray-500" />
+                  <div>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">{t('auth.phone')}</p>
+                    <p className="text-gray-900 dark:text-white font-medium">{user.phone}</p>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Edit on Wallet.az button */}
+            <div className="mt-8 flex gap-4">
+              <Link
+                href={`/settings`}
+                className="flex-1 px-6 py-3 rounded-2xl border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-center"
+              >
+                {t('common.back')}
+              </Link>
+              <a
+                href={walletProfileUrl}
+                className="flex-1 px-6 py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold transition-all flex items-center justify-center gap-2"
+              >
+                <ExternalLink className="w-5 h-5" />
+                {t('settings.editOnWallet')}
+              </a>
             </div>
           </div>
+        ) : (
+          /* Editable Form for regular users */
+          <form onSubmit={handleSubmit} className="rounded-3xl p-8 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border border-white/30 dark:border-gray-700/30">
+            {/* Profile Photo Section */}
+            <div className="mb-8 flex flex-col items-center">
+              <div className="relative">
+                {/* Avatar Display */}
+                <div className="w-32 h-32 rounded-full overflow-hidden bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center">
+                  {avatarPreview || user.avatar ? (
+                    <img
+                      src={avatarPreview || user.avatar}
+                      alt={user.name}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <span className="text-white text-4xl font-bold">
+                      {user.name?.charAt(0)?.toUpperCase()}
+                    </span>
+                  )}
+                </div>
 
-          <div className="space-y-6">
+                {/* Upload Button Overlay */}
+                <label
+                  htmlFor="avatar-upload"
+                  className="absolute bottom-0 right-0 w-10 h-10 bg-indigo-600 hover:bg-indigo-700 rounded-full flex items-center justify-center cursor-pointer shadow-lg transition-colors"
+                >
+                  <Camera className="w-5 h-5 text-white" />
+                  <input
+                    id="avatar-upload"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleAvatarChange}
+                    className="hidden"
+                  />
+                </label>
+              </div>
+
+              <div className="mt-4 text-center">
+                <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  {t('settings.profile.profilePhoto')}
+                </p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  {t('settings.profile.photoHint')}
+                </p>
+              </div>
+            </div>
+
+            <div className="space-y-6">
             {/* Name */}
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -401,6 +489,7 @@ export default function ProfileSettingsPage() {
             </button>
           </div>
         </form>
+        )}
       </div>
     </div>
   );

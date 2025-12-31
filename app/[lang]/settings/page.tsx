@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter, useParams } from 'next/navigation';
+import { useRouter, useParams, useSearchParams } from 'next/navigation';
 import { Link } from '@/lib/navigation';
 import {
   User,
@@ -12,6 +12,8 @@ import {
   Phone,
   Edit2,
   Loader2,
+  Wallet,
+  ExternalLink,
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
@@ -19,10 +21,15 @@ export default function SettingsPage() {
   const t = useTranslations();
   const router = useRouter();
   const params = useParams();
+  const searchParams = useSearchParams();
   const locale = (params?.lang as string) || 'az';
 
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [syncing, setSyncing] = useState(false);
+
+  // Check if returning from Wallet.az profile edit
+  const walletUpdated = searchParams.get('wallet_updated');
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -32,30 +39,65 @@ export default function SettingsPage() {
       return;
     }
 
-    // Fetch user data
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/user`, {
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
-    })
-      .then(res => res.json())
-      .then(data => {
+    const fetchUser = async () => {
+      try {
+        // If returning from Wallet.az, sync profile first
+        if (walletUpdated === '1') {
+          setSyncing(true);
+          try {
+            const syncResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/user/sync-from-wallet`, {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+              }
+            });
+            const syncData = await syncResponse.json();
+            if (syncData.status === 'success') {
+              setUser(syncData.data);
+              // Remove the query parameter from URL
+              window.history.replaceState({}, '', window.location.pathname);
+              setLoading(false);
+              setSyncing(false);
+              return;
+            }
+          } catch (err) {
+            console.error('Failed to sync from Wallet.az:', err);
+          }
+          setSyncing(false);
+          // Remove the query parameter even if sync failed
+          window.history.replaceState({}, '', window.location.pathname);
+        }
+
+        // Normal user fetch
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/user`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        const data = await response.json();
         if (data.status === 'success') {
           setUser(data.data);
         }
-      })
-      .catch(err => {
+      } catch (err) {
         console.error('Failed to fetch user:', err);
-      })
-      .finally(() => {
+      } finally {
         setLoading(false);
-      });
-  }, [router, locale]);
+      }
+    };
+
+    fetchUser();
+  }, [router, locale, walletUpdated]);
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-white dark:bg-gray-900">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-white dark:bg-gray-900 gap-3">
         <Loader2 className="w-8 h-8 animate-spin text-indigo-600" />
+        {syncing && (
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            {t('settings.syncingFromWallet')}
+          </p>
+        )}
       </div>
     );
   }
@@ -138,6 +180,13 @@ export default function SettingsPage() {
                 <p className="text-sm text-gray-500 dark:text-gray-400">
                   {user.email}
                 </p>
+                {/* Wallet.az Connected Badge */}
+                {user.wallet_id && (
+                  <div className="mt-3 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 text-xs font-medium">
+                    <Wallet className="w-3.5 h-3.5" />
+                    {t('settings.connectedViaWallet')}
+                  </div>
+                )}
               </div>
 
               {/* Quick Info */}
@@ -151,13 +200,23 @@ export default function SettingsPage() {
               </div>
 
               {/* Edit Profile Button */}
-              <Link
-                href={`/settings/profile`}
-                className="w-full px-4 py-2.5 bg-gradient-to-r from-indigo-500 to-purple-500 text-white rounded-2xl hover:shadow-lg hover:scale-105 transition-all duration-300 text-center font-medium text-sm flex items-center justify-center gap-2"
-              >
-                <Edit2 className="w-4 h-4" />
-                {t('settings.profile.editProfile')}
-              </Link>
+              {user.wallet_id ? (
+                <a
+                  href={`${process.env.NEXT_PUBLIC_WALLET_URL || 'https://wallet.az'}/settings/profile?return_url=${encodeURIComponent(window.location.origin + '/settings?wallet_updated=1')}`}
+                  className="w-full px-4 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-2xl hover:shadow-lg hover:scale-105 transition-all duration-300 text-center font-medium text-sm flex items-center justify-center gap-2"
+                >
+                  <ExternalLink className="w-4 h-4" />
+                  {t('settings.editOnWallet')}
+                </a>
+              ) : (
+                <Link
+                  href={`/settings/profile`}
+                  className="w-full px-4 py-2.5 bg-gradient-to-r from-indigo-500 to-purple-500 text-white rounded-2xl hover:shadow-lg hover:scale-105 transition-all duration-300 text-center font-medium text-sm flex items-center justify-center gap-2"
+                >
+                  <Edit2 className="w-4 h-4" />
+                  {t('settings.profile.editProfile')}
+                </Link>
+              )}
             </div>
           </div>
 
