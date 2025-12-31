@@ -73,17 +73,29 @@ export default function WalletCallbackPage() {
           setStatus('success');
           setMessage(t('login.walletAuthSuccess'));
 
-          // Redirect to dashboard after short delay
-          setTimeout(() => {
-            router.push('/dashboard');
-          }, 1500);
+          // If opened in popup, send message to opener and close
+          if (window.opener) {
+            window.opener.postMessage({ type: 'oauth_success' }, '*');
+            setTimeout(() => window.close(), 1000);
+          } else {
+            // Redirect to dashboard after short delay
+            setTimeout(() => {
+              router.push('/dashboard');
+            }, 1500);
+          }
         } else {
           throw new Error(t('login.noTokenReceived'));
         }
       } catch (err: any) {
         console.error('Wallet OAuth error:', err);
         setStatus('error');
-        setMessage(err.message || t('login.walletAuthFailed'));
+        const errorMessage = err.message || t('login.walletAuthFailed');
+        setMessage(errorMessage);
+
+        // If opened in popup, send error message to opener
+        if (window.opener) {
+          window.opener.postMessage({ type: 'oauth_error', message: errorMessage }, '*');
+        }
       }
     };
 

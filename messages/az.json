@@ -463,7 +463,8 @@
     "processingWallet": "Wallet girişi emal edilir",
     "pleaseWait": "Hesabınız yoxlanılır, zəhmət olmasa gözləyin...",
     "redirecting": "İdarə panelinə yönləndirilir...",
-    "backToLogin": "Geri qayıt"
+    "backToLogin": "Geri qayıt",
+    "popupBlocked": "Popup bloklandı. Zəhmət olmasa popup-lara icazə verin."
   },
   "register": {
     "createAccount": "Hesab Yaradın",

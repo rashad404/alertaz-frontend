@@ -181,11 +181,15 @@ export default function DashboardPage() {
 
       // Check if approval is needed
       if (data.data?.status === 'pending_approval' && data.data?.approval_url) {
-        // Open Wallet.az approval popup
+        // Open Wallet.az approval popup (centered)
         const walletUrl = process.env.NEXT_PUBLIC_WALLET_URL || 'http://100.89.150.50:3011';
         const approvalUrl = `${walletUrl}/oauth/approve/${data.data.charge_id}`;
 
-        const popup = window.open(approvalUrl, 'wallet_approve', 'width=500,height=700');
+        const width = 420;
+        const height = 580;
+        const left = (window.screen.width - width) / 2;
+        const top = (window.screen.height - height) / 2;
+        const popup = window.open(approvalUrl, 'wallet_approve', `width=${width},height=${height},left=${left},top=${top}`);
 
         // Listen for approval result
         const handleMessage = (event: MessageEvent) => {

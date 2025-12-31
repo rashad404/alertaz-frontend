@@ -119,15 +119,43 @@ export default function LoginPage() {
       const params = new URLSearchParams({
         client_id: CLIENT_ID,
         redirect_uri: REDIRECT_URI,
-        scope: 'profile:read verification:read wallet:charge',
+        scope: 'profile:name profile:email profile:phone verification:read wallet:charge',
         state: state,
         code_challenge: codeChallenge,
         code_challenge_method: codeChallengeMethod,
         response_type: 'code',
       });
 
-      // Redirect to Wallet.az frontend authorization page
-      window.location.href = `${WALLET_URL}/oauth/authorize?${params}`;
+      // Open Wallet.az authorization in popup (centered)
+      const authUrl = `${WALLET_URL}/oauth/authorize?${params}`;
+      const width = 420;
+      const height = 520;
+      const left = (window.screen.width - width) / 2;
+      const top = (window.screen.height - height) / 2;
+      const popup = window.open(authUrl, 'wallet_login', `width=${width},height=${height},left=${left},top=${top}`);
+
+      // Listen for OAuth result from popup
+      const handleMessage = (event: MessageEvent) => {
+        if (event.data?.type === 'oauth_success') {
+          window.removeEventListener('message', handleMessage);
+          popup?.close();
+          // Token is already stored by callback, redirect to dashboard
+          router.push('/dashboard');
+        } else if (event.data?.type === 'oauth_error' || event.data?.type === 'oauth_denied') {
+          window.removeEventListener('message', handleMessage);
+          popup?.close();
+          setError(event.data?.message || t('login.walletAuthFailed'));
+          setIsWalletLoading(false);
+        }
+      };
+      window.addEventListener('message', handleMessage);
+
+      // Check if popup was blocked
+      if (!popup) {
+        window.removeEventListener('message', handleMessage);
+        setError(t('login.popupBlocked'));
+        setIsWalletLoading(false);
+      }
     } catch (err: any) {
       console.error('[Wallet Login] Error:', err);
       setError(err.message || t('login.walletAuthFailed'));

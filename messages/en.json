@@ -463,7 +463,8 @@
     "processingWallet": "Processing Wallet Login",
     "pleaseWait": "Please wait while we verify your account...",
     "redirecting": "Redirecting to dashboard...",
-    "backToLogin": "Back to Login"
+    "backToLogin": "Back to Login",
+    "popupBlocked": "Popup was blocked. Please allow popups and try again."
   },
   "register": {
     "createAccount": "Create Account",
