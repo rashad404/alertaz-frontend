@@ -186,7 +186,7 @@ export default function DashboardPage() {
         const approvalUrl = `${walletUrl}/oauth/approve/${data.data.charge_id}`;
 
         const width = 420;
-        const height = 580;
+        const height = 650;
         const left = (window.screen.width - width) / 2;
         const top = (window.screen.height - height) / 2;
         const popup = window.open(approvalUrl, 'wallet_approve', `width=${width},height=${height},left=${left},top=${top}`);
