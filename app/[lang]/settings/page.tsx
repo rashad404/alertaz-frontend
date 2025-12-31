@@ -16,6 +16,7 @@ import {
   ExternalLink,
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import AuthRequiredCard from '@/components/auth/AuthRequiredCard';
 
 export default function SettingsPage() {
   const t = useTranslations();
@@ -26,6 +27,7 @@ export default function SettingsPage() {
 
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [syncing, setSyncing] = useState(false);
 
   // Check if returning from Wallet.az profile edit
@@ -35,9 +37,11 @@ export default function SettingsPage() {
     const token = localStorage.getItem('token');
 
     if (!token) {
-      router.push(`/login`);
+      setIsAuthenticated(false);
+      setLoading(false);
       return;
     }
+    setIsAuthenticated(true);
 
     const fetchUser = async () => {
       try {
@@ -89,7 +93,17 @@ export default function SettingsPage() {
     fetchUser();
   }, [router, locale, walletUpdated]);
 
-  if (loading) {
+  // Show auth required card if not authenticated
+  if (isAuthenticated === false) {
+    return (
+      <AuthRequiredCard
+        title={t('auth.signInToContinue')}
+        message={t('settings.accessYourSettings')}
+      />
+    );
+  }
+
+  if (loading || isAuthenticated === null) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-white dark:bg-gray-900 gap-3">
         <Loader2 className="w-8 h-8 animate-spin text-indigo-600" />

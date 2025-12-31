@@ -139,10 +139,10 @@ export default function WalletCallbackPage() {
               {message}
             </p>
             <button
-              onClick={() => router.push('/login')}
+              onClick={() => router.push('/')}
               className="btn-primary"
             >
-              {t('login.backToLogin')}
+              {t('auth.backToHome')}
             </button>
           </>
         )}

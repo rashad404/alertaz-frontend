@@ -2,17 +2,28 @@
 
 import { useEffect, useState } from 'react';
 import { Link } from '@/lib/navigation';
+import { usePathname } from 'next/navigation';
 import { ArrowRight, Code, Megaphone, Zap, Users, Clock, Shield, BarChart3 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import { openWalletLogin, getLocaleFromPathname } from '@/lib/utils/walletAuth';
 
 export default function SMSShowcase() {
   const t = useTranslations('sms');
+  const pathname = usePathname();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const locale = getLocaleFromPathname(pathname);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
     setIsLoggedIn(!!token);
   }, []);
+
+  const handleLoginClick = () => {
+    openWalletLogin({
+      locale,
+      onSuccess: () => setIsLoggedIn(true)
+    });
+  };
 
   const smsApiFeatures = [
     { icon: Zap, key: 'instantDelivery' },
@@ -133,13 +144,23 @@ export default function SMSShowcase() {
                 </div>
 
                 {/* CTA Button */}
-                <Link
-                  href={isLoggedIn ? "/settings/sms/projects" : "/register"}
-                  className="cursor-pointer inline-flex items-center gap-2 px-6 py-3 rounded-2xl font-medium text-white bg-gradient-to-r from-pink-500 to-rose-500 hover:shadow-lg hover:shadow-rose-500/30 hover:scale-105 transition-all duration-300"
-                >
-                  {t('campaigns.cta')}
-                  <ArrowRight className="w-4 h-4" />
-                </Link>
+                {isLoggedIn ? (
+                  <Link
+                    href="/settings/sms/projects"
+                    className="cursor-pointer inline-flex items-center gap-2 px-6 py-3 rounded-2xl font-medium text-white bg-gradient-to-r from-pink-500 to-rose-500 hover:shadow-lg hover:shadow-rose-500/30 hover:scale-105 transition-all duration-300"
+                  >
+                    {t('campaigns.cta')}
+                    <ArrowRight className="w-4 h-4" />
+                  </Link>
+                ) : (
+                  <button
+                    onClick={handleLoginClick}
+                    className="cursor-pointer inline-flex items-center gap-2 px-6 py-3 rounded-2xl font-medium text-white bg-gradient-to-r from-pink-500 to-rose-500 hover:shadow-lg hover:shadow-rose-500/30 hover:scale-105 transition-all duration-300"
+                  >
+                    {t('campaigns.cta')}
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
+                )}
               </div>
             </div>
           </div>

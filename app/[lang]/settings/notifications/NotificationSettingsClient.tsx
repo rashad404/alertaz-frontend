@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import authService, { User } from '@/lib/api/auth';
-import AuthModal from '@/components/auth/AuthModal';
+import { openWalletLogin } from '@/lib/utils/walletAuth';
 import EmailSettings from './components/EmailSettings';
 import PhoneSettings from './components/PhoneSettings';
 import TelegramSettings from './components/TelegramSettings';
@@ -30,7 +30,7 @@ const NotificationSettingsClient: React.FC<NotificationSettingsClientProps> = ({
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [needsAuth, setNeedsAuth] = useState(false);
   const [activeTab, setActiveTab] = useState('email');
   const [successMessage, setSuccessMessage] = useState('');
 
@@ -42,16 +42,26 @@ const NotificationSettingsClient: React.FC<NotificationSettingsClientProps> = ({
     try {
       const currentUser = await authService.getCurrentUser();
       if (!currentUser) {
-        setShowAuthModal(true);
+        setNeedsAuth(true);
       } else {
         setUser(currentUser);
+        setNeedsAuth(false);
       }
     } catch (error) {
       console.error('Failed to load user:', error);
-      setShowAuthModal(true);
+      setNeedsAuth(true);
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleLoginClick = () => {
+    openWalletLogin({
+      locale: lang,
+      onSuccess: () => {
+        loadUser();
+      }
+    });
   };
 
   const handleUpdateUser = async (updates: Partial<User>) => {
@@ -124,31 +134,21 @@ const NotificationSettingsClient: React.FC<NotificationSettingsClientProps> = ({
     );
   }
 
-  if (!user) {
+  if (!user || needsAuth) {
     return (
-      <>
-        <div className="min-h-screen flex items-center justify-center bg-white dark:bg-gray-900">
-          <div className="text-center">
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
-              {t('settings.notificationSettings.signInToManage')}
-            </h2>
-            <button
-              onClick={() => setShowAuthModal(true)}
-              className="px-6 py-3 bg-indigo-600 text-white rounded-2xl hover:bg-indigo-700 transition-all"
-            >
-              {t('settings.notificationSettings.signIn')}
-            </button>
-          </div>
+      <div className="min-h-screen flex items-center justify-center bg-white dark:bg-gray-900">
+        <div className="text-center">
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+            {t('settings.notificationSettings.signInToManage')}
+          </h2>
+          <button
+            onClick={handleLoginClick}
+            className="px-6 py-3 bg-indigo-600 text-white rounded-2xl hover:bg-indigo-700 transition-all"
+          >
+            {t('settings.notificationSettings.signIn')}
+          </button>
         </div>
-        <AuthModal
-          isOpen={showAuthModal}
-          onClose={() => router.push('/')}
-          onSuccess={() => {
-            setShowAuthModal(false);
-            loadUser();
-          }}
-        />
-      </>
+      </div>
     );
   }
 

@@ -3,11 +3,12 @@
 import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
-import { Mail, Copy, Check, Code, Filter, X, Search, Eye, EyeOff, FlaskConical } from 'lucide-react';
+import { Mail, Copy, Check, Code, Filter, X, Search, Eye, EyeOff, FlaskConical, Loader2 } from 'lucide-react';
 import { Link } from '@/lib/navigation';
 import axios from 'axios';
 import { formatDateInTimezone } from '@/lib/utils/date';
 import { useTimezone } from '@/providers/timezone-provider';
+import AuthRequiredCard from '@/components/auth/AuthRequiredCard';
 
 interface EmailMessage {
   id: number;
@@ -39,6 +40,7 @@ export default function EmailHistoryPage() {
   const { timezone } = useTimezone();
   const [messages, setMessages] = useState<EmailMessage[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [apiToken, setApiToken] = useState<string>('');
   const [tokenCopied, setTokenCopied] = useState(false);
   const [showToken, setShowToken] = useState(false);
@@ -68,9 +70,11 @@ export default function EmailHistoryPage() {
     try {
       const token = localStorage.getItem('token');
       if (!token) {
-        router.push('/login');
+        setIsAuthenticated(false);
+        setLoading(false);
         return;
       }
+      setIsAuthenticated(true);
 
       // Fetch the permanent API token (not session token)
       try {
@@ -105,7 +109,7 @@ export default function EmailHistoryPage() {
     } catch (error: any) {
       console.error('Failed to fetch Email data:', error);
       if (error.response?.status === 401) {
-        router.push('/login');
+        setIsAuthenticated(false);
       }
       setLoading(false);
     }
@@ -174,11 +178,21 @@ export default function EmailHistoryPage() {
 
   const hasActiveFilters = Object.values(filters).some(v => v !== '');
 
-  if (loading) {
+  // Show auth required card if not authenticated
+  if (isAuthenticated === false) {
+    return (
+      <AuthRequiredCard
+        title={t('auth.signInToContinue')}
+        message={t('dashboard.accessYourAlerts')}
+      />
+    );
+  }
+
+  if (loading || isAuthenticated === null) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <Loader2 className="w-8 h-8 animate-spin text-indigo-600 dark:text-indigo-400 mx-auto mb-2" />
           <p className="text-gray-600 dark:text-gray-400">{t('common.loading')}</p>
         </div>
       </div>

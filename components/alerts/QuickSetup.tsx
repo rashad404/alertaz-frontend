@@ -1,13 +1,13 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { Link } from '@/lib/navigation';
 import { Bell, TrendingUp, Bitcoin, Globe, Cloud, DollarSign, Plane, Check, ArrowRight, ArrowLeft, Sparkles, Edit3, Mail, Send, MessageCircle, Smartphone, Info } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import alertsService from '@/lib/api/alerts';
 import authService from '@/lib/api/auth';
-import AuthModal from '@/components/auth/AuthModal';
+import { openWalletLogin, getLocaleFromPathname } from '@/lib/utils/walletAuth';
 
 type AlertService = 'crypto' | 'stocks' | 'website' | 'weather' | 'currency' | 'flight';
 
@@ -58,7 +58,9 @@ const serviceGradients = {
 export default function QuickSetup() {
   const t = useTranslations();
   const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
+  const locale = getLocaleFromPathname(pathname);
   // Start at step 0 if no service is provided, otherwise start at step 1
   const [step, setStep] = useState(searchParams.get('service') ? 1 : 0);
   const [isLoading, setIsLoading] = useState(false);
@@ -73,7 +75,6 @@ export default function QuickSetup() {
   const [mode, setMode] = useState<'ai' | 'manual'>('ai'); // AI mode is default
   const [fieldsEnabled, setFieldsEnabled] = useState(false); // Fields start disabled in AI mode
   const [hideAiInput, setHideAiInput] = useState(false); // Hide AI input when pre-filled
-  const [showAuthModal, setShowAuthModal] = useState(false);
 
   const [config, setConfig] = useState<AlertConfig>({
     service: (searchParams.get('service') as AlertService) || 'crypto',
@@ -460,11 +461,14 @@ export default function QuickSetup() {
     }));
   };
 
-  const handleAuthSuccess = () => {
-    // Close modal
-    setShowAuthModal(false);
-    // User is now logged in, they can try to create alert again
-    // Config data is already in state so it persists
+  const handleLoginRequired = () => {
+    openWalletLogin({
+      locale,
+      onSuccess: () => {
+        // User is now logged in, they can try to create alert again
+        // Config data is already in state so it persists
+      }
+    });
   };
 
   const handleCreate = async () => {
@@ -473,8 +477,8 @@ export default function QuickSetup() {
     // Check if user is authenticated before making API call
     const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
     if (!token) {
-      // Show auth modal - config is already in state so it persists
-      setShowAuthModal(true);
+      // Open login popup - config is already in state so it persists
+      handleLoginRequired();
       return;
     }
 
@@ -1267,12 +1271,6 @@ export default function QuickSetup() {
         </div>
       </div>
 
-      {/* Auth Modal */}
-      <AuthModal
-        isOpen={showAuthModal}
-        onClose={() => setShowAuthModal(false)}
-        onSuccess={handleAuthSuccess}
-      />
     </div>
   );
 }

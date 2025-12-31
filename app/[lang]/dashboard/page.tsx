@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Link } from '@/lib/navigation';
 import { Bell, Plus, TrendingUp, Activity, Settings, Bitcoin, Globe, BarChart3, Play, Pause, MessageSquare, CreditCard, Megaphone, Mail, Wallet, Loader2, ArrowUpRight } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import AuthRequiredCard from '@/components/auth/AuthRequiredCard';
 
 type AlertService = 'crypto' | 'stocks' | 'website' | 'weather' | 'currency' | 'flight';
 type AlertStatus = 'active' | 'paused';
@@ -60,6 +61,7 @@ export default function DashboardPage() {
   const [user, setUser] = useState<any>(null);
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [balance, setBalance] = useState<number | null>(null);
   const [totalSpent, setTotalSpent] = useState<number>(0);
   const [isTopupLoading, setIsTopupLoading] = useState(false);
@@ -73,9 +75,11 @@ export default function DashboardPage() {
     // Check authentication
     const token = localStorage.getItem('token');
     if (!token) {
-      router.push('/login');
+      setIsAuthenticated(false);
+      setIsLoading(false);
       return;
     }
+    setIsAuthenticated(true);
 
     // Fetch user data and alerts from API
     const fetchData = async () => {
@@ -222,11 +226,23 @@ export default function DashboardPage() {
     }
   };
 
-  if (!user) {
+  // Show auth required card if not authenticated
+  if (isAuthenticated === false) {
+    return (
+      <AuthRequiredCard
+        title={t('auth.signInToContinue')}
+        message={t('dashboard.accessYourAlerts')}
+      />
+    );
+  }
+
+  // Show loading if still checking auth or loading data
+  if (isAuthenticated === null || !user) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-pulse text-indigo-600 dark:text-indigo-400">Loading...</div>
+          <Loader2 className="w-8 h-8 animate-spin text-indigo-600 dark:text-indigo-400 mx-auto mb-2" />
+          <div className="text-gray-600 dark:text-gray-400">{t('common.loading')}</div>
         </div>
       </div>
     );

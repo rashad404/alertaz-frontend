@@ -9,6 +9,8 @@ import AssetSelection from './steps/AssetSelection';
 import ConditionBuilder from './steps/ConditionBuilder';
 import NotificationChannels from './steps/NotificationChannels';
 import AlertConfirmation from './steps/AlertConfirmation';
+import { openWalletLogin, getLocaleFromPathname } from '@/lib/utils/walletAuth';
+import { usePathname } from 'next/navigation';
 
 export interface WizardData {
   alertType?: AlertType;
@@ -31,6 +33,8 @@ interface AlertCreationWizardProps {
 
 const AlertCreationWizard: React.FC<AlertCreationWizardProps> = ({ onComplete, onCancel }) => {
   const router = useRouter();
+  const pathname = usePathname();
+  const locale = getLocaleFromPathname(pathname);
   const [currentStep, setCurrentStep] = useState(1);
   const [alertTypes, setAlertTypes] = useState<AlertType[]>([]);
   const [wizardData, setWizardData] = useState<WizardData>({
@@ -78,10 +82,19 @@ const AlertCreationWizard: React.FC<AlertCreationWizardProps> = ({ onComplete, o
     }
   };
 
+  const handleLoginRequired = () => {
+    openWalletLogin({
+      locale,
+      onSuccess: () => {
+        checkAuthentication();
+      }
+    });
+  };
+
   const handleNext = async () => {
     if (!isAuthenticated && currentStep === 4) {
-      // Redirect to authentication if not logged in
-      router.push('/auth/login?return=' + encodeURIComponent(window.location.pathname));
+      // Open login popup if not logged in
+      handleLoginRequired();
       return;
     }
 
@@ -112,7 +125,7 @@ const AlertCreationWizard: React.FC<AlertCreationWizardProps> = ({ onComplete, o
 
   const handleSubmit = async () => {
     if (!isAuthenticated) {
-      router.push('/auth/login?return=' + encodeURIComponent(window.location.pathname));
+      handleLoginRequired();
       return;
     }
 
@@ -242,6 +255,7 @@ const AlertCreationWizard: React.FC<AlertCreationWizardProps> = ({ onComplete, o
           </button>
         )}
       </div>
+
     </div>
   );
 };

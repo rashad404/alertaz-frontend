@@ -15,6 +15,7 @@ import {
   ExternalLink
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import AuthRequiredCard from '@/components/auth/AuthRequiredCard';
 
 export default function SecuritySettingsPage() {
   const t = useTranslations();
@@ -24,6 +25,7 @@ export default function SecuritySettingsPage() {
 
   const [user, setUser] = useState<any>(null);
   const [userLoading, setUserLoading] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState({ type: '', text: '' });
 
@@ -33,9 +35,11 @@ export default function SecuritySettingsPage() {
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (!token) {
-      router.push(`/login`);
+      setIsAuthenticated(false);
+      setUserLoading(false);
       return;
     }
+    setIsAuthenticated(true);
 
     fetch(`${process.env.NEXT_PUBLIC_API_URL}/user`, {
       headers: { 'Authorization': `Bearer ${token}` }
@@ -137,7 +141,17 @@ export default function SecuritySettingsPage() {
     }
   };
 
-  if (userLoading) {
+  // Show auth required card if not authenticated
+  if (isAuthenticated === false) {
+    return (
+      <AuthRequiredCard
+        title={t('auth.signInToContinue')}
+        message={t('settings.accessYourSettings')}
+      />
+    );
+  }
+
+  if (userLoading || isAuthenticated === null) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white dark:bg-gray-900">
         <Loader2 className="w-8 h-8 animate-spin text-indigo-600" />
