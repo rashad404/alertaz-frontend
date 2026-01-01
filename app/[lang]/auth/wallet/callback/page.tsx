@@ -30,8 +30,8 @@ export default function WalletCallbackPage() {
         return;
       }
 
-      // Verify state
-      const savedState = sessionStorage.getItem('wallet_oauth_state');
+      // Verify state (using localStorage since popup is a separate window)
+      const savedState = localStorage.getItem('wallet_oauth_state');
       if (state !== savedState) {
         setStatus('error');
         setMessage(t('login.invalidState'));
@@ -39,7 +39,7 @@ export default function WalletCallbackPage() {
       }
 
       try {
-        const codeVerifier = sessionStorage.getItem('wallet_code_verifier');
+        const codeVerifier = localStorage.getItem('wallet_code_verifier');
 
         const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://100.89.150.50:8007/api';
 
@@ -63,9 +63,9 @@ export default function WalletCallbackPage() {
           throw new Error(data.message || t('login.walletAuthFailed'));
         }
 
-        // Clean up session storage
-        sessionStorage.removeItem('wallet_oauth_state');
-        sessionStorage.removeItem('wallet_code_verifier');
+        // Clean up localStorage
+        localStorage.removeItem('wallet_oauth_state');
+        localStorage.removeItem('wallet_code_verifier');
 
         // Store the token
         if (data.data?.token) {

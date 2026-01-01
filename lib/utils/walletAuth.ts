@@ -48,19 +48,43 @@ interface WalletLoginOptions {
 /**
  * Opens Wallet.az OAuth popup directly (single step)
  * Use this for immediate login without intermediate modal
+ *
+ * Note: Popup is opened IMMEDIATELY to a loading page to avoid
+ * mobile browser popup blockers, then redirected to OAuth URL
  */
 export async function openWalletLogin(options: WalletLoginOptions = {}): Promise<void> {
   const { locale = 'az', onSuccess, onError } = options;
 
+  const WALLET_URL = process.env.NEXT_PUBLIC_WALLET_URL || 'http://100.89.150.50:3011';
+
+  // 1. Open popup IMMEDIATELY to loading page (prevents popup blocking on mobile)
+  const width = 420;
+  const height = 520;
+  const left = (window.screen.width - width) / 2;
+  const top = (window.screen.height - height) / 2;
+  const popup = window.open(
+    `${WALLET_URL}/${locale}/oauth/loading`,
+    'wallet_login',
+    `width=${width},height=${height},left=${left},top=${top}`
+  );
+
+  if (!popup) {
+    if (onError) {
+      onError('popup_blocked');
+    }
+    return;
+  }
+
   try {
+    // 2. Generate PKCE (async - this is why we opened popup first)
     const codeVerifier = generateCodeVerifier();
     const { challenge: codeChallenge, method: codeChallengeMethod } = await generateCodeChallenge(codeVerifier);
     const state = generateUUID();
 
-    sessionStorage.setItem('wallet_code_verifier', codeVerifier);
-    sessionStorage.setItem('wallet_oauth_state', state);
+    // Use localStorage (not sessionStorage) because popup is a separate window
+    localStorage.setItem('wallet_code_verifier', codeVerifier);
+    localStorage.setItem('wallet_oauth_state', state);
 
-    const WALLET_URL = process.env.NEXT_PUBLIC_WALLET_URL || 'http://100.89.150.50:3011';
     const CLIENT_ID = process.env.NEXT_PUBLIC_WALLET_CLIENT_ID || '';
     const REDIRECT_URI = `${window.location.origin}/auth/wallet/callback`;
 
@@ -74,13 +98,11 @@ export async function openWalletLogin(options: WalletLoginOptions = {}): Promise
       response_type: 'code',
     });
 
+    // 3. Redirect popup to OAuth authorize URL
     const authUrl = `${WALLET_URL}/${locale}/oauth/authorize?${params}`;
-    const width = 420;
-    const height = 520;
-    const left = (window.screen.width - width) / 2;
-    const top = (window.screen.height - height) / 2;
-    const popup = window.open(authUrl, 'wallet_login', `width=${width},height=${height},left=${left},top=${top}`);
+    popup.location.href = authUrl;
 
+    // 4. Listen for postMessage from popup
     const handleMessage = (event: MessageEvent) => {
       if (event.data?.type === 'oauth_success') {
         window.removeEventListener('message', handleMessage);
@@ -101,15 +123,9 @@ export async function openWalletLogin(options: WalletLoginOptions = {}): Promise
       }
     };
     window.addEventListener('message', handleMessage);
-
-    if (!popup) {
-      window.removeEventListener('message', handleMessage);
-      if (onError) {
-        onError('popup_blocked');
-      }
-    }
   } catch (err: any) {
     console.error('[Wallet Login] Error:', err);
+    popup?.close();
     if (onError) {
       onError(err.message || 'Login failed');
     }

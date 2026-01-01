@@ -1,11 +1,12 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { Link } from '@/lib/navigation';
 import { Bell, Plus, TrendingUp, Activity, Settings, Bitcoin, Globe, BarChart3, Play, Pause, MessageSquare, CreditCard, Megaphone, Mail, Wallet, Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import AuthRequiredCard from '@/components/auth/AuthRequiredCard';
+import { getLocaleFromPathname } from '@/lib/utils/walletAuth';
 
 type AlertService = 'crypto' | 'stocks' | 'website' | 'weather' | 'currency' | 'flight';
 type AlertStatus = 'active' | 'paused';
@@ -58,6 +59,8 @@ const normalizeInterval = (interval: string): string => {
 export default function DashboardPage() {
   const t = useTranslations();
   const router = useRouter();
+  const pathname = usePathname();
+  const locale = getLocaleFromPathname(pathname);
   const [user, setUser] = useState<any>(null);
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -163,17 +166,29 @@ export default function DashboardPage() {
       return;
     }
 
-    // Open Wallet.az topup popup directly
     const walletUrl = process.env.NEXT_PUBLIC_WALLET_URL || 'http://100.89.150.50:3011';
-    const topupUrl = `${walletUrl}/oauth/topup?client_id=${clientId}`;
 
+    // 1. Open popup IMMEDIATELY to loading page (prevents popup blocking on mobile)
     const width = 420;
     const height = 600;
     const left = (window.screen.width - width) / 2;
     const top = (window.screen.height - height) / 2;
-    const popup = window.open(topupUrl, 'wallet_topup', `width=${width},height=${height},left=${left},top=${top}`);
+    const popup = window.open(
+      `${walletUrl}/${locale}/oauth/loading`,
+      'wallet_topup',
+      `width=${width},height=${height},left=${left},top=${top}`
+    );
 
-    // Listen for topup result
+    if (!popup) {
+      console.error('Popup blocked');
+      return;
+    }
+
+    // 2. Redirect popup to topup URL
+    const topupUrl = `${walletUrl}/${locale}/oauth/topup?client_id=${clientId}`;
+    popup.location.href = topupUrl;
+
+    // 3. Listen for topup result
     const handleMessage = (event: MessageEvent) => {
       if (event.data?.type === 'topup_completed') {
         window.removeEventListener('message', handleMessage);
