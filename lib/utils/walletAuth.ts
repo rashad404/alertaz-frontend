@@ -1,4 +1,4 @@
-// Wallet.az OAuth utility - DRY implementation for direct popup login
+// Kimlik.az OAuth utility - DRY implementation for direct popup login
 
 // PKCE helpers
 function generateCodeVerifier(): string {
@@ -46,7 +46,7 @@ interface WalletLoginOptions {
 }
 
 /**
- * Opens Wallet.az OAuth popup directly (single step)
+ * Opens Kimlik.az OAuth popup directly (single step)
  * Use this for immediate login without intermediate modal
  *
  * Note: Popup is opened IMMEDIATELY to a loading page to avoid

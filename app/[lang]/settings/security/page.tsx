@@ -29,7 +29,7 @@ export default function SecuritySettingsPage() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState({ type: '', text: '' });
 
-  // Check if user is OAuth (Wallet.az) user
+  // Check if user is OAuth (Kimlik.az) user
   const isWalletUser = !!user?.wallet_id;
 
   useEffect(() => {
@@ -215,7 +215,7 @@ export default function SecuritySettingsPage() {
             </h2>
           </div>
 
-          {/* Wallet.az users cannot change password here */}
+          {/* Kimlik.az users cannot change password here */}
           {isWalletUser ? (
             <div className="text-center py-8">
               <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
@@ -228,7 +228,7 @@ export default function SecuritySettingsPage() {
                 {t('settings.passwordNotAvailable')}
               </p>
               <a
-                href={`${process.env.NEXT_PUBLIC_WALLET_URL || 'https://wallet.az'}/settings/security`}
+                href={`${process.env.NEXT_PUBLIC_WALLET_URL || 'https://kimlik.az'}/settings/security`}
                 className="inline-flex items-center gap-2 px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-2xl transition-colors"
               >
                 <ExternalLink className="w-5 h-5" />

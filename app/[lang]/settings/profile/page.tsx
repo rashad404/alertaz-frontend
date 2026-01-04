@@ -197,9 +197,9 @@ export default function ProfileSettingsPage() {
     return null;
   }
 
-  // Check if user logged in via Wallet.az OAuth
+  // Check if user logged in via Kimlik.az OAuth
   const isWalletUser = !!user.wallet_id;
-  const walletProfileUrl = `${process.env.NEXT_PUBLIC_WALLET_URL || 'https://wallet.az'}/settings/profile?return_url=${encodeURIComponent(typeof window !== 'undefined' ? window.location.origin + '/settings' : '')}`;
+  const walletProfileUrl = `${process.env.NEXT_PUBLIC_WALLET_URL || 'https://kimlik.az'}/settings/profile?return_url=${encodeURIComponent(typeof window !== 'undefined' ? window.location.origin + '/settings' : '')}`;
 
   return (
     <div className="min-h-screen py-8 px-4 sm:px-6 bg-white dark:bg-gray-900">
@@ -223,7 +223,7 @@ export default function ProfileSettingsPage() {
           </p>
         </div>
 
-        {/* Wallet.az Info Banner for OAuth users */}
+        {/* Kimlik.az Info Banner for OAuth users */}
         {isWalletUser && (
           <div className="mb-6 p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800">
             <div className="flex items-start gap-3">
@@ -304,7 +304,7 @@ export default function ProfileSettingsPage() {
               )}
             </div>
 
-            {/* Edit on Wallet.az button */}
+            {/* Edit on Kimlik.az button */}
             <div className="mt-8 flex gap-4">
               <Link
                 href={`/settings`}

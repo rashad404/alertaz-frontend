@@ -30,7 +30,7 @@ export default function SettingsPage() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [syncing, setSyncing] = useState(false);
 
-  // Check if returning from Wallet.az profile edit
+  // Check if returning from Kimlik.az profile edit
   const walletUpdated = searchParams.get('wallet_updated');
 
   useEffect(() => {
@@ -45,7 +45,7 @@ export default function SettingsPage() {
 
     const fetchUser = async () => {
       try {
-        // If returning from Wallet.az, sync profile first
+        // If returning from Kimlik.az, sync profile first
         if (walletUpdated === '1') {
           setSyncing(true);
           try {
@@ -66,7 +66,7 @@ export default function SettingsPage() {
               return;
             }
           } catch (err) {
-            console.error('Failed to sync from Wallet.az:', err);
+            console.error('Failed to sync from Kimlik.az:', err);
           }
           setSyncing(false);
           // Remove the query parameter even if sync failed
@@ -194,7 +194,7 @@ export default function SettingsPage() {
                 <p className="text-sm text-gray-500 dark:text-gray-400">
                   {user.email}
                 </p>
-                {/* Wallet.az Connected Badge */}
+                {/* Kimlik.az Connected Badge */}
                 {user.wallet_id && (
                   <div className="mt-3 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 text-xs font-medium">
                     <Wallet className="w-3.5 h-3.5" />
@@ -216,7 +216,7 @@ export default function SettingsPage() {
               {/* Edit Profile Button */}
               {user.wallet_id ? (
                 <a
-                  href={`${process.env.NEXT_PUBLIC_WALLET_URL || 'https://wallet.az'}/settings/profile?return_url=${encodeURIComponent(window.location.origin + '/settings?wallet_updated=1')}`}
+                  href={`${process.env.NEXT_PUBLIC_WALLET_URL || 'https://kimlik.az'}/settings/profile?return_url=${encodeURIComponent(window.location.origin + '/settings?wallet_updated=1')}`}
                   className="w-full px-4 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-2xl hover:shadow-lg hover:scale-105 transition-all duration-300 text-center font-medium text-sm flex items-center justify-center gap-2"
                 >
                   <ExternalLink className="w-4 h-4" />
