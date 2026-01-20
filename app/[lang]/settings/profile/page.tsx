@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter, useParams } from 'next/navigation';
+import { useRouter, useParams, useSearchParams } from 'next/navigation';
 import { Link } from '@/lib/navigation';
 import {
   User,
@@ -23,12 +23,14 @@ export default function ProfileSettingsPage() {
   const t = useTranslations();
   const router = useRouter();
   const params = useParams();
+  const searchParams = useSearchParams();
   const locale = (params?.lang as string) || 'az';
 
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [saving, setSaving] = useState(false);
+  const [syncing, setSyncing] = useState(false);
   const [message, setMessage] = useState({ type: '', text: '' });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
@@ -73,6 +75,45 @@ export default function ProfileSettingsPage() {
         setLoading(false);
       });
   }, [router, locale]);
+
+  // Sync from Kimlik.az when returning with wallet_updated=1
+  useEffect(() => {
+    const walletUpdated = searchParams.get('wallet_updated');
+    const token = localStorage.getItem('token');
+    if (walletUpdated === '1' && user?.wallet_id && token) {
+      setSyncing(true);
+      fetch(`${process.env.NEXT_PUBLIC_API_URL}/user/sync-from-wallet`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (data.status === 'success' && data.data) {
+            setUser(data.data);
+            setFormData({
+              name: data.data.name || '',
+              email: data.data.email || '',
+              phone: data.data.phone ? String(data.data.phone) : '',
+              timezone: data.data.timezone || 'Asia/Baku'
+            });
+            setMessage({ type: 'success', text: t('settings.profileSyncedFromWallet') });
+          }
+        })
+        .catch(err => {
+          console.error('Failed to sync from Kimlik.az:', err);
+        })
+        .finally(() => {
+          setSyncing(false);
+          // Remove the query parameter from URL
+          const url = new URL(window.location.href);
+          url.searchParams.delete('wallet_updated');
+          router.replace(url.pathname, { scroll: false });
+        });
+    }
+  }, [searchParams, user?.wallet_id, t, router]);
 
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -185,10 +226,13 @@ export default function ProfileSettingsPage() {
     );
   }
 
-  if (loading || isAuthenticated === null) {
+  if (loading || syncing || isAuthenticated === null) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white dark:bg-gray-900">
-        <Loader2 className="w-8 h-8 animate-spin text-indigo-600" />
+        <div className="text-center">
+          <Loader2 className="w-8 h-8 animate-spin text-indigo-600 mx-auto mb-2" />
+          {syncing && <p className="text-sm text-gray-500">{t('settings.syncingFromWallet')}</p>}
+        </div>
       </div>
     );
   }
@@ -199,7 +243,9 @@ export default function ProfileSettingsPage() {
 
   // Check if user logged in via Kimlik.az OAuth
   const isWalletUser = !!user.wallet_id;
-  const walletProfileUrl = `${process.env.NEXT_PUBLIC_WALLET_URL || 'https://kimlik.az'}/settings/profile?return_url=${encodeURIComponent(typeof window !== 'undefined' ? window.location.origin + '/settings' : '')}`;
+  const currentUrl = typeof window !== 'undefined' ? window.location.origin + window.location.pathname : '';
+  const returnUrl = encodeURIComponent(currentUrl + '?wallet_updated=1');
+  const walletProfileUrl = `${process.env.NEXT_PUBLIC_WALLET_URL || 'https://kimlik.az'}/settings/profile?return_url=${returnUrl}`;
 
   return (
     <div className="min-h-screen py-8 px-4 sm:px-6 bg-white dark:bg-gray-900">

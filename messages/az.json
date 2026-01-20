@@ -204,6 +204,7 @@
     "passwordNotAvailable": "Kimlik.az ilə qoşulduğunuz üçün şifrə dəyişikliyi burada mövcud deyil. Şifrənizi Kimlik.az hesabınızdan dəyişə bilərsiniz.",
     "changePasswordOnWallet": "Kimlik.az-da şifrəni dəyiş",
     "syncingFromWallet": "Kimlik.az-dan profil sinxronlaşdırılır...",
+    "profileSyncedFromWallet": "Profil Kimlik.az-dan yeniləndi",
     "notificationSettings": {
       "title": "Bildiriş Parametrləri",
       "subtitle": "Xəbərdarlıqları necə alacağınızı təyin edin",

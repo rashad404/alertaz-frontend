@@ -204,6 +204,7 @@
     "passwordNotAvailable": "Изменение пароля недоступно здесь, так как вы подключены через Kimlik.az. Управляйте паролем на Kimlik.az.",
     "changePasswordOnWallet": "Изменить пароль на Kimlik.az",
     "syncingFromWallet": "Синхронизация профиля с Kimlik.az...",
+    "profileSyncedFromWallet": "Профиль обновлен из Kimlik.az",
     "notificationSettings": {
       "title": "Настройки уведомлений",
       "subtitle": "Настройте способ получения оповещений",
