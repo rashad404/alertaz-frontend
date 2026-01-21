@@ -15,7 +15,8 @@ const contactsClient = axios.create({
 export interface Contact {
   id: number;
   client_id: number;
-  phone: string;
+  phone: string | null;
+  email: string | null;
   attributes: Record<string, any>;
   created_at: string;
   updated_at: string;
@@ -71,17 +72,18 @@ export const contactsApi = {
   },
 
   // Create single contact
-  create: async (phone: string, attributes: Record<string, any> = {}): Promise<{ contact: Contact }> => {
+  create: async (phone: string | null, attributes: Record<string, any> = {}, email?: string | null): Promise<{ contact: Contact }> => {
     const response = await contactsClient.post('/contacts', {
       phone,
+      email,
       attributes
     }, { headers: getHeaders() });
     return response.data.data;
   },
 
-  // Update contact by phone
-  update: async (phone: string, data: { phone?: string; attributes?: Record<string, any> }): Promise<{ contact: Contact }> => {
-    const response = await contactsClient.put(`/contacts/${phone}`, data, { headers: getHeaders() });
+  // Update contact by phone or email identifier
+  update: async (identifier: string, data: { phone?: string | null; email?: string | null; attributes?: Record<string, any> }): Promise<{ contact: Contact }> => {
+    const response = await contactsClient.put(`/contacts/${identifier}`, data, { headers: getHeaders() });
     return response.data.data;
   },
 

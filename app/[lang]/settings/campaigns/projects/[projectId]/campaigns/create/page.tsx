@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { useRouter, useParams } from 'next/navigation';
 import { projectsApi, Project } from '@/lib/api/projects';
-import { campaignsApi, SegmentFilter, AttributeSchema, setProjectToken } from '@/lib/api/campaigns';
+import { campaignsApi, SegmentFilter, AttributeSchema, setProjectToken, CampaignChannel } from '@/lib/api/campaigns';
 import SegmentBuilder from '@/components/sms/SegmentBuilder';
 import { Link } from '@/lib/navigation';
 import { convertHourToUTC } from '@/lib/utils/date';
@@ -23,6 +23,9 @@ import {
   Zap,
   RefreshCw,
   Calendar,
+  Mail,
+  Smartphone,
+  Layers,
 } from 'lucide-react';
 
 const STEPS = ['details', 'audience', 'message', 'review'];
@@ -52,8 +55,11 @@ export default function CreateCampaignPage() {
 
   const [formData, setFormData] = useState({
     name: '',
+    channel: 'sms' as CampaignChannel,
     sender: '',
     message_template: '',
+    email_subject_template: '',
+    email_body_template: '',
     segment_filter: {
       logic: 'AND' as const,
       conditions: [],
@@ -147,12 +153,23 @@ export default function CreateCampaignPage() {
     try {
       const payload: any = {
         name: formData.name,
-        sender: formData.sender,
-        message_template: formData.message_template,
+        channel: formData.channel,
         segment_filter: formData.segment_filter,
         is_test: formData.is_test,
         type: formData.type,
       };
+
+      // SMS fields (if channel is sms or both)
+      if (formData.channel === 'sms' || formData.channel === 'both') {
+        payload.sender = formData.sender;
+        payload.message_template = formData.message_template;
+      }
+
+      // Email fields (if channel is email or both)
+      if (formData.channel === 'email' || formData.channel === 'both') {
+        payload.email_subject_template = formData.email_subject_template;
+        payload.email_body_template = formData.email_body_template;
+      }
 
       if (formData.type === 'automated') {
         // Automated campaign fields
@@ -175,7 +192,7 @@ export default function CreateCampaignPage() {
       }
 
       await campaignsApi.create(payload);
-      router.push(`/settings/sms/projects/${projectId}/campaigns`);
+      router.push(`/settings/campaigns/projects/${projectId}/campaigns`);
     } catch (err: any) {
       setError(err.response?.data?.message || 'Failed to create campaign');
     } finally {
@@ -186,11 +203,23 @@ export default function CreateCampaignPage() {
   const canProceed = () => {
     switch (currentStep) {
       case 0:
-        return formData.name.trim() !== '' && formData.sender.trim() !== '';
+        // Name is always required
+        if (formData.name.trim() === '') return false;
+        // Sender required for SMS/Both channels
+        if ((formData.channel === 'sms' || formData.channel === 'both') && formData.sender.trim() === '') return false;
+        return true;
       case 1:
         return formData.segment_filter.conditions.length > 0;
       case 2:
-        return formData.message_template.trim() !== '' && !hasUnicode(formData.message_template);
+        // SMS template required if channel is sms or both
+        if (formData.channel === 'sms' || formData.channel === 'both') {
+          if (formData.message_template.trim() === '' || hasUnicode(formData.message_template)) return false;
+        }
+        // Email templates required if channel is email or both
+        if (formData.channel === 'email' || formData.channel === 'both') {
+          if (formData.email_subject_template.trim() === '' || formData.email_body_template.trim() === '') return false;
+        }
+        return true;
       case 3:
         return true;
       default:
@@ -240,7 +269,7 @@ export default function CreateCampaignPage() {
           </h3>
           <p className="text-gray-600 dark:text-gray-400 mb-8">{error}</p>
           <Link
-            href={`/settings/sms/projects`}
+            href={`/settings/campaigns/projects`}
             className="cursor-pointer px-8 py-3 rounded-2xl font-medium text-white bg-gradient-to-r from-indigo-500 to-purple-500 hover:shadow-lg transition-all duration-300 hover:scale-105 inline-block"
           >
             {t('common.back')}
@@ -256,7 +285,7 @@ export default function CreateCampaignPage() {
         {/* Header */}
         <div className="mb-8">
           <Link
-            href={`/settings/sms/projects/${projectId}/campaigns`}
+            href={`/settings/campaigns/projects/${projectId}/campaigns`}
             className="inline-flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors cursor-pointer mb-4"
           >
             <ArrowLeft className="w-4 h-4" />
@@ -347,6 +376,77 @@ export default function CreateCampaignPage() {
                 />
               </div>
 
+              {/* Channel Selection */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  {t('smsApi.campaigns.channel')} *
+                </label>
+                <div className="grid grid-cols-3 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setFormData({ ...formData, channel: 'sms' })}
+                    className={`cursor-pointer p-4 rounded-xl text-center transition-all border-2 ${
+                      formData.channel === 'sms'
+                        ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20'
+                        : 'border-gray-200 dark:border-gray-700 hover:border-indigo-300 dark:hover:border-indigo-700'
+                    }`}
+                  >
+                    <Smartphone className={`w-6 h-6 mx-auto mb-2 ${
+                      formData.channel === 'sms' ? 'text-indigo-500' : 'text-gray-400'
+                    }`} />
+                    <span className={`font-medium text-sm ${
+                      formData.channel === 'sms'
+                        ? 'text-indigo-700 dark:text-indigo-300'
+                        : 'text-gray-600 dark:text-gray-400'
+                    }`}>
+                      {t('smsApi.campaigns.channelSms')}
+                    </span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setFormData({ ...formData, channel: 'email' })}
+                    className={`cursor-pointer p-4 rounded-xl text-center transition-all border-2 ${
+                      formData.channel === 'email'
+                        ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20'
+                        : 'border-gray-200 dark:border-gray-700 hover:border-emerald-300 dark:hover:border-emerald-700'
+                    }`}
+                  >
+                    <Mail className={`w-6 h-6 mx-auto mb-2 ${
+                      formData.channel === 'email' ? 'text-emerald-500' : 'text-gray-400'
+                    }`} />
+                    <span className={`font-medium text-sm ${
+                      formData.channel === 'email'
+                        ? 'text-emerald-700 dark:text-emerald-300'
+                        : 'text-gray-600 dark:text-gray-400'
+                    }`}>
+                      {t('smsApi.campaigns.channelEmail')}
+                    </span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setFormData({ ...formData, channel: 'both' })}
+                    className={`cursor-pointer p-4 rounded-xl text-center transition-all border-2 ${
+                      formData.channel === 'both'
+                        ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/20'
+                        : 'border-gray-200 dark:border-gray-700 hover:border-purple-300 dark:hover:border-purple-700'
+                    }`}
+                  >
+                    <Layers className={`w-6 h-6 mx-auto mb-2 ${
+                      formData.channel === 'both' ? 'text-purple-500' : 'text-gray-400'
+                    }`} />
+                    <span className={`font-medium text-sm ${
+                      formData.channel === 'both'
+                        ? 'text-purple-700 dark:text-purple-300'
+                        : 'text-gray-600 dark:text-gray-400'
+                    }`}>
+                      {t('smsApi.campaigns.channelBoth')}
+                    </span>
+                  </button>
+                </div>
+              </div>
+
+              {/* SMS Sender - only shown for SMS/Both channels */}
+              {(formData.channel === 'sms' || formData.channel === 'both') && (
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   {t('smsApi.campaigns.sender')} *
@@ -366,6 +466,7 @@ export default function CreateCampaignPage() {
                   {t('smsApi.campaigns.senderNote')}
                 </p>
               </div>
+              )}
 
               {/* Campaign Type Selection */}
               <div>
@@ -622,33 +723,83 @@ export default function CreateCampaignPage() {
           {/* Step 3: Message */}
           {currentStep === 2 && (
             <div className="space-y-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  {t('smsApi.campaigns.messageTemplate')} *
-                </label>
-                <textarea
-                  value={formData.message_template}
-                  onChange={(e) => setFormData({ ...formData, message_template: e.target.value })}
-                  placeholder={t('smsApi.campaigns.messagePlaceholder')}
-                  rows={6}
-                  className={`w-full px-4 py-3 border rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all resize-none ${
-                    hasUnicode(formData.message_template)
-                      ? 'border-red-500 dark:border-red-500'
-                      : 'border-gray-200 dark:border-gray-700'
-                  }`}
-                />
-                <div className="mt-1 flex justify-between items-center">
-                  <p className="text-xs text-gray-500">
-                    {formData.message_template.length} / 500
-                  </p>
-                  {hasUnicode(formData.message_template) && (
-                    <p className="text-xs text-red-500">
-                      {t('smsApi.campaigns.errors.unicodeNotAllowed')}
-                    </p>
-                  )}
+              {/* SMS Message Template - only for SMS/Both channels */}
+              {(formData.channel === 'sms' || formData.channel === 'both') && (
+                <div className="p-4 rounded-xl bg-indigo-50 dark:bg-indigo-900/10 border border-indigo-200 dark:border-indigo-800/30">
+                  <div className="flex items-center gap-2 mb-4">
+                    <Smartphone className="w-5 h-5 text-indigo-500" />
+                    <span className="font-medium text-indigo-700 dark:text-indigo-300">
+                      {t('smsApi.campaigns.channelSms')}
+                    </span>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      {t('smsApi.campaigns.messageTemplate')} *
+                    </label>
+                    <textarea
+                      value={formData.message_template}
+                      onChange={(e) => setFormData({ ...formData, message_template: e.target.value })}
+                      placeholder={t('smsApi.campaigns.messagePlaceholder')}
+                      rows={4}
+                      className={`w-full px-4 py-3 border rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all resize-none ${
+                        hasUnicode(formData.message_template)
+                          ? 'border-red-500 dark:border-red-500'
+                          : 'border-gray-200 dark:border-gray-700'
+                      }`}
+                    />
+                    <div className="mt-1 flex justify-between items-center">
+                      <p className="text-xs text-gray-500">
+                        {formData.message_template.length} / 500
+                      </p>
+                      {hasUnicode(formData.message_template) && (
+                        <p className="text-xs text-red-500">
+                          {t('smsApi.campaigns.errors.unicodeNotAllowed')}
+                        </p>
+                      )}
+                    </div>
+                  </div>
                 </div>
-              </div>
+              )}
 
+              {/* Email Templates - only for Email/Both channels */}
+              {(formData.channel === 'email' || formData.channel === 'both') && (
+                <div className="p-4 rounded-xl bg-emerald-50 dark:bg-emerald-900/10 border border-emerald-200 dark:border-emerald-800/30">
+                  <div className="flex items-center gap-2 mb-4">
+                    <Mail className="w-5 h-5 text-emerald-500" />
+                    <span className="font-medium text-emerald-700 dark:text-emerald-300">
+                      {t('smsApi.campaigns.channelEmail')}
+                    </span>
+                  </div>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        {t('smsApi.campaigns.emailSubject')} *
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.email_subject_template}
+                        onChange={(e) => setFormData({ ...formData, email_subject_template: e.target.value })}
+                        placeholder={t('smsApi.campaigns.emailSubjectPlaceholder')}
+                        className="w-full px-4 py-3 border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        {t('smsApi.campaigns.emailBody')} *
+                      </label>
+                      <textarea
+                        value={formData.email_body_template}
+                        onChange={(e) => setFormData({ ...formData, email_body_template: e.target.value })}
+                        placeholder={t('smsApi.campaigns.emailBodyPlaceholder')}
+                        rows={6}
+                        className="w-full px-4 py-3 border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all resize-none"
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Variables Helper */}
               {attributes.length > 0 && (
                 <div className="p-4 rounded-xl bg-gray-50 dark:bg-gray-800/50">
                   <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -661,10 +812,17 @@ export default function CreateCampaignPage() {
                         key={attr.key}
                         type="button"
                         onClick={() => {
-                          setFormData({
-                            ...formData,
-                            message_template: formData.message_template + `{{${attr.key}}}`,
-                          });
+                          if (formData.channel === 'email') {
+                            setFormData({
+                              ...formData,
+                              email_body_template: formData.email_body_template + `{{${attr.key}}}`,
+                            });
+                          } else {
+                            setFormData({
+                              ...formData,
+                              message_template: formData.message_template + `{{${attr.key}}}`,
+                            });
+                          }
                         }}
                         className="cursor-pointer px-3 py-1.5 rounded-lg text-xs font-mono bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-200 dark:hover:bg-indigo-900/50 transition-colors"
                       >
@@ -674,14 +832,40 @@ export default function CreateCampaignPage() {
                     <button
                       type="button"
                       onClick={() => {
-                        setFormData({
-                          ...formData,
-                          message_template: formData.message_template + '{{phone}}',
-                        });
+                        if (formData.channel === 'email') {
+                          setFormData({
+                            ...formData,
+                            email_body_template: formData.email_body_template + '{{phone}}',
+                          });
+                        } else {
+                          setFormData({
+                            ...formData,
+                            message_template: formData.message_template + '{{phone}}',
+                          });
+                        }
                       }}
                       className="cursor-pointer px-3 py-1.5 rounded-lg text-xs font-mono bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-200 dark:hover:bg-indigo-900/50 transition-colors"
                     >
                       {'{{phone}}'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (formData.channel === 'email') {
+                          setFormData({
+                            ...formData,
+                            email_body_template: formData.email_body_template + '{{email}}',
+                          });
+                        } else {
+                          setFormData({
+                            ...formData,
+                            message_template: formData.message_template + '{{email}}',
+                          });
+                        }
+                      }}
+                      className="cursor-pointer px-3 py-1.5 rounded-lg text-xs font-mono bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-200 dark:hover:bg-emerald-900/50 transition-colors"
+                    >
+                      {'{{email}}'}
                     </button>
                   </div>
                 </div>
@@ -703,13 +887,32 @@ export default function CreateCampaignPage() {
                 </div>
                 <div className="p-4 rounded-xl bg-gray-50 dark:bg-gray-800/50">
                   <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
+                    {t('smsApi.campaigns.channel')}
+                  </h4>
+                  <div className="flex items-center gap-2">
+                    {formData.channel === 'sms' && <Smartphone className="w-5 h-5 text-indigo-500" />}
+                    {formData.channel === 'email' && <Mail className="w-5 h-5 text-emerald-500" />}
+                    {formData.channel === 'both' && <Layers className="w-5 h-5 text-purple-500" />}
+                    <p className="text-lg font-semibold text-gray-900 dark:text-white">
+                      {formData.channel === 'sms' && t('smsApi.campaigns.channelSms')}
+                      {formData.channel === 'email' && t('smsApi.campaigns.channelEmail')}
+                      {formData.channel === 'both' && t('smsApi.campaigns.channelBoth')}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Sender - only for SMS/Both */}
+              {(formData.channel === 'sms' || formData.channel === 'both') && (
+                <div className="p-4 rounded-xl bg-gray-50 dark:bg-gray-800/50">
+                  <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
                     {t('smsApi.campaigns.sender')}
                   </h4>
                   <p className="text-lg font-semibold text-gray-900 dark:text-white">
                     {formData.sender}
                   </p>
                 </div>
-              </div>
+              )}
 
               <div className="p-4 rounded-xl bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 border border-indigo-100 dark:border-indigo-800/30">
                 <div className="flex items-center gap-3">
@@ -727,14 +930,46 @@ export default function CreateCampaignPage() {
                 </div>
               </div>
 
-              <div className="p-4 rounded-xl bg-gray-50 dark:bg-gray-800/50">
-                <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">
-                  {t('smsApi.campaigns.messagePreview')}
-                </h4>
-                <p className="text-gray-900 dark:text-white whitespace-pre-wrap font-mono text-sm p-4 bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700">
-                  {formData.message_template || '-'}
-                </p>
-              </div>
+              {/* SMS Message Preview - only for SMS/Both */}
+              {(formData.channel === 'sms' || formData.channel === 'both') && (
+                <div className="p-4 rounded-xl bg-indigo-50 dark:bg-indigo-900/10 border border-indigo-200 dark:border-indigo-800/30">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Smartphone className="w-4 h-4 text-indigo-500" />
+                    <h4 className="text-sm font-medium text-indigo-700 dark:text-indigo-300">
+                      {t('smsApi.campaigns.messagePreview')}
+                    </h4>
+                  </div>
+                  <p className="text-gray-900 dark:text-white whitespace-pre-wrap font-mono text-sm p-4 bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700">
+                    {formData.message_template || '-'}
+                  </p>
+                </div>
+              )}
+
+              {/* Email Preview - only for Email/Both */}
+              {(formData.channel === 'email' || formData.channel === 'both') && (
+                <div className="p-4 rounded-xl bg-emerald-50 dark:bg-emerald-900/10 border border-emerald-200 dark:border-emerald-800/30">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Mail className="w-4 h-4 text-emerald-500" />
+                    <h4 className="text-sm font-medium text-emerald-700 dark:text-emerald-300">
+                      {t('smsApi.campaigns.channelEmail')}
+                    </h4>
+                  </div>
+                  <div className="space-y-3">
+                    <div className="p-3 bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700">
+                      <span className="text-xs text-gray-500">{t('smsApi.campaigns.emailSubject')}:</span>
+                      <p className="text-gray-900 dark:text-white font-medium">
+                        {formData.email_subject_template || '-'}
+                      </p>
+                    </div>
+                    <div className="p-3 bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700">
+                      <span className="text-xs text-gray-500">{t('smsApi.campaigns.emailBody')}:</span>
+                      <p className="text-gray-900 dark:text-white whitespace-pre-wrap text-sm mt-1">
+                        {formData.email_body_template || '-'}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* Campaign Type Badge */}
               <div className="p-4 rounded-xl bg-gray-50 dark:bg-gray-800/50">

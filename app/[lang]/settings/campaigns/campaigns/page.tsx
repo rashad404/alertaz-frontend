@@ -125,7 +125,7 @@ export default function CampaignsPage() {
               {t('smsApi.projects.noProjectsDesc')}
             </p>
             <Link
-              href={`/settings/sms/projects`}
+              href={`/settings/campaigns/projects`}
               className="cursor-pointer px-8 py-3 rounded-2xl font-medium text-white bg-gradient-to-r from-indigo-500 to-purple-500 hover:shadow-lg transition-all duration-300 hover:scale-105 inline-block"
             >
               {t('smsApi.projects.createProject')}
@@ -168,7 +168,7 @@ export default function CampaignsPage() {
             </p>
           </div>
           <Link
-            href={`/settings/sms/campaigns/create`}
+            href={`/settings/campaigns/campaigns/create`}
             className="cursor-pointer group relative px-6 py-3 rounded-2xl font-medium text-white bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 transition-all duration-300 hover:shadow-lg hover:scale-105 overflow-hidden"
           >
             <span className="absolute inset-0 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
@@ -199,7 +199,7 @@ export default function CampaignsPage() {
               {t('smsApi.campaigns.noCampaignsDesc')}
             </p>
             <Link
-              href={`/settings/sms/campaigns/create`}
+              href={`/settings/campaigns/campaigns/create`}
               className="cursor-pointer px-8 py-3 rounded-2xl font-medium text-white bg-gradient-to-r from-indigo-500 to-purple-500 hover:shadow-lg transition-all duration-300 hover:scale-105 inline-block"
             >
               {t('smsApi.campaigns.createCampaign')}
@@ -303,7 +303,7 @@ export default function CampaignsPage() {
                             </button>
                           )}
                           <Link
-                            href={`/settings/sms/campaigns/${campaign.id}`}
+                            href={`/settings/campaigns/campaigns/${campaign.id}`}
                             className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                           >
                             <Eye className="w-4 h-4" />

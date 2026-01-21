@@ -32,6 +32,9 @@ import {
   Phone,
   RotateCcw,
   X,
+  Smartphone,
+  Mail,
+  Layers,
 } from 'lucide-react';
 
 const statusIcons: Record<string, React.ReactNode> = {
@@ -116,9 +119,9 @@ export default function CampaignDetailPage() {
     loadData();
   }, [projectId, campaignId]);
 
-  // Load planned messages for draft, active, paused campaigns
+  // Load planned messages for draft, scheduled, active, paused campaigns
   useEffect(() => {
-    if (campaign && ['draft', 'active', 'paused'].includes(campaign.status)) {
+    if (campaign && ['draft', 'scheduled', 'active', 'paused'].includes(campaign.status)) {
       loadPlannedMessages();
     }
   }, [campaign?.id, plannedPage]);
@@ -296,7 +299,7 @@ export default function CampaignDetailPage() {
 
     try {
       await campaignsApi.delete(campaign.id);
-      window.location.href = `/settings/sms/projects/${projectId}/campaigns`;
+      window.location.href = `/settings/campaigns/projects/${projectId}/campaigns`;
     } catch (err: any) {
       setError(err.response?.data?.message || 'Failed to delete campaign');
     }
@@ -320,7 +323,7 @@ export default function CampaignDetailPage() {
     try {
       const result = await campaignsApi.duplicate(campaign.id);
       // Redirect to the new campaign
-      window.location.href = `/settings/sms/projects/${projectId}/campaigns/${result.campaign.id}`;
+      window.location.href = `/settings/campaigns/projects/${projectId}/campaigns/${result.campaign.id}`;
     } catch (err: any) {
       setError(err.response?.data?.message || 'Failed to duplicate campaign');
     }
@@ -486,7 +489,7 @@ export default function CampaignDetailPage() {
           </h3>
           <p className="text-gray-600 dark:text-gray-400 mb-8">{error}</p>
           <Link
-            href={`/settings/sms/projects/${projectId}/campaigns`}
+            href={`/settings/campaigns/projects/${projectId}/campaigns`}
             className="cursor-pointer px-8 py-3 rounded-2xl font-medium text-white bg-gradient-to-r from-indigo-500 to-purple-500 hover:shadow-lg transition-all duration-300 hover:scale-105 inline-block"
           >
             {t('common.back')}
@@ -502,7 +505,7 @@ export default function CampaignDetailPage() {
         {/* Header */}
         <div className="mb-8">
           <Link
-            href={`/settings/sms/projects/${projectId}/campaigns`}
+            href={`/settings/campaigns/projects/${projectId}/campaigns`}
             className="inline-flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors cursor-pointer mb-4"
           >
             <ArrowLeft className="w-4 h-4" />
@@ -523,6 +526,21 @@ export default function CampaignDetailPage() {
               {campaign.name}
             </h1>
             <div className="flex flex-wrap items-center gap-3">
+              {/* Channel Badge */}
+              <span className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium ${
+                campaign.channel === 'sms'
+                  ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400'
+                  : campaign.channel === 'email'
+                  ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
+                  : 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400'
+              }`}>
+                {campaign.channel === 'sms' && <Smartphone className="w-4 h-4" />}
+                {campaign.channel === 'email' && <Mail className="w-4 h-4" />}
+                {campaign.channel === 'both' && <Layers className="w-4 h-4" />}
+                {campaign.channel === 'sms' && t('smsApi.campaigns.channelSms')}
+                {campaign.channel === 'email' && t('smsApi.campaigns.channelEmail')}
+                {campaign.channel === 'both' && t('smsApi.campaigns.channelBoth')}
+              </span>
               <span className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium ${statusColors[campaign.status]}`}>
                 {statusIcons[campaign.status]}
                 {t(`smsApi.campaigns.statuses.${campaign.status}`)}
@@ -539,7 +557,7 @@ export default function CampaignDetailPage() {
             {campaign.status === 'draft' && (
               <>
                 <Link
-                  href={`/settings/sms/projects/${projectId}/campaigns/${campaignId}/edit`}
+                  href={`/settings/campaigns/projects/${projectId}/campaigns/${campaignId}/edit`}
                   className="cursor-pointer flex items-center gap-2 px-5 py-2.5 rounded-xl font-medium bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all text-sm"
                 >
                   <Pencil className="w-4 h-4" />
@@ -578,7 +596,7 @@ export default function CampaignDetailPage() {
             {campaign.status === 'paused' && campaign.type === 'automated' && (
               <>
                 <Link
-                  href={`/settings/sms/projects/${projectId}/campaigns/${campaignId}/edit`}
+                  href={`/settings/campaigns/projects/${projectId}/campaigns/${campaignId}/edit`}
                   className="cursor-pointer flex items-center gap-2 px-5 py-2.5 rounded-xl font-medium bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all text-sm"
                 >
                   <Pencil className="w-4 h-4" />
@@ -775,10 +793,13 @@ export default function CampaignDetailPage() {
 
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
-              <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">{t('smsApi.campaigns.sender')}</p>
-                <p className="text-gray-900 dark:text-white font-medium">{campaign.sender}</p>
-              </div>
+              {/* Sender - only for SMS/Both channels */}
+              {(campaign.channel === 'sms' || campaign.channel === 'both') && campaign.sender && (
+                <div>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">{t('smsApi.campaigns.sender')}</p>
+                  <p className="text-gray-900 dark:text-white font-medium">{campaign.sender}</p>
+                </div>
+              )}
               {campaign.scheduled_at && (
                 <div>
                   <p className="text-sm text-gray-500 dark:text-gray-400">{t('smsApi.campaigns.scheduledAt')}</p>
@@ -802,12 +823,38 @@ export default function CampaignDetailPage() {
               )}
             </div>
 
-            <div>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">{t('smsApi.campaigns.messageTemplate')}</p>
-              <div className="p-4 rounded-xl bg-gray-50 dark:bg-gray-800 font-mono text-sm whitespace-pre-wrap">
-                {campaign.message_template}
+            {/* SMS Message Template - only for SMS/Both channels */}
+            {(campaign.channel === 'sms' || campaign.channel === 'both') && campaign.message_template && (
+              <div className="p-4 rounded-xl bg-indigo-50 dark:bg-indigo-900/10 border border-indigo-200 dark:border-indigo-800/30">
+                <div className="flex items-center gap-2 mb-2">
+                  <Smartphone className="w-4 h-4 text-indigo-500" />
+                  <p className="text-sm font-medium text-indigo-700 dark:text-indigo-300">{t('smsApi.campaigns.messageTemplate')}</p>
+                </div>
+                <div className="p-4 rounded-xl bg-white dark:bg-gray-800 font-mono text-sm whitespace-pre-wrap">
+                  {campaign.message_template}
+                </div>
               </div>
-            </div>
+            )}
+
+            {/* Email Templates - only for Email/Both channels */}
+            {(campaign.channel === 'email' || campaign.channel === 'both') && (
+              <div className="p-4 rounded-xl bg-emerald-50 dark:bg-emerald-900/10 border border-emerald-200 dark:border-emerald-800/30">
+                <div className="flex items-center gap-2 mb-3">
+                  <Mail className="w-4 h-4 text-emerald-500" />
+                  <p className="text-sm font-medium text-emerald-700 dark:text-emerald-300">{t('smsApi.campaigns.channelEmail')}</p>
+                </div>
+                <div className="space-y-3">
+                  <div className="p-3 rounded-lg bg-white dark:bg-gray-800">
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">{t('smsApi.campaigns.emailSubject')}</p>
+                    <p className="text-gray-900 dark:text-white font-medium">{campaign.email_subject_template || '-'}</p>
+                  </div>
+                  <div className="p-3 rounded-lg bg-white dark:bg-gray-800">
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">{t('smsApi.campaigns.emailBody')}</p>
+                    <p className="text-gray-900 dark:text-white whitespace-pre-wrap text-sm">{campaign.email_body_template || '-'}</p>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Segment Filter Conditions */}
             <div>
@@ -925,8 +972,8 @@ export default function CampaignDetailPage() {
           </div>
         )}
 
-        {/* Planned Messages (for draft, active, paused - contacts that will receive SMS on next run) */}
-        {['draft', 'active', 'paused'].includes(campaign.status) && (
+        {/* Planned Messages (for draft, scheduled, active, paused - contacts that will receive messages) */}
+        {['draft', 'scheduled', 'active', 'paused'].includes(campaign.status) && (
           <div className="rounded-3xl p-6 bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50 mb-6">
             <div className="flex items-center justify-between mb-4">
               <div>
@@ -956,28 +1003,39 @@ export default function CampaignDetailPage() {
                     <thead className="bg-gray-50 dark:bg-gray-900/50">
                       <tr>
                         <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                          {t('smsApi.phone')}
+                          {campaign.channel === 'email' ? t('smsApi.contacts.email') : t('smsApi.phone')}
                         </th>
                         <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                          {t('smsApi.message')}
+                          {campaign.channel === 'email' ? t('smsApi.campaigns.emailSubject') : t('smsApi.message')}
                         </th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                          {t('smsApi.campaigns.segments')}
-                        </th>
+                        {campaign.channel !== 'email' && (
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                            {t('smsApi.campaigns.segments')}
+                          </th>
+                        )}
                       </tr>
                     </thead>
                     <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                       {plannedContacts.map((contact) => (
                         <tr key={contact.contact_id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
                           <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
-                            {contact.phone}
+                            {campaign.channel === 'email' ? contact.email : contact.phone}
                           </td>
-                          <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300 max-w-xs truncate">
-                            {contact.message}
+                          <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300 max-w-md">
+                            {campaign.channel === 'email' ? (
+                              <div>
+                                <p className="font-medium truncate">{contact.email_subject}</p>
+                                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 line-clamp-2">
+                                  {contact.email_body?.slice(0, 200)}{contact.email_body && contact.email_body.length > 200 ? '...' : ''}
+                                </p>
+                              </div>
+                            ) : contact.message}
                           </td>
-                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                            {contact.segments}
-                          </td>
+                          {campaign.channel !== 'email' && (
+                            <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                              {contact.segments}
+                            </td>
+                          )}
                         </tr>
                       ))}
                     </tbody>
@@ -1021,11 +1079,23 @@ export default function CampaignDetailPage() {
         {/* Sent Messages History (for all campaigns) */}
         <div className="rounded-3xl p-6 bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+              {campaign.channel === 'email' ? (
+                <Mail className="w-5 h-5 text-emerald-500" />
+              ) : campaign.channel === 'both' ? (
+                <Layers className="w-5 h-5 text-purple-500" />
+              ) : (
+                <Smartphone className="w-5 h-5 text-indigo-500" />
+              )}
               {t('smsApi.campaigns.sentMessages')}
             </h2>
             <span className="text-sm text-gray-500 dark:text-gray-400">
-              {campaign.sent_count} {t('smsApi.message').toLowerCase()}
+              {campaign.channel === 'email'
+                ? `${campaign.email_sent_count || 0} ${t('smsApi.campaigns.emailsSent')}`
+                : campaign.channel === 'both'
+                ? `${campaign.sent_count} SMS, ${campaign.email_sent_count || 0} ${t('smsApi.campaigns.emails')}`
+                : `${campaign.sent_count} ${t('smsApi.message').toLowerCase()}`
+              }
             </span>
           </div>
 
@@ -1035,9 +1105,16 @@ export default function CampaignDetailPage() {
             </div>
           ) : messages.length === 0 ? (
             <div className="text-center py-8">
-              <MessageSquare className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
+              {campaign.channel === 'email' ? (
+                <Mail className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
+              ) : (
+                <MessageSquare className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
+              )}
               <p className="text-gray-500 dark:text-gray-400">
-                {t('smsApi.noMessages')}
+                {campaign.channel === 'email'
+                  ? t('smsApi.campaigns.noEmailsSent')
+                  : t('smsApi.noMessages')
+                }
               </p>
             </div>
           ) : (

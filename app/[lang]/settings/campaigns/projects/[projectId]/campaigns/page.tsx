@@ -24,6 +24,9 @@ import {
   Server,
   Users,
   Copy,
+  Smartphone,
+  Mail,
+  Layers,
 } from 'lucide-react';
 
 const statusIcons: Record<string, React.ReactNode> = {
@@ -178,7 +181,7 @@ export default function ProjectCampaignsPage() {
   const handleDuplicate = async (id: number) => {
     try {
       const result = await campaignsApi.duplicate(id);
-      router.push(`/settings/sms/projects/${projectId}/campaigns/${result.campaign.id}`);
+      router.push(`/settings/campaigns/projects/${projectId}/campaigns/${result.campaign.id}`);
     } catch (err: any) {
       setError(err.response?.data?.message || 'Failed to duplicate campaign');
     }
@@ -220,7 +223,7 @@ export default function ProjectCampaignsPage() {
               {error || 'The project you are looking for does not exist.'}
             </p>
             <Link
-              href={`/settings/sms/projects`}
+              href={`/settings/campaigns/projects`}
               className="cursor-pointer px-8 py-3 rounded-2xl font-medium text-white bg-gradient-to-r from-indigo-500 to-purple-500 hover:shadow-lg transition-all duration-300 hover:scale-105 inline-block"
             >
               {t('common.back')}
@@ -237,7 +240,7 @@ export default function ProjectCampaignsPage() {
         {/* Back Button & Project Info */}
         <div className="mb-6">
           <Link
-            href={`/settings/sms/projects`}
+            href={`/settings/campaigns/projects`}
             className="inline-flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors cursor-pointer mb-4"
           >
             <ArrowLeft className="w-4 h-4" />
@@ -265,14 +268,14 @@ export default function ProjectCampaignsPage() {
           </div>
           <div className="flex items-center gap-3">
             <Link
-              href={`/settings/sms/projects/${projectId}/contacts`}
+              href={`/settings/campaigns/projects/${projectId}/contacts`}
               className="cursor-pointer px-6 py-3 rounded-2xl font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 transition-all duration-300 hover:shadow-lg hover:scale-105 flex items-center gap-2"
             >
               <Users className="w-5 h-5" />
               {t('smsApi.contacts.title')}
             </Link>
             <Link
-              href={`/settings/sms/projects/${projectId}/campaigns/create`}
+              href={`/settings/campaigns/projects/${projectId}/campaigns/create`}
               className="cursor-pointer group relative px-6 py-3 rounded-2xl font-medium text-white bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 transition-all duration-300 hover:shadow-lg hover:scale-105 overflow-hidden"
             >
               <span className="absolute inset-0 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
@@ -304,7 +307,7 @@ export default function ProjectCampaignsPage() {
               {t('smsApi.campaigns.noCampaignsDesc')}
             </p>
             <Link
-              href={`/settings/sms/projects/${projectId}/campaigns/create`}
+              href={`/settings/campaigns/projects/${projectId}/campaigns/create`}
               className="cursor-pointer px-8 py-3 rounded-2xl font-medium text-white bg-gradient-to-r from-indigo-500 to-purple-500 hover:shadow-lg transition-all duration-300 hover:scale-105 inline-block"
             >
               {t('smsApi.campaigns.createCampaign')}
@@ -315,7 +318,7 @@ export default function ProjectCampaignsPage() {
             {campaigns.map((campaign) => (
               <div
                 key={campaign.id}
-                onClick={() => router.push(`/settings/sms/projects/${projectId}/campaigns/${campaign.id}`)}
+                onClick={() => router.push(`/settings/campaigns/projects/${projectId}/campaigns/${campaign.id}`)}
                 className={`block relative rounded-2xl p-6 bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50 transition-all duration-300 hover:shadow-xl hover:shadow-indigo-500/10 cursor-pointer ${openMenuId === campaign.id ? 'z-50' : 'z-0'}`}
               >
                 <div className="flex items-center justify-between">
@@ -329,6 +332,21 @@ export default function ProjectCampaignsPage() {
                         {campaign.name}
                       </h3>
                       <div className="flex items-center gap-3 mt-1 flex-wrap">
+                        {/* Channel Badge */}
+                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium ${
+                          campaign.channel === 'sms'
+                            ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400'
+                            : campaign.channel === 'email'
+                            ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
+                            : 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400'
+                        }`}>
+                          {campaign.channel === 'sms' && <Smartphone className="w-3 h-3" />}
+                          {campaign.channel === 'email' && <Mail className="w-3 h-3" />}
+                          {campaign.channel === 'both' && <Layers className="w-3 h-3" />}
+                          {campaign.channel === 'sms' && t('smsApi.campaigns.channelSms')}
+                          {campaign.channel === 'email' && t('smsApi.campaigns.channelEmail')}
+                          {campaign.channel === 'both' && t('smsApi.campaigns.channelBoth')}
+                        </span>
                         <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium ${statusColors[campaign.status]}`}>
                           {statusIcons[campaign.status]}
                           {t(`smsApi.campaigns.statuses.${campaign.status}`)}
@@ -414,7 +432,7 @@ export default function ProjectCampaignsPage() {
                           {campaign.status === 'draft' && (
                             <>
                               <Link
-                                href={`/settings/sms/projects/${projectId}/campaigns/${campaign.id}/edit`}
+                                href={`/settings/campaigns/projects/${projectId}/campaigns/${campaign.id}/edit`}
                                 className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                                 onClick={(e) => {
                                   e.stopPropagation();
@@ -451,7 +469,7 @@ export default function ProjectCampaignsPage() {
                             </button>
                           )}
                           <Link
-                            href={`/settings/sms/projects/${projectId}/campaigns/${campaign.id}`}
+                            href={`/settings/campaigns/projects/${projectId}/campaigns/${campaign.id}`}
                             className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                             onClick={(e) => {
                               e.stopPropagation();

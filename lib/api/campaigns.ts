@@ -12,12 +12,17 @@ const campaignClient = axios.create({
 });
 
 // Types
+export type CampaignChannel = 'sms' | 'email' | 'both';
+
 export interface Campaign {
   id: number;
   client_id: number;
   name: string;
   sender: string;
   message_template: string;
+  channel: CampaignChannel;
+  email_subject_template: string | null;
+  email_body_template: string | null;
   status: 'draft' | 'scheduled' | 'sending' | 'completed' | 'cancelled' | 'failed' | 'active' | 'paused';
   segment_filter: SegmentFilter;
   scheduled_at: string | null;
@@ -29,6 +34,11 @@ export interface Campaign {
   delivered_count: number;
   failed_count: number;
   total_cost: string;
+  // Email stats
+  email_sent_count: number;
+  email_delivered_count: number;
+  email_failed_count: number;
+  email_total_cost: string;
   created_by: number;
   is_test: boolean;
   created_at: string;
@@ -66,8 +76,11 @@ export interface AttributeSchema {
 }
 
 export interface MessagePreview {
-  phone: string;
-  message: string;
+  phone: string | null;
+  email: string | null;
+  message: string | null;
+  email_subject: string | null;
+  email_body: string | null;
   segments: number;
   attributes: Record<string, any>;
 }
@@ -80,6 +93,18 @@ export interface CampaignStats {
   total_cost: number;
   delivery_rate: number;
   success_rate: number;
+  // Email stats
+  email_sent_count: number;
+  email_delivered_count: number;
+  email_failed_count: number;
+  email_total_cost: number;
+  email_delivery_rate: number;
+  email_success_rate: number;
+  // Combined stats
+  combined_sent_count: number;
+  combined_delivered_count: number;
+  combined_failed_count: number;
+  combined_total_cost: number;
 }
 
 export interface CampaignMessage {
@@ -95,15 +120,38 @@ export interface CampaignMessage {
   created_at: string;
   contact?: {
     id: number;
-    phone: string;
+    phone: string | null;
+    email: string | null;
+    attributes: Record<string, any>;
+  };
+}
+
+export interface CampaignEmailMessage {
+  id: number;
+  email: string;
+  subject: string;
+  body: string;
+  cost: number;
+  status: 'pending' | 'sent' | 'delivered' | 'failed';
+  is_test: boolean;
+  sent_at: string | null;
+  delivered_at: string | null;
+  created_at: string;
+  contact?: {
+    id: number;
+    phone: string | null;
+    email: string | null;
     attributes: Record<string, any>;
   };
 }
 
 export interface PlannedContact {
   contact_id: number;
-  phone: string;
-  message: string;
+  phone: string | null;
+  email: string | null;
+  message: string | null;
+  email_subject: string | null;
+  email_body: string | null;
   segments: number;
   attributes: Record<string, any>;
 }
@@ -169,8 +217,11 @@ export const campaignsApi = {
   // Create campaign
   create: async (data: {
     name: string;
-    sender: string;
-    message_template: string;
+    channel: CampaignChannel;
+    sender?: string;
+    message_template?: string;
+    email_subject_template?: string;
+    email_body_template?: string;
     segment_filter: SegmentFilter;
     scheduled_at?: string;
     is_test?: boolean;

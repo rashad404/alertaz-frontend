@@ -267,7 +267,7 @@ print(result)
               />
               <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-2">
                 <ChevronRight className="w-4 h-4" />
-                <Link href="/settings/sms/projects" className="text-indigo-600 dark:text-indigo-400 hover:underline">
+                <Link href="/settings/campaigns/projects" className="text-indigo-600 dark:text-indigo-400 hover:underline">
                   {t('emailApi.docs.authentication.getToken')}
                 </Link>
               </p>

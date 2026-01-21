@@ -71,6 +71,7 @@ export default function ProjectContactsPage() {
 
   // Form state for add/edit modal
   const [formPhone, setFormPhone] = useState('');
+  const [formEmail, setFormEmail] = useState('');
   const [formAttributes, setFormAttributes] = useState<Record<string, any>>({});
   const [formError, setFormError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
@@ -149,7 +150,7 @@ export default function ProjectContactsPage() {
     if (selectedContacts.size === contacts.length) {
       setSelectedContacts(new Set());
     } else {
-      setSelectedContacts(new Set(contacts.map(c => c.phone)));
+      setSelectedContacts(new Set(contacts.map(c => c.phone || c.email || '')));
     }
   };
 
@@ -188,6 +189,7 @@ export default function ProjectContactsPage() {
   const openAddModal = () => {
     setEditingContact(null);
     setFormPhone('');
+    setFormEmail('');
     setFormAttributes({});
     setFormError(null);
     setShowModal(true);
@@ -195,7 +197,8 @@ export default function ProjectContactsPage() {
 
   const openEditModal = (contact: Contact) => {
     setEditingContact(contact);
-    setFormPhone(contact.phone);
+    setFormPhone(contact.phone || '');
+    setFormEmail(contact.email || '');
     setFormAttributes(contact.attributes || {});
     setFormError(null);
     setShowModal(true);
@@ -205,21 +208,35 @@ export default function ProjectContactsPage() {
     e.preventDefault();
     setFormError(null);
 
-    // Validate phone
-    if (!/^994[0-9]{9}$/.test(formPhone)) {
+    // Require at least phone or email
+    if (!formPhone && !formEmail) {
+      setFormError(t('smsApi.contacts.phoneOrEmailRequired'));
+      return;
+    }
+
+    // Validate phone format if provided
+    if (formPhone && !/^994[0-9]{9}$/.test(formPhone)) {
       setFormError(t('smsApi.contacts.phoneInvalid'));
+      return;
+    }
+
+    // Validate email format if provided
+    if (formEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formEmail)) {
+      setFormError(t('smsApi.contacts.emailInvalid'));
       return;
     }
 
     setIsSaving(true);
     try {
+      const identifier = editingContact?.phone || editingContact?.email || formPhone || formEmail;
       if (editingContact) {
-        await contactsApi.update(editingContact.phone, {
-          phone: formPhone,
+        await contactsApi.update(identifier, {
+          phone: formPhone || null,
+          email: formEmail || null,
           attributes: formAttributes,
         });
       } else {
-        await contactsApi.create(formPhone, formAttributes);
+        await contactsApi.create(formPhone || null, formAttributes, formEmail || null);
       }
       setShowModal(false);
       loadContacts();
@@ -354,7 +371,7 @@ export default function ProjectContactsPage() {
             {t('smsApi.projects.notFound')}
           </h3>
           <Link
-            href={`/settings/sms/projects`}
+            href={`/settings/campaigns/projects`}
             className="cursor-pointer px-8 py-3 rounded-2xl font-medium text-white bg-gradient-to-r from-indigo-500 to-purple-500 hover:shadow-lg transition-all duration-300 hover:scale-105 inline-block"
           >
             {t('common.back')}
@@ -370,7 +387,7 @@ export default function ProjectContactsPage() {
         {/* Header Navigation */}
         <div className="mb-6">
           <Link
-            href={`/settings/sms/projects/${projectId}/campaigns`}
+            href={`/settings/campaigns/projects/${projectId}/campaigns`}
             className="inline-flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors cursor-pointer mb-4"
           >
             <ArrowLeft className="w-4 h-4" />
@@ -513,7 +530,7 @@ export default function ProjectContactsPage() {
                 </div>
                 <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">{t('smsApi.contacts.quickStart.step4Desc')}</p>
                 <Link
-                  href={`/settings/sms/projects/${projectId}/campaigns/create`}
+                  href={`/settings/campaigns/projects/${projectId}/campaigns/create`}
                   className="text-sm text-indigo-600 dark:text-indigo-400 hover:underline"
                 >
                   {t('smsApi.campaigns.createCampaign')} →
@@ -629,6 +646,9 @@ export default function ProjectContactsPage() {
                       {t('smsApi.contacts.phone')}
                     </th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      {t('smsApi.contacts.email')}
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                       {t('smsApi.contacts.attributes')}
                     </th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
@@ -645,13 +665,16 @@ export default function ProjectContactsPage() {
                       <td className="px-4 py-3">
                         <input
                           type="checkbox"
-                          checked={selectedContacts.has(contact.phone)}
-                          onChange={() => handleSelectContact(contact.phone)}
+                          checked={selectedContacts.has(contact.phone || contact.email || '')}
+                          onChange={() => handleSelectContact(contact.phone || contact.email || '')}
                           className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
                         />
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap">
-                        <span className="font-mono text-sm text-gray-900 dark:text-white">{contact.phone}</span>
+                        <span className="font-mono text-sm text-gray-900 dark:text-white">{contact.phone || '-'}</span>
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        <span className="text-sm text-gray-900 dark:text-white">{contact.email || '-'}</span>
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex flex-wrap gap-1 max-w-md">
@@ -683,7 +706,7 @@ export default function ProjectContactsPage() {
                             <Pencil className="w-4 h-4" />
                           </button>
                           <button
-                            onClick={() => handleDelete(contact.phone)}
+                            onClick={() => handleDelete(contact.phone || contact.email || '')}
                             className="p-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 text-red-600 dark:text-red-400 transition-colors cursor-pointer"
                           >
                             <Trash2 className="w-4 h-4" />
@@ -747,7 +770,7 @@ export default function ProjectContactsPage() {
                 <form onSubmit={handleSaveContact} className="space-y-5">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      {t('smsApi.contacts.phone')} *
+                      {t('smsApi.contacts.phone')}
                     </label>
                     <input
                       type="text"
@@ -755,9 +778,23 @@ export default function ProjectContactsPage() {
                       onChange={(e) => setFormPhone(e.target.value)}
                       placeholder="994501234567"
                       className="w-full px-4 py-3 border border-gray-200 dark:border-gray-700 rounded-2xl bg-white/50 dark:bg-gray-800/50 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500"
-                      required
                     />
                     <p className="mt-1 text-xs text-gray-500">{t('smsApi.contacts.phoneFormat')}</p>
+                  </div>
+
+                  {/* Email Field */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      {t('smsApi.contacts.email')}
+                    </label>
+                    <input
+                      type="email"
+                      value={formEmail}
+                      onChange={(e) => setFormEmail(e.target.value)}
+                      placeholder="user@example.com"
+                      className="w-full px-4 py-3 border border-gray-200 dark:border-gray-700 rounded-2xl bg-white/50 dark:bg-gray-800/50 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500"
+                    />
+                    <p className="mt-1 text-xs text-gray-500">{t('smsApi.contacts.phoneOrEmailRequired')}</p>
                   </div>
 
                   {/* Dynamic attribute fields based on schema */}

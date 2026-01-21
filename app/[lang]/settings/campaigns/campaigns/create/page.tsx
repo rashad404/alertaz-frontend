@@ -96,7 +96,7 @@ export default function CreateCampaignPage() {
       }
 
       await campaignsApi.create(payload);
-      router.push(`/${lang}/settings/sms/campaigns`);
+      router.push(`/${lang}/settings/campaigns/campaigns`);
     } catch (err: any) {
       setError(err.response?.data?.message || 'Failed to create campaign');
     } finally {

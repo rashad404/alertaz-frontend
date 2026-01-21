@@ -146,7 +146,7 @@ export default function SMSShowcase() {
                 {/* CTA Button */}
                 {isLoggedIn ? (
                   <Link
-                    href="/settings/sms/projects"
+                    href="/settings/campaigns/projects"
                     className="cursor-pointer inline-flex items-center gap-2 px-6 py-3 rounded-2xl font-medium text-white bg-gradient-to-r from-pink-500 to-rose-500 hover:shadow-lg hover:shadow-rose-500/30 hover:scale-105 transition-all duration-300"
                   >
                     {t('campaigns.cta')}

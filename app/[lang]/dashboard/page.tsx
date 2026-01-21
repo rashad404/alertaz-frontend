@@ -485,7 +485,7 @@ export default function DashboardPage() {
           </Link>
 
           <Link
-            href="/settings/sms/projects"
+            href="/settings/campaigns/projects"
             className="card-glass rounded-3xl p-6 hover:scale-105 transition-transform duration-300"
           >
             <div className="flex items-center gap-4">

@@ -237,7 +237,7 @@ print(result)
         <aside className="hidden lg:block w-64 shrink-0 border-r border-gray-200 dark:border-gray-800 bg-white/50 dark:bg-gray-900/50 backdrop-blur-xl sticky top-0 h-screen overflow-y-auto">
           <div className="p-6">
             <Link
-              href={`/settings/sms/projects`}
+              href={`/settings/campaigns/projects`}
               className="inline-flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors mb-6"
             >
               <ArrowLeft className="w-4 h-4" />
@@ -273,7 +273,7 @@ print(result)
         <main className="flex-1 p-6 lg:p-12 max-w-4xl">
           {/* Mobile Back Button */}
           <Link
-            href={`/settings/sms/projects`}
+            href={`/settings/campaigns/projects`}
             className="lg:hidden inline-flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors mb-6"
           >
             <ArrowLeft className="w-4 h-4" />
@@ -321,7 +321,7 @@ print(result)
               />
               <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-2">
                 <ChevronRight className="w-4 h-4" />
-                <Link href={`/settings/sms/projects`} className="text-indigo-600 dark:text-indigo-400 hover:underline">
+                <Link href={`/settings/campaigns/projects`} className="text-indigo-600 dark:text-indigo-400 hover:underline">
                   {t('smsApi.docs.authentication.getToken')}
                 </Link>
               </p>
