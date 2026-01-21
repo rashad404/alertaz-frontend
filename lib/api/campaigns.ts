@@ -268,17 +268,31 @@ export const campaignsApi = {
     return response.data.data;
   },
 
-  // Test send to custom phone
-  testSendCustom: async (id: number, phone: string, sampleContactId?: number): Promise<{
-    phone: string;
-    message: string;
-    status: string;
-    transaction_id?: string;
-    error?: string;
+  // Test send to custom phone/email
+  testSendCustom: async (id: number, params: { phone?: string; email?: string; sampleContactId?: number }): Promise<{
+    sms?: {
+      phone: string;
+      message: string;
+      segments?: number;
+      cost: number;
+      status: string;
+      error?: string;
+      test_mode?: boolean;
+    };
+    email?: {
+      email: string;
+      subject: string;
+      cost: number;
+      status: string;
+      error?: string;
+      test_mode?: boolean;
+    };
+    sample_contact_id: number;
   }> => {
     const response = await campaignClient.post(`/campaigns/${id}/test-send-custom`, {
-      phone,
-      sample_contact_id: sampleContactId,
+      phone: params.phone,
+      email: params.email,
+      sample_contact_id: params.sampleContactId,
     }, { headers: getHeaders() });
     return response.data.data;
   },

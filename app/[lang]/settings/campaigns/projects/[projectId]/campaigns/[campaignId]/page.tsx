@@ -106,11 +106,15 @@ export default function CampaignDetailPage() {
   const [testSendLoading, setTestSendLoading] = useState(false);
   const [testSendResults, setTestSendResults] = useState<Array<{ phone: string; message: string; status: string; error?: string }> | null>(null);
 
-  // Custom phone test send state
-  const [showCustomPhoneModal, setShowCustomPhoneModal] = useState(false);
+  // Custom test send state (supports both phone and email)
+  const [showCustomTestModal, setShowCustomTestModal] = useState(false);
   const [customPhone, setCustomPhone] = useState('');
-  const [customPhoneLoading, setCustomPhoneLoading] = useState(false);
-  const [customPhoneResult, setCustomPhoneResult] = useState<{ phone: string; message: string; status: string; error?: string } | null>(null);
+  const [customEmail, setCustomEmail] = useState('');
+  const [customTestLoading, setCustomTestLoading] = useState(false);
+  const [customTestResult, setCustomTestResult] = useState<{
+    sms?: { phone: string; message: string; segments?: number; cost: number; status: string; error?: string };
+    email?: { email: string; subject: string; cost: number; status: string; error?: string };
+  } | null>(null);
 
   // Retry failed state
   const [retryLoading, setRetryLoading] = useState(false);
@@ -420,21 +424,32 @@ export default function CampaignDetailPage() {
     }
   };
 
-  const handleCustomPhoneTest = async () => {
-    if (!campaign || !customPhone) return;
+  const handleCustomTest = async () => {
+    if (!campaign) return;
 
-    setCustomPhoneLoading(true);
-    setCustomPhoneResult(null);
+    const requiresPhone = campaign.channel === 'sms' || campaign.channel === 'both';
+    const requiresEmail = campaign.channel === 'email' || campaign.channel === 'both';
+
+    // Validate based on channel
+    if (requiresPhone && !requiresEmail && !customPhone) return;
+    if (requiresEmail && !requiresPhone && !customEmail) return;
+    if (requiresPhone && requiresEmail && !customPhone && !customEmail) return;
+
+    setCustomTestLoading(true);
+    setCustomTestResult(null);
     setError(null);
 
     try {
-      const result = await campaignsApi.testSendCustom(campaign.id, customPhone);
-      setCustomPhoneResult(result);
-      setSuccessMessage(t('smsApi.campaigns.customPhoneSuccess'));
+      const result = await campaignsApi.testSendCustom(campaign.id, {
+        phone: customPhone || undefined,
+        email: customEmail || undefined,
+      });
+      setCustomTestResult(result);
+      setSuccessMessage(t('smsApi.campaigns.customTestSuccess'));
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Custom phone test failed');
+      setError(err.response?.data?.message || 'Custom test failed');
     } finally {
-      setCustomPhoneLoading(false);
+      setCustomTestLoading(false);
     }
   };
 
@@ -625,25 +640,21 @@ export default function CampaignDetailPage() {
 
           {/* Secondary Actions */}
           <div className="flex flex-wrap gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
-            {/* Test buttons - for draft campaigns */}
-            {campaign.status === 'draft' && (
-              <>
-                <button
-                  onClick={() => setShowTestSendModal(true)}
-                  className="cursor-pointer flex items-center gap-2 px-4 py-2 rounded-lg font-medium bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300 hover:bg-purple-100 dark:hover:bg-purple-900/30 transition-all text-sm"
-                >
-                  <TestTube className="w-4 h-4" />
-                  {t('smsApi.campaigns.actions.testSend')}
-                </button>
-                <button
-                  onClick={() => setShowCustomPhoneModal(true)}
-                  className="cursor-pointer flex items-center gap-2 px-4 py-2 rounded-lg font-medium bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-all text-sm"
-                >
-                  <Phone className="w-4 h-4" />
-                  {t('smsApi.campaigns.actions.testCustomPhone')}
-                </button>
-              </>
-            )}
+            {/* Test buttons - available for all campaign statuses */}
+            <button
+              onClick={() => setShowTestSendModal(true)}
+              className="cursor-pointer flex items-center gap-2 px-4 py-2 rounded-lg font-medium bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300 hover:bg-purple-100 dark:hover:bg-purple-900/30 transition-all text-sm"
+            >
+              <TestTube className="w-4 h-4" />
+              {t('smsApi.campaigns.actions.testSend')}
+            </button>
+            <button
+              onClick={() => setShowCustomTestModal(true)}
+              className="cursor-pointer flex items-center gap-2 px-4 py-2 rounded-lg font-medium bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-all text-sm"
+            >
+              {campaign.channel === 'email' ? <Mail className="w-4 h-4" /> : <Phone className="w-4 h-4" />}
+              {t('smsApi.campaigns.actions.testCustom')}
+            </button>
             {/* Retry failed - for campaigns with failures */}
             {campaign.failed_count > 0 && ['completed', 'failed', 'active', 'paused'].includes(campaign.status) && (
               <button
@@ -1123,8 +1134,13 @@ export default function CampaignDetailPage() {
                   <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                     <thead className="bg-gray-50 dark:bg-gray-900/50">
                       <tr>
+                        {campaign.channel === 'both' && (
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                            {t('smsApi.campaigns.channel')}
+                          </th>
+                        )}
                         <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                          {t('smsApi.phone')}
+                          {campaign.channel === 'email' ? t('smsApi.email') : campaign.channel === 'both' ? t('smsApi.campaigns.recipient') : t('smsApi.phone')}
                         </th>
                         <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                           {t('smsApi.message')}
@@ -1141,13 +1157,22 @@ export default function CampaignDetailPage() {
                       </tr>
                     </thead>
                     <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                      {messages.map((msg) => (
-                        <tr key={msg.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                      {messages.map((msg: any) => (
+                        <tr key={`${msg.type}-${msg.id}`} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                          {campaign.channel === 'both' && (
+                            <td className="px-4 py-3 whitespace-nowrap">
+                              {msg.type === 'email' ? (
+                                <Mail className="w-4 h-4 text-emerald-500" />
+                              ) : (
+                                <Smartphone className="w-4 h-4 text-indigo-500" />
+                              )}
+                            </td>
+                          )}
                           <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
-                            {msg.phone}
+                            {msg.recipient || msg.phone}
                           </td>
                           <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300 max-w-xs truncate">
-                            {msg.message}
+                            {msg.content || msg.message}
                           </td>
                           <td className="px-4 py-3 whitespace-nowrap">
                             <div className="flex items-center gap-2">
@@ -1293,20 +1318,21 @@ export default function CampaignDetailPage() {
           </div>
         )}
 
-        {/* Custom Phone Test Modal */}
-        {showCustomPhoneModal && (
+        {/* Custom Test Modal (Phone/Email based on channel) */}
+        {showCustomTestModal && (
           <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
             <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 max-w-lg w-full">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-                  <Phone className="w-5 h-5" />
-                  {t('smsApi.campaigns.customPhoneTitle')}
+                  {campaign.channel === 'email' ? <Mail className="w-5 h-5" /> : campaign.channel === 'both' ? <Layers className="w-5 h-5" /> : <Phone className="w-5 h-5" />}
+                  {t('smsApi.campaigns.customTestTitle')}
                 </h3>
                 <button
                   onClick={() => {
-                    setShowCustomPhoneModal(false);
-                    setCustomPhoneResult(null);
+                    setShowCustomTestModal(false);
+                    setCustomTestResult(null);
                     setCustomPhone('');
+                    setCustomEmail('');
                   }}
                   className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg"
                 >
@@ -1315,37 +1341,105 @@ export default function CampaignDetailPage() {
               </div>
 
               <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                {t('smsApi.campaigns.customPhoneDescription')}
+                {t('smsApi.campaigns.customTestDescription')}
               </p>
 
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  {t('smsApi.phone')}
-                </label>
-                <input
-                  type="tel"
-                  value={customPhone}
-                  onChange={(e) => setCustomPhone(e.target.value)}
-                  placeholder="994501234567"
-                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-                />
-              </div>
+              {/* Phone input - show for SMS and Both channels */}
+              {(campaign.channel === 'sms' || campaign.channel === 'both') && (
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    <Phone className="w-4 h-4 inline mr-1" />
+                    {t('smsApi.phone')}
+                  </label>
+                  <input
+                    type="tel"
+                    value={customPhone}
+                    onChange={(e) => setCustomPhone(e.target.value)}
+                    placeholder="994501234567"
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                  />
+                </div>
+              )}
 
-              {customPhoneResult && (
+              {/* Email input - show for Email and Both channels */}
+              {(campaign.channel === 'email' || campaign.channel === 'both') && (
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    <Mail className="w-4 h-4 inline mr-1" />
+                    {t('smsApi.email')}
+                  </label>
+                  <input
+                    type="email"
+                    value={customEmail}
+                    onChange={(e) => setCustomEmail(e.target.value)}
+                    placeholder="test@example.com"
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                  />
+                </div>
+              )}
+
+              {/* SMS Result */}
+              {customTestResult?.sms && (
                 <div className={`mb-4 p-4 rounded-lg ${
-                  customPhoneResult.status === 'sent' ? 'bg-green-50 dark:bg-green-900/20' : 'bg-red-50 dark:bg-red-900/20'
+                  customTestResult.sms.status === 'sent' ? 'bg-green-50 dark:bg-green-900/20' : 'bg-red-50 dark:bg-red-900/20'
                 }`}>
                   <div className="flex items-center justify-between mb-2">
-                    <span className="font-medium text-gray-900 dark:text-white">{customPhoneResult.phone}</span>
-                    <span className={`text-xs px-2 py-0.5 rounded ${
-                      customPhoneResult.status === 'sent' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
-                    }`}>
-                      {customPhoneResult.status}
+                    <span className="font-medium text-gray-900 dark:text-white flex items-center gap-1">
+                      <Phone className="w-4 h-4" />
+                      {customTestResult.sms.phone}
                     </span>
+                    <div className="flex items-center gap-2">
+                      {customTestResult.sms.test_mode && (
+                        <span className="text-xs px-2 py-0.5 rounded bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400">
+                          {t('smsApi.campaigns.serverTestMode')}
+                        </span>
+                      )}
+                      <span className={`text-xs px-2 py-0.5 rounded ${
+                        customTestResult.sms.status === 'sent' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+                      }`}>
+                        {customTestResult.sms.status}
+                      </span>
+                    </div>
                   </div>
-                  <p className="text-sm text-gray-700 dark:text-gray-300 mb-2">{customPhoneResult.message}</p>
-                  {customPhoneResult.error && (
-                    <p className="text-xs text-red-600 dark:text-red-400">{customPhoneResult.error}</p>
+                  <p className="text-sm text-gray-700 dark:text-gray-300 mb-2">{customTestResult.sms.message}</p>
+                  {customTestResult.sms.test_mode && (
+                    <p className="text-xs text-yellow-600 dark:text-yellow-400 mb-2">{t('smsApi.campaigns.serverTestModeNotice')}</p>
+                  )}
+                  {customTestResult.sms.error && (
+                    <p className="text-xs text-red-600 dark:text-red-400">{customTestResult.sms.error}</p>
+                  )}
+                </div>
+              )}
+
+              {/* Email Result */}
+              {customTestResult?.email && (
+                <div className={`mb-4 p-4 rounded-lg ${
+                  customTestResult.email.status === 'sent' ? 'bg-green-50 dark:bg-green-900/20' : 'bg-red-50 dark:bg-red-900/20'
+                }`}>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="font-medium text-gray-900 dark:text-white flex items-center gap-1">
+                      <Mail className="w-4 h-4" />
+                      {customTestResult.email.email}
+                    </span>
+                    <div className="flex items-center gap-2">
+                      {customTestResult.email.test_mode && (
+                        <span className="text-xs px-2 py-0.5 rounded bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400">
+                          {t('smsApi.campaigns.serverTestMode')}
+                        </span>
+                      )}
+                      <span className={`text-xs px-2 py-0.5 rounded ${
+                        customTestResult.email.status === 'sent' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+                      }`}>
+                        {customTestResult.email.status}
+                      </span>
+                    </div>
+                  </div>
+                  <p className="text-sm text-gray-700 dark:text-gray-300 mb-2">{customTestResult.email.subject}</p>
+                  {customTestResult.email.test_mode && (
+                    <p className="text-xs text-yellow-600 dark:text-yellow-400 mb-2">{t('smsApi.campaigns.serverTestModeNotice')}</p>
+                  )}
+                  {customTestResult.email.error && (
+                    <p className="text-xs text-red-600 dark:text-red-400">{customTestResult.email.error}</p>
                   )}
                 </div>
               )}
@@ -1353,20 +1447,25 @@ export default function CampaignDetailPage() {
               <div className="flex gap-3">
                 <button
                   onClick={() => {
-                    setShowCustomPhoneModal(false);
-                    setCustomPhoneResult(null);
+                    setShowCustomTestModal(false);
+                    setCustomTestResult(null);
                     setCustomPhone('');
+                    setCustomEmail('');
                   }}
                   className="flex-1 px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
                 >
                   {t('common.close')}
                 </button>
                 <button
-                  onClick={handleCustomPhoneTest}
-                  disabled={customPhoneLoading || !customPhone}
+                  onClick={handleCustomTest}
+                  disabled={customTestLoading || (
+                    (campaign.channel === 'sms' && !customPhone) ||
+                    (campaign.channel === 'email' && !customEmail) ||
+                    (campaign.channel === 'both' && !customPhone && !customEmail)
+                  )}
                   className="flex-1 px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 flex items-center justify-center gap-2"
                 >
-                  {customPhoneLoading ? (
+                  {customTestLoading ? (
                     <RefreshCw className="w-4 h-4 animate-spin" />
                   ) : (
                     <Send className="w-4 h-4" />
