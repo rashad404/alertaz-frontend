@@ -704,6 +704,7 @@
       "name": "Название кампании",
       "namePlaceholder": "например: Ежемесячная рассылка",
       "sender": "Имя отправителя",
+      "smsSender": "SMS Имя отправителя",
       "senderPlaceholder": "например: MyBrand",
       "senderNote": "Это имя будет показано получателям SMS",
       "messageTemplate": "Шаблон сообщения",

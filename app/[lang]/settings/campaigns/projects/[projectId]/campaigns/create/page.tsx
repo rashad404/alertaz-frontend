@@ -204,20 +204,20 @@ export default function CreateCampaignPage() {
     switch (currentStep) {
       case 0:
         // Name is always required
-        if (formData.name.trim() === '') return false;
+        if ((formData.name?.trim() || '') === '') return false;
         // Sender required for SMS/Both channels
-        if ((formData.channel === 'sms' || formData.channel === 'both') && formData.sender.trim() === '') return false;
+        if ((formData.channel === 'sms' || formData.channel === 'both') && (formData.sender?.trim() || '') === '') return false;
         return true;
       case 1:
-        return formData.segment_filter.conditions.length > 0;
+        return formData.segment_filter?.conditions?.length > 0;
       case 2:
         // SMS template required if channel is sms or both
         if (formData.channel === 'sms' || formData.channel === 'both') {
-          if (formData.message_template.trim() === '' || hasUnicode(formData.message_template)) return false;
+          if ((formData.message_template?.trim() || '') === '' || hasUnicode(formData.message_template || '')) return false;
         }
         // Email templates required if channel is email or both
         if (formData.channel === 'email' || formData.channel === 'both') {
-          if (formData.email_subject_template.trim() === '' || formData.email_body_template.trim() === '') return false;
+          if ((formData.email_subject_template?.trim() || '') === '' || (formData.email_body_template?.trim() || '') === '') return false;
         }
         return true;
       case 3:
@@ -384,7 +384,11 @@ export default function CreateCampaignPage() {
                 <div className="grid grid-cols-3 gap-3">
                   <button
                     type="button"
-                    onClick={() => setFormData({ ...formData, channel: 'sms' })}
+                    onClick={() => setFormData({
+                      ...formData,
+                      channel: 'sms',
+                      sender: formData.sender || availableSenders[0] || ''
+                    })}
                     className={`cursor-pointer p-4 rounded-xl text-center transition-all border-2 ${
                       formData.channel === 'sms'
                         ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20'
@@ -424,7 +428,11 @@ export default function CreateCampaignPage() {
                   </button>
                   <button
                     type="button"
-                    onClick={() => setFormData({ ...formData, channel: 'both' })}
+                    onClick={() => setFormData({
+                      ...formData,
+                      channel: 'both',
+                      sender: formData.sender || availableSenders[0] || ''
+                    })}
                     className={`cursor-pointer p-4 rounded-xl text-center transition-all border-2 ${
                       formData.channel === 'both'
                         ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/20'
@@ -449,7 +457,7 @@ export default function CreateCampaignPage() {
               {(formData.channel === 'sms' || formData.channel === 'both') && (
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  {t('smsApi.campaigns.sender')} *
+                  {t('smsApi.campaigns.smsSender')} *
                 </label>
                 <select
                   value={formData.sender}

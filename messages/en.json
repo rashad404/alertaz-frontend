@@ -704,6 +704,7 @@
       "name": "Campaign Name",
       "namePlaceholder": "e.g., Monthly Newsletter",
       "sender": "Sender Name",
+      "smsSender": "SMS Sender Name",
       "senderPlaceholder": "e.g., MyBrand",
       "senderNote": "This name will be shown to SMS recipients",
       "messageTemplate": "Message Template",

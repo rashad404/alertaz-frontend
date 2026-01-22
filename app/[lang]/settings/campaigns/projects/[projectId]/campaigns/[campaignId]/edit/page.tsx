@@ -22,6 +22,9 @@ import {
   Save,
   Zap,
   RefreshCw,
+  Smartphone,
+  Mail,
+  Layers,
 } from 'lucide-react';
 
 const STEPS = ['details', 'audience', 'message', 'review'];
@@ -54,7 +57,10 @@ export default function EditCampaignPage() {
   const [formData, setFormData] = useState({
     name: '',
     sender: '',
+    channel: 'sms' as 'sms' | 'email' | 'both',
     message_template: '',
+    email_subject_template: '',
+    email_body_template: '',
     segment_filter: {
       logic: 'AND' as const,
       conditions: [],
@@ -106,10 +112,13 @@ export default function EditCampaignPage() {
       const displayEndHour = runAllDay ? 18 : convertHourFromUTC(c.run_end_hour ?? 18, timezone);
 
       setFormData({
-        name: c.name,
-        sender: c.sender,
-        message_template: c.message_template,
-        segment_filter: c.segment_filter,
+        name: c.name || '',
+        sender: c.sender || '',
+        channel: c.channel || 'sms',
+        message_template: c.message_template || '',
+        email_subject_template: c.email_subject_template || '',
+        email_body_template: c.email_body_template || '',
+        segment_filter: c.segment_filter || { logic: 'AND', conditions: [] },
         scheduled_at: c.scheduled_at || '',
         schedule_type: c.scheduled_at ? 'later' : 'now',
         is_test: c.is_test ?? true,
@@ -159,7 +168,10 @@ export default function EditCampaignPage() {
       const payload: any = {
         name: formData.name,
         sender: formData.sender,
+        channel: formData.channel,
         message_template: formData.message_template,
+        email_subject_template: formData.email_subject_template,
+        email_body_template: formData.email_body_template,
         segment_filter: formData.segment_filter,
         is_test: formData.is_test,
         type: formData.type,
@@ -198,11 +210,23 @@ export default function EditCampaignPage() {
   const canProceed = () => {
     switch (currentStep) {
       case 0:
-        return formData.name.trim() !== '' && formData.sender.trim() !== '';
+        // Name always required
+        if ((formData.name?.trim() || '') === '') return false;
+        // Sender required for SMS/Both
+        if ((formData.channel === 'sms' || formData.channel === 'both') && (formData.sender?.trim() || '') === '') return false;
+        return true;
       case 1:
-        return formData.segment_filter.conditions.length > 0;
+        return formData.segment_filter?.conditions?.length > 0;
       case 2:
-        return formData.message_template.trim() !== '' && !hasUnicode(formData.message_template);
+        // SMS template required for SMS/Both
+        if (formData.channel === 'sms' || formData.channel === 'both') {
+          if ((formData.message_template?.trim() || '') === '' || hasUnicode(formData.message_template || '')) return false;
+        }
+        // Email templates required for Email/Both
+        if (formData.channel === 'email' || formData.channel === 'both') {
+          if ((formData.email_subject_template?.trim() || '') === '' || (formData.email_body_template?.trim() || '') === '') return false;
+        }
+        return true;
       case 3:
         return true;
       default:
@@ -384,9 +408,88 @@ export default function EditCampaignPage() {
                 />
               </div>
 
+              {/* Channel Selector */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  {t('smsApi.campaigns.sender')} *
+                  {t('smsApi.campaigns.channel')} *
+                </label>
+                <div className="grid grid-cols-3 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setFormData({
+                      ...formData,
+                      channel: 'sms',
+                      sender: formData.sender || availableSenders[0] || ''
+                    })}
+                    className={`cursor-pointer p-4 rounded-xl text-center transition-all border-2 ${
+                      formData.channel === 'sms'
+                        ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20'
+                        : 'border-gray-200 dark:border-gray-700 hover:border-indigo-300 dark:hover:border-indigo-700'
+                    }`}
+                  >
+                    <Smartphone className={`w-6 h-6 mx-auto mb-2 ${
+                      formData.channel === 'sms' ? 'text-indigo-500' : 'text-gray-400'
+                    }`} />
+                    <span className={`font-medium text-sm ${
+                      formData.channel === 'sms'
+                        ? 'text-indigo-700 dark:text-indigo-300'
+                        : 'text-gray-600 dark:text-gray-400'
+                    }`}>
+                      {t('smsApi.campaigns.channelSms')}
+                    </span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setFormData({ ...formData, channel: 'email' })}
+                    className={`cursor-pointer p-4 rounded-xl text-center transition-all border-2 ${
+                      formData.channel === 'email'
+                        ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20'
+                        : 'border-gray-200 dark:border-gray-700 hover:border-emerald-300 dark:hover:border-emerald-700'
+                    }`}
+                  >
+                    <Mail className={`w-6 h-6 mx-auto mb-2 ${
+                      formData.channel === 'email' ? 'text-emerald-500' : 'text-gray-400'
+                    }`} />
+                    <span className={`font-medium text-sm ${
+                      formData.channel === 'email'
+                        ? 'text-emerald-700 dark:text-emerald-300'
+                        : 'text-gray-600 dark:text-gray-400'
+                    }`}>
+                      {t('smsApi.campaigns.channelEmail')}
+                    </span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setFormData({
+                      ...formData,
+                      channel: 'both',
+                      sender: formData.sender || availableSenders[0] || ''
+                    })}
+                    className={`cursor-pointer p-4 rounded-xl text-center transition-all border-2 ${
+                      formData.channel === 'both'
+                        ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/20'
+                        : 'border-gray-200 dark:border-gray-700 hover:border-purple-300 dark:hover:border-purple-700'
+                    }`}
+                  >
+                    <Layers className={`w-6 h-6 mx-auto mb-2 ${
+                      formData.channel === 'both' ? 'text-purple-500' : 'text-gray-400'
+                    }`} />
+                    <span className={`font-medium text-sm ${
+                      formData.channel === 'both'
+                        ? 'text-purple-700 dark:text-purple-300'
+                        : 'text-gray-600 dark:text-gray-400'
+                    }`}>
+                      {t('smsApi.campaigns.channelBoth')}
+                    </span>
+                  </button>
+                </div>
+              </div>
+
+              {/* SMS Sender - only for SMS/Both */}
+              {(formData.channel === 'sms' || formData.channel === 'both') && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  {t('smsApi.campaigns.smsSender')} *
                 </label>
                 <select
                   value={formData.sender}
@@ -403,6 +506,7 @@ export default function EditCampaignPage() {
                   {t('smsApi.campaigns.senderNote')}
                 </p>
               </div>
+              )}
 
               {/* Campaign Type */}
               <div>
@@ -659,32 +763,70 @@ export default function EditCampaignPage() {
           {/* Step 3: Message */}
           {currentStep === 2 && (
             <div className="space-y-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  {t('smsApi.campaigns.messageTemplate')} *
-                </label>
-                <textarea
-                  value={formData.message_template}
-                  onChange={(e) => setFormData({ ...formData, message_template: e.target.value })}
-                  placeholder={t('smsApi.campaigns.messagePlaceholder')}
-                  rows={6}
-                  className={`w-full px-4 py-3 border rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all resize-none ${
-                    hasUnicode(formData.message_template)
-                      ? 'border-red-500 dark:border-red-500'
-                      : 'border-gray-200 dark:border-gray-700'
-                  }`}
-                />
-                <div className="mt-1 flex justify-between items-center">
-                  <p className="text-xs text-gray-500">
-                    {formData.message_template.length} / 500
-                  </p>
-                  {hasUnicode(formData.message_template) && (
-                    <p className="text-xs text-red-500">
-                      {t('smsApi.campaigns.errors.unicodeNotAllowed')}
+              {/* SMS Template - for SMS/Both channels */}
+              {(formData.channel === 'sms' || formData.channel === 'both') && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    <Smartphone className="w-4 h-4 inline mr-1" />
+                    {t('smsApi.campaigns.messageTemplate')} *
+                  </label>
+                  <textarea
+                    value={formData.message_template}
+                    onChange={(e) => setFormData({ ...formData, message_template: e.target.value })}
+                    placeholder={t('smsApi.campaigns.messagePlaceholder')}
+                    rows={6}
+                    className={`w-full px-4 py-3 border rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all resize-none ${
+                      hasUnicode(formData.message_template || '')
+                        ? 'border-red-500 dark:border-red-500'
+                        : 'border-gray-200 dark:border-gray-700'
+                    }`}
+                  />
+                  <div className="mt-1 flex justify-between items-center">
+                    <p className="text-xs text-gray-500">
+                      {(formData.message_template || '').length} / 500
                     </p>
-                  )}
+                    {hasUnicode(formData.message_template || '') && (
+                      <p className="text-xs text-red-500">
+                        {t('smsApi.campaigns.errors.unicodeNotAllowed')}
+                      </p>
+                    )}
+                  </div>
                 </div>
-              </div>
+              )}
+
+              {/* Email Templates - for Email/Both channels */}
+              {(formData.channel === 'email' || formData.channel === 'both') && (
+                <>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      <Mail className="w-4 h-4 inline mr-1" />
+                      {t('smsApi.campaigns.emailSubject')} *
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.email_subject_template}
+                      onChange={(e) => setFormData({ ...formData, email_subject_template: e.target.value })}
+                      placeholder={t('smsApi.campaigns.emailSubjectPlaceholder')}
+                      className="w-full px-4 py-3 border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      {t('smsApi.campaigns.emailBody')} *
+                    </label>
+                    <textarea
+                      value={formData.email_body_template}
+                      onChange={(e) => setFormData({ ...formData, email_body_template: e.target.value })}
+                      placeholder={t('smsApi.campaigns.emailBodyPlaceholder')}
+                      rows={10}
+                      className="w-full px-4 py-3 border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all resize-none font-mono text-sm"
+                    />
+                    <p className="mt-1 text-xs text-gray-500">
+                      {t('smsApi.campaigns.emailBodyHint')}
+                    </p>
+                  </div>
+                </>
+              )}
 
               {attributes.length > 0 && (
                 <div className="p-4 rounded-xl bg-gray-50 dark:bg-gray-800/50">
@@ -698,10 +840,17 @@ export default function EditCampaignPage() {
                         key={attr.key}
                         type="button"
                         onClick={() => {
-                          setFormData({
-                            ...formData,
-                            message_template: formData.message_template + `{{${attr.key}}}`,
-                          });
+                          if (formData.channel === 'sms' || formData.channel === 'both') {
+                            setFormData({
+                              ...formData,
+                              message_template: (formData.message_template || '') + `{{${attr.key}}}`,
+                            });
+                          } else {
+                            setFormData({
+                              ...formData,
+                              email_body_template: (formData.email_body_template || '') + `{{${attr.key}}}`,
+                            });
+                          }
                         }}
                         className="cursor-pointer px-3 py-1.5 rounded-lg text-xs font-mono bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-200 dark:hover:bg-indigo-900/50 transition-colors"
                       >
@@ -711,10 +860,17 @@ export default function EditCampaignPage() {
                     <button
                       type="button"
                       onClick={() => {
-                        setFormData({
-                          ...formData,
-                          message_template: formData.message_template + '{{phone}}',
-                        });
+                        if (formData.channel === 'sms' || formData.channel === 'both') {
+                          setFormData({
+                            ...formData,
+                            message_template: (formData.message_template || '') + '{{phone}}',
+                          });
+                        } else {
+                          setFormData({
+                            ...formData,
+                            email_body_template: (formData.email_body_template || '') + '{{phone}}',
+                          });
+                        }
                       }}
                       className="cursor-pointer px-3 py-1.5 rounded-lg text-xs font-mono bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-200 dark:hover:bg-indigo-900/50 transition-colors"
                     >

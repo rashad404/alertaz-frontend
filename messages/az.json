@@ -704,6 +704,7 @@
       "name": "Kampaniya Adı",
       "namePlaceholder": "məsələn: Aylıq Xəbər Bülleteni",
       "sender": "Göndərən Adı",
+      "smsSender": "SMS Göndərən Adı",
       "senderPlaceholder": "məsələn: BrandAdı",
       "senderNote": "SMS alıcılarına bu ad göstəriləcək",
       "messageTemplate": "Mesaj Şablonu",
