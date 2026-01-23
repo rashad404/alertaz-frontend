@@ -91,9 +91,6 @@ export default function SegmentBuilder({ value, onChange, showPreview = true }: 
       (c) => !c.key || !c.operator || (!OPERATORS_WITHOUT_VALUE.includes(c.operator) && (c.value === undefined || c.value === null || c.value === ''))
     );
 
-    // Debug log
-    console.log('loadPreview - filter:', JSON.stringify(value, null, 2), 'incomplete:', hasIncompleteConditions);
-
     if (hasIncompleteConditions) {
       return;
     }
@@ -137,10 +134,15 @@ export default function SegmentBuilder({ value, onChange, showPreview = true }: 
       delete newConditions[index].value;
     }
 
+    // Reset value when operator changes (different operators expect different value formats)
+    if (field === 'operator' && !OPERATORS_WITHOUT_VALUE.includes(fieldValue)) {
+      newConditions[index].value = null;
+    }
+
     // Reset operator and value when attribute changes
     if (field === 'key') {
       newConditions[index].operator = '';
-      newConditions[index].value = '';
+      newConditions[index].value = null;
     }
 
     onChange({ ...value, conditions: newConditions });
@@ -167,9 +169,6 @@ export default function SegmentBuilder({ value, onChange, showPreview = true }: 
 
     const attribute = getAttributeByKey(condition.key);
     if (!attribute) return null;
-
-    // Debug log
-    console.log('renderValueInput - attribute:', attribute.key, 'type:', attribute.type, 'operator:', condition.operator, 'value:', condition.value);
 
     // Array operators that need days input
     const arrayDaysOperators = ['any_expiry_within', 'any_expiry_in_days', 'any_expiry_after', 'any_expiry_expired_since'];
