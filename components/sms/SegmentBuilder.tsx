@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
-import { Plus, Trash2, Users, ChevronDown, Filter } from 'lucide-react';
+import { Plus, Trash2, Users, ChevronDown, Filter, Copy, Check } from 'lucide-react';
 import { campaignsApi, AttributeSchema, SegmentFilter, Condition } from '@/lib/api/campaigns';
 
 interface SegmentBuilderProps {
@@ -19,6 +19,8 @@ interface PreviewData {
     phone: string;
     attributes: Record<string, any>;
   }>;
+  debug_sql?: string;
+  debug_filter?: any;
 }
 
 const OPERATORS_WITHOUT_VALUE = [
@@ -33,6 +35,35 @@ export default function SegmentBuilder({ value, onChange, showPreview = true }: 
   const [preview, setPreview] = useState<PreviewData | null>(null);
   const [isLoadingPreview, setIsLoadingPreview] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [copiedSql, setCopiedSql] = useState(false);
+  const [copiedJson, setCopiedJson] = useState(false);
+
+  const copyToClipboard = (text: string, type: 'sql' | 'json') => {
+    // Fallback for non-HTTPS environments
+    const textArea = document.createElement('textarea');
+    textArea.value = text;
+    textArea.style.position = 'fixed';
+    textArea.style.left = '-9999px';
+    textArea.style.top = '-9999px';
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+
+    try {
+      document.execCommand('copy');
+      if (type === 'sql') {
+        setCopiedSql(true);
+        setTimeout(() => setCopiedSql(false), 2000);
+      } else {
+        setCopiedJson(true);
+        setTimeout(() => setCopiedJson(false), 2000);
+      }
+    } catch (err) {
+      console.error('Failed to copy:', err);
+    }
+
+    document.body.removeChild(textArea);
+  };
 
   useEffect(() => {
     loadAttributes();
@@ -438,6 +469,44 @@ export default function SegmentBuilder({ value, onChange, showPreview = true }: 
               )}
             </div>
           </div>
+
+          {/* Debug SQL - only shown for client_id 1 */}
+          {preview?.debug_sql && (
+            <div className="mt-4 space-y-2">
+              <div className="p-3 rounded-lg bg-gray-900 dark:bg-black overflow-x-auto relative group">
+                <div className="flex items-center justify-between mb-1">
+                  <p className="text-xs text-gray-400">SQL Query:</p>
+                  <button
+                    type="button"
+                    onClick={() => copyToClipboard(preview.debug_sql!, 'sql')}
+                    className="cursor-pointer flex items-center gap-1 px-2 py-1 rounded text-xs bg-gray-700 hover:bg-gray-600 text-gray-300 transition-colors"
+                  >
+                    {copiedSql ? <Check className="w-3 h-3 text-green-400" /> : <Copy className="w-3 h-3" />}
+                    {copiedSql ? 'Copied!' : 'Copy'}
+                  </button>
+                </div>
+                <pre className="text-xs text-green-400 font-mono whitespace-pre-wrap break-all">
+                  {preview.debug_sql}
+                </pre>
+              </div>
+              <div className="p-3 rounded-lg bg-gray-900 dark:bg-black overflow-x-auto relative group">
+                <div className="flex items-center justify-between mb-1">
+                  <p className="text-xs text-gray-400">Filter JSON:</p>
+                  <button
+                    type="button"
+                    onClick={() => copyToClipboard(JSON.stringify(preview.debug_filter, null, 2), 'json')}
+                    className="cursor-pointer flex items-center gap-1 px-2 py-1 rounded text-xs bg-gray-700 hover:bg-gray-600 text-gray-300 transition-colors"
+                  >
+                    {copiedJson ? <Check className="w-3 h-3 text-green-400" /> : <Copy className="w-3 h-3" />}
+                    {copiedJson ? 'Copied!' : 'Copy'}
+                  </button>
+                </div>
+                <pre className="text-xs text-yellow-400 font-mono whitespace-pre-wrap break-all">
+                  {JSON.stringify(preview.debug_filter, null, 2)}
+                </pre>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
