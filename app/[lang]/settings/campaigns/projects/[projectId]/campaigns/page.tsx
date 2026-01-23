@@ -17,6 +17,7 @@ import {
   AlertCircle,
   MoreVertical,
   Play,
+  Pause,
   Trash2,
   Eye,
   Pencil,
@@ -36,6 +37,8 @@ const statusIcons: Record<string, React.ReactNode> = {
   completed: <CheckCircle className="w-4 h-4" />,
   cancelled: <XCircle className="w-4 h-4" />,
   failed: <AlertCircle className="w-4 h-4" />,
+  active: <Play className="w-4 h-4" />,
+  paused: <Pause className="w-4 h-4" />,
 };
 
 const statusColors: Record<string, string> = {
@@ -45,6 +48,8 @@ const statusColors: Record<string, string> = {
   completed: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
   cancelled: 'bg-gray-100 text-gray-700 dark:bg-gray-700/30 dark:text-gray-400',
   failed: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+  active: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
+  paused: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400',
 };
 
 export default function ProjectCampaignsPage() {
@@ -184,6 +189,28 @@ export default function ProjectCampaignsPage() {
       router.push(`/settings/campaigns/projects/${projectId}/campaigns/${result.campaign.id}`);
     } catch (err: any) {
       setError(err.response?.data?.message || 'Failed to duplicate campaign');
+    }
+    setOpenMenuId(null);
+  };
+
+  const handlePause = async (id: number) => {
+    if (!confirm(t('smsApi.campaigns.confirmPause'))) return;
+    try {
+      await campaignsApi.pause(id);
+      await loadCampaigns();
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Failed to pause campaign');
+    }
+    setOpenMenuId(null);
+  };
+
+  const handleActivate = async (id: number) => {
+    if (!confirm(t('smsApi.campaigns.confirmActivate'))) return;
+    try {
+      await campaignsApi.activate(id);
+      await loadCampaigns();
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Failed to activate campaign');
     }
     setOpenMenuId(null);
   };
@@ -467,6 +494,45 @@ export default function ProjectCampaignsPage() {
                               <XCircle className="w-4 h-4" />
                               {t('smsApi.campaigns.actions.cancel')}
                             </button>
+                          )}
+                          {campaign.status === 'active' && (
+                            <button
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                handlePause(campaign.id);
+                              }}
+                              className="cursor-pointer w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-colors"
+                            >
+                              <Pause className="w-4 h-4" />
+                              {t('smsApi.campaigns.actions.pause')}
+                            </button>
+                          )}
+                          {campaign.status === 'paused' && (
+                            <>
+                              <Link
+                                href={`/settings/campaigns/projects/${projectId}/campaigns/${campaign.id}/edit`}
+                                className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setOpenMenuId(null);
+                                }}
+                              >
+                                <Pencil className="w-4 h-4" />
+                                {t('smsApi.campaigns.actions.edit')}
+                              </Link>
+                              <button
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  handleActivate(campaign.id);
+                                }}
+                                className="cursor-pointer w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20 transition-colors"
+                              >
+                                <Play className="w-4 h-4" />
+                                {t('smsApi.campaigns.actions.activate')}
+                              </button>
+                            </>
                           )}
                           <Link
                             href={`/settings/campaigns/projects/${projectId}/campaigns/${campaign.id}`}
