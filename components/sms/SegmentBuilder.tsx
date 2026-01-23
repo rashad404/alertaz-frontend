@@ -88,8 +88,11 @@ export default function SegmentBuilder({ value, onChange, showPreview = true }: 
     }
 
     const hasIncompleteConditions = value.conditions.some(
-      (c) => !c.key || !c.operator || (!OPERATORS_WITHOUT_VALUE.includes(c.operator) && c.value === undefined)
+      (c) => !c.key || !c.operator || (!OPERATORS_WITHOUT_VALUE.includes(c.operator) && (c.value === undefined || c.value === null || c.value === ''))
     );
+
+    // Debug log
+    console.log('loadPreview - filter:', JSON.stringify(value, null, 2), 'incomplete:', hasIncompleteConditions);
 
     if (hasIncompleteConditions) {
       return;
@@ -165,14 +168,21 @@ export default function SegmentBuilder({ value, onChange, showPreview = true }: 
     const attribute = getAttributeByKey(condition.key);
     if (!attribute) return null;
 
+    // Debug log
+    console.log('renderValueInput - attribute:', attribute.key, 'type:', attribute.type, 'operator:', condition.operator, 'value:', condition.value);
+
     // Array operators that need days input
     const arrayDaysOperators = ['any_expiry_within', 'any_expiry_in_days', 'any_expiry_after', 'any_expiry_expired_since'];
     if (attribute.type === 'array' && arrayDaysOperators.includes(condition.operator)) {
       return (
         <input
           type="number"
-          value={condition.value || ''}
-          onChange={(e) => updateCondition(index, 'value', parseInt(e.target.value) || '')}
+          value={condition.value ?? ''}
+          onChange={(e) => {
+            const val = e.target.value;
+            const parsed = val === '' ? null : parseInt(val, 10);
+            updateCondition(index, 'value', isNaN(parsed as number) ? null : parsed);
+          }}
           placeholder={t('smsApi.segments.enterDays')}
           min="0"
           className="flex-1 min-w-[120px] px-3 py-2.5 border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
