@@ -823,6 +823,8 @@
       "serverTestMode": "Тестовый режим",
       "serverTestModeNotice": "Сообщение записано, но не отправлено (на сервере включен тестовый режим).",
       "messagePreview": "Предпросмотр сообщения",
+      "smsPreview": "Предпросмотр SMS",
+      "emailPreview": "Предпросмотр Email",
       "plannedMessages": "Запланированные сообщения",
       "plannedForNextRun": "{count} контактов запланировано на следующий запуск",
       "noPlannedContacts": "Нет контактов запланированных на следующий запуск",

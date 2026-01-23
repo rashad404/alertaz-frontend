@@ -823,6 +823,8 @@
       "serverTestMode": "Test Mode",
       "serverTestModeNotice": "Message was logged but not actually sent (test mode enabled on server).",
       "messagePreview": "Message Preview",
+      "smsPreview": "SMS Preview",
+      "emailPreview": "Email Preview",
       "plannedMessages": "Planned Messages",
       "plannedForNextRun": "{count} contacts planned for next run",
       "noPlannedContacts": "No contacts planned for next run",

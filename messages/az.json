@@ -823,6 +823,8 @@
       "serverTestMode": "Test Rejimi",
       "serverTestModeNotice": "Mesaj qeyd edildi, lakin göndərilmədi (serverdə test rejimi aktivdir).",
       "messagePreview": "Mesaj Önizləməsi",
+      "smsPreview": "SMS Önizləmə",
+      "emailPreview": "Email Önizləmə",
       "showingSamples": "{count} / {total} nümunə göstərilir",
       "noMatchingContacts": "{count} uyğun kontakt",
       "noContactsToSend": "Cari seqment filterinə uyğun kontakt yoxdur",
