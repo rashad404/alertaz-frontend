@@ -115,8 +115,8 @@ export default function CampaignDetailPage() {
   const [customEmail, setCustomEmail] = useState('');
   const [customTestLoading, setCustomTestLoading] = useState(false);
   const [customTestResult, setCustomTestResult] = useState<{
-    sms?: { phone: string; message: string; segments?: number; cost: number; status: string; error?: string };
-    email?: { email: string; subject: string; cost: number; status: string; error?: string };
+    sms?: { phone: string; message: string; segments?: number; cost: number; status: string; error?: string; test_mode?: boolean };
+    email?: { email: string; subject: string; cost: number; status: string; error?: string; test_mode?: boolean };
   } | null>(null);
 
   // Retry failed state

@@ -443,6 +443,37 @@
       }
     }
   },
+  "campaigns": {
+    "sectionLabel": "Messaging Platform",
+    "sectionTitle": "SMS & Email Campaigns",
+    "sectionSubtitle": "Reach your audience through multiple channels with smart segmentation and automation",
+    "api": {
+      "title": "Messaging API",
+      "description": "Integrate SMS and Email into your applications with our simple REST API. Perfect for OTP codes, notifications, and transactional messages.",
+      "features": {
+        "instantDelivery": "Instant delivery worldwide",
+        "simpleIntegration": "Simple REST API with code examples",
+        "reliable": "99.9% uptime with delivery reports"
+      }
+    },
+    "campaigns": {
+      "title": "Smart Campaigns",
+      "description": "Create automated campaigns with advanced segmentation. Target users based on behavior, subscription dates, and custom attributes.",
+      "cta": "Create Campaign",
+      "features": {
+        "smartSegmentation": "Target users by any attribute",
+        "automation": "Automated recurring campaigns",
+        "analytics": "Real-time delivery analytics"
+      }
+    },
+    "segmentation": {
+      "title": "Powerful Segmentation",
+      "subtitle": "Target exactly who you need with flexible conditions",
+      "conditions": "Conditions",
+      "results": "Results",
+      "matchingContacts": "Matching Contacts"
+    }
+  },
   "metadata": {
     "title": "Alert.az - Unified Notification Platform",
     "description": "Monitor everything that matters. Get instant alerts for crypto, stocks, weather, and more."

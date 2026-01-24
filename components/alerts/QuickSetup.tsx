@@ -1005,7 +1005,7 @@ export default function QuickSetup() {
               )}
 
               {/* Crypto, Stocks, Currency: Operator and Price Threshold */}
-              {(config.service === 'crypto' || config.service === 'stocks' || config.service === 'currency') && (
+              {(['crypto', 'stocks', 'currency'] as AlertService[]).includes(config.service) && (
                 <>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -1059,7 +1059,7 @@ export default function QuickSetup() {
               )}
 
               {/* Weather: Location */}
-              {config.service === 'weather' && (
+              {(config.service as AlertService) === 'weather' && (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     {t('alerts.quickSetup.location')}
@@ -1075,7 +1075,7 @@ export default function QuickSetup() {
               )}
 
               {/* Flight: Flight Number */}
-              {config.service === 'flight' && (
+              {(config.service as AlertService) === 'flight' && (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     {t('alerts.quickSetup.flightNumber')}

@@ -27,7 +27,7 @@ export function getTranslation(
     }
   }
   
-  return translation[locale as keyof Translation] || translation.az || '';
+  return (translation as Translation)[locale as keyof Translation] || (translation as Translation).az || '';
 }
 
 export function formatCurrency(amount: number, currency: string = 'AZN'): string {

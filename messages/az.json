@@ -443,6 +443,37 @@
       }
     }
   },
+  "campaigns": {
+    "sectionLabel": "Mesajlaşma Platforması",
+    "sectionTitle": "SMS & Email Kampaniyaları",
+    "sectionSubtitle": "Ağıllı seqmentasiya və avtomatlaşdırma ilə auditoriyaya çoxsaylı kanallardan çatın",
+    "api": {
+      "title": "Mesajlaşma API",
+      "description": "Sadə REST API ilə tətbiqlərinizə SMS və Email inteqrasiya edin. OTP kodları, bildirişlər və tranzaksiya mesajları üçün idealdır.",
+      "features": {
+        "instantDelivery": "Dünya üzrə ani çatdırılma",
+        "simpleIntegration": "Kod nümunələri ilə sadə REST API",
+        "reliable": "Çatdırılma hesabatları ilə 99.9% işləmə müddəti"
+      }
+    },
+    "campaigns": {
+      "title": "Ağıllı Kampaniyalar",
+      "description": "Qabaqcıl seqmentasiya ilə avtomatlaşdırılmış kampaniyalar yaradın. İstifadəçiləri davranış, abunəlik tarixi və xüsusi atributlara görə hədəfləyin.",
+      "cta": "Kampaniya Yarat",
+      "features": {
+        "smartSegmentation": "İstənilən atributa görə hədəfləmə",
+        "automation": "Avtomatlaşdırılmış təkrarlanan kampaniyalar",
+        "analytics": "Real vaxt çatdırılma analitikası"
+      }
+    },
+    "segmentation": {
+      "title": "Güclü Seqmentasiya",
+      "subtitle": "Çevik şərtlərlə lazım olanı dəqiq hədəfləyin",
+      "conditions": "Şərtlər",
+      "results": "Nəticələr",
+      "matchingContacts": "Uyğun Kontaktlar"
+    }
+  },
   "metadata": {
     "title": "Alert.az - Vahid Bildiriş Platforması",
     "description": "Əhəmiyyətli hər şeyi izləyin. Kripto, səhmlər, hava və daha çoxu üçün ani bildirişlər alın."

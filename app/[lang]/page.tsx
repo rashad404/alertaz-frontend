@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import SearchMonitor from '@/components/home/SearchMonitor';
 import ServiceGrid from '@/components/home/ServiceGrid';
-import SMSShowcase from '@/components/home/SMSShowcase';
+import CampaignsShowcase from '@/components/home/CampaignsShowcase';
 import { Bell, Sparkles, Zap, Shield } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 
@@ -92,8 +92,8 @@ export default function HomePage({ params }: HomePageProps) {
         </div>
       </section>
 
-      {/* SMS Showcase Section */}
-      <SMSShowcase />
+      {/* Campaigns Showcase Section */}
+      <CampaignsShowcase />
 
       {/* Bento Grid Services */}
       <section className="relative px-6 py-20">

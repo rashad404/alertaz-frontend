@@ -69,8 +69,8 @@ const NotificationSettingsClient: React.FC<NotificationSettingsClientProps> = ({
 
     try {
       const response = await authService.updateProfile(updates);
-      if (response.status === 'success') {
-        setUser(response.data as User);
+      if (response.status === 'success' && response.data?.user) {
+        setUser(response.data.user);
         setSuccessMessage(t('settings.notificationSettings.settingsUpdated'));
         setTimeout(() => setSuccessMessage(''), 3000);
         return true;

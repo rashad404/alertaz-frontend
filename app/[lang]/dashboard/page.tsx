@@ -18,6 +18,7 @@ interface Alert {
   asset: string;
   threshold: string;
   operator: string;
+  field: string;
   interval: string;
   channels: string[];
   status: AlertStatus;

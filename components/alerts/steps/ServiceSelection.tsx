@@ -1,13 +1,17 @@
 "use client";
 
 import React from 'react';
-import { AlertType } from '@/lib/api/alerts';
+import { AlertType, ChannelValidationResponse } from '@/lib/api/alerts';
 import { WizardData } from '../AlertCreationWizard';
 
 interface ServiceSelectionProps {
   data: WizardData;
   onUpdate: (data: Partial<WizardData>) => void;
   alertTypes: AlertType[];
+  // Optional props passed by parent but not used in this component
+  channelValidation?: ChannelValidationResponse;
+  onValidateChannels?: (channels: string[]) => Promise<ChannelValidationResponse>;
+  isAuthenticated?: boolean;
 }
 
 const ServiceSelection: React.FC<ServiceSelectionProps> = ({ data, onUpdate, alertTypes }) => {
