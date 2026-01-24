@@ -1066,6 +1066,7 @@ export default function CampaignDetailPage() {
             onPageChange={setPlannedPage}
             nextRunAt={nextRunAt}
             formatDate={formatDate}
+            emailSender={campaign.email_sender || undefined}
           />
         )}
 
@@ -1398,10 +1399,10 @@ export default function CampaignDetailPage() {
                 <div className={`mb-4 p-4 rounded-lg ${
                   customTestResult.email.status === 'sent' ? 'bg-green-50 dark:bg-green-900/20' : 'bg-red-50 dark:bg-red-900/20'
                 }`}>
-                  <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center justify-between mb-3">
                     <span className="font-medium text-gray-900 dark:text-white flex items-center gap-1">
                       <Mail className="w-4 h-4" />
-                      {customTestResult.email.email}
+                      {t('smsApi.campaigns.emailPreview')}
                     </span>
                     <div className="flex items-center gap-2">
                       {customTestResult.email.test_mode && (
@@ -1416,12 +1417,25 @@ export default function CampaignDetailPage() {
                       </span>
                     </div>
                   </div>
-                  <p className="text-sm text-gray-700 dark:text-gray-300 mb-2">{customTestResult.email.subject}</p>
+                  <div className="space-y-1 mb-3 text-sm">
+                    <div className="flex">
+                      <span className="text-gray-500 dark:text-gray-400 w-12">{t('smsApi.campaigns.emailFrom')}:</span>
+                      <span className="text-gray-900 dark:text-white">{campaign?.email_sender || 'noreply@alert.az'}</span>
+                    </div>
+                    <div className="flex">
+                      <span className="text-gray-500 dark:text-gray-400 w-12">{t('smsApi.campaigns.emailTo')}:</span>
+                      <span className="text-gray-900 dark:text-white">{customTestResult.email.email}</span>
+                    </div>
+                  </div>
+                  <div className="p-3 rounded-lg bg-white/50 dark:bg-gray-800/50">
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">{t('smsApi.campaigns.emailSubject')}:</p>
+                    <p className="text-sm font-medium text-gray-900 dark:text-white">{customTestResult.email.subject}</p>
+                  </div>
                   {customTestResult.email.test_mode && (
-                    <p className="text-xs text-yellow-600 dark:text-yellow-400 mb-2">{t('smsApi.campaigns.serverTestModeNotice')}</p>
+                    <p className="text-xs text-yellow-600 dark:text-yellow-400 mt-2">{t('smsApi.campaigns.serverTestModeNotice')}</p>
                   )}
                   {customTestResult.email.error && (
-                    <p className="text-xs text-red-600 dark:text-red-400">{customTestResult.email.error}</p>
+                    <p className="text-xs text-red-600 dark:text-red-400 mt-2">{customTestResult.email.error}</p>
                   )}
                 </div>
               )}

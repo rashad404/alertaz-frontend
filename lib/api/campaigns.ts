@@ -19,6 +19,7 @@ export interface Campaign {
   client_id: number;
   name: string;
   sender: string;
+  email_sender: string | null;
   message_template: string;
   channel: CampaignChannel;
   email_subject_template: string | null;
@@ -174,10 +175,22 @@ const getHeaders = () => {
   return {};
 };
 
+export interface EmailSender {
+  email: string;
+  name: string;
+  label: string;
+}
+
 export const campaignsApi = {
-  // Get available senders for the user
+  // Get available SMS senders for the user
   getSenders: async (): Promise<{ senders: string[]; default: string }> => {
     const response = await campaignClient.get('/senders', { headers: getHeaders() });
+    return response.data.data;
+  },
+
+  // Get available email senders for the user
+  getEmailSenders: async (): Promise<{ senders: EmailSender[]; default: EmailSender }> => {
+    const response = await campaignClient.get('/email-senders', { headers: getHeaders() });
     return response.data.data;
   },
 

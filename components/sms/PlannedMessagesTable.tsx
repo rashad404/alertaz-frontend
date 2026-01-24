@@ -17,6 +17,7 @@ interface PlannedMessagesTableProps {
   onPageChange: (page: number) => void;
   nextRunAt?: string | null;
   formatDate?: (date: string) => string;
+  emailSender?: string;
 }
 
 interface MessageModalData {
@@ -41,6 +42,7 @@ export default function PlannedMessagesTable({
   onPageChange,
   nextRunAt,
   formatDate,
+  emailSender,
 }: PlannedMessagesTableProps) {
   const t = useTranslations();
   const [activeTab, setActiveTab] = useState<'sms' | 'email'>('sms');
@@ -328,10 +330,7 @@ export default function PlannedMessagesTable({
                 ) : (
                   <>
                     <Mail className="w-5 h-5" />
-                    <div>
-                      <h3 className="font-semibold">{t('smsApi.campaigns.emailPreview')}</h3>
-                      <p className="text-sm opacity-90">{modalData.email}</p>
-                    </div>
+                    <h3 className="font-semibold">{t('smsApi.campaigns.emailPreview')}</h3>
                   </>
                 )}
               </div>
@@ -361,6 +360,22 @@ export default function PlannedMessagesTable({
                 </div>
               ) : (
                 <div className="space-y-4">
+                  <div>
+                    <label className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      {t('smsApi.campaigns.emailFrom')}
+                    </label>
+                    <p className="mt-1 text-gray-900 dark:text-white">
+                      {emailSender || 'noreply@alert.az'}
+                    </p>
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                      {t('smsApi.campaigns.emailTo')}
+                    </label>
+                    <p className="mt-1 text-gray-900 dark:text-white">
+                      {modalData.email || '-'}
+                    </p>
+                  </div>
                   <div>
                     <label className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                       {t('smsApi.campaigns.emailSubject')}

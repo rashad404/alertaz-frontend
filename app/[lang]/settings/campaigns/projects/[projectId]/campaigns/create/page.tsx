@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { useRouter, useParams } from 'next/navigation';
 import { projectsApi, Project } from '@/lib/api/projects';
-import { campaignsApi, SegmentFilter, AttributeSchema, setProjectToken, CampaignChannel } from '@/lib/api/campaigns';
+import { campaignsApi, SegmentFilter, AttributeSchema, setProjectToken, CampaignChannel, EmailSender } from '@/lib/api/campaigns';
 import SegmentBuilder from '@/components/sms/SegmentBuilder';
 import { Link } from '@/lib/navigation';
 import { convertHourToUTC } from '@/lib/utils/date';
@@ -51,12 +51,14 @@ export default function CreateCampaignPage() {
   const [error, setError] = useState<string | null>(null);
   const [attributes, setAttributes] = useState<AttributeSchema[]>([]);
   const [availableSenders, setAvailableSenders] = useState<string[]>([]);
+  const [availableEmailSenders, setAvailableEmailSenders] = useState<EmailSender[]>([]);
   const [previewCount, setPreviewCount] = useState<number | null>(null);
 
   const [formData, setFormData] = useState({
     name: '',
     channel: 'sms' as CampaignChannel,
     sender: '',
+    email_sender: '',
     message_template: '',
     email_subject_template: '',
     email_body_template: '',
@@ -90,8 +92,8 @@ export default function CreateCampaignPage() {
       // Set the project token for campaign API calls
       setProjectToken(data.project.api_token);
 
-      // Load senders and attributes after setting token
-      await Promise.all([loadSenders(), loadAttributes()]);
+      // Load senders, email senders, and attributes after setting token
+      await Promise.all([loadSenders(), loadEmailSenders(), loadAttributes()]);
     } catch (err: any) {
       setError(err.response?.data?.message || 'Failed to load project');
     } finally {
@@ -112,6 +114,19 @@ export default function CreateCampaignPage() {
       // Fallback to default
       setAvailableSenders(['Alert.az']);
       setFormData(prev => ({ ...prev, sender: 'Alert.az' }));
+    }
+  };
+
+  const loadEmailSenders = async () => {
+    try {
+      const data = await campaignsApi.getEmailSenders();
+      setAvailableEmailSenders(data.senders);
+      // Set default email sender
+      if (data.default && !formData.email_sender) {
+        setFormData(prev => ({ ...prev, email_sender: data.default.email }));
+      }
+    } catch (err) {
+      console.error('Failed to load email senders:', err);
     }
   };
 
@@ -167,6 +182,7 @@ export default function CreateCampaignPage() {
 
       // Email fields (if channel is email or both)
       if (formData.channel === 'email' || formData.channel === 'both') {
+        payload.email_sender = formData.email_sender;
         payload.email_subject_template = formData.email_subject_template;
         payload.email_body_template = formData.email_body_template;
       }
@@ -472,6 +488,29 @@ export default function CreateCampaignPage() {
                 </select>
                 <p className="mt-1 text-xs text-gray-500">
                   {t('smsApi.campaigns.senderNote')}
+                </p>
+              </div>
+              )}
+
+              {/* Email Sender - only for Email/Both */}
+              {(formData.channel === 'email' || formData.channel === 'both') && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  {t('smsApi.campaigns.emailSender')} *
+                </label>
+                <select
+                  value={formData.email_sender}
+                  onChange={(e) => setFormData({ ...formData, email_sender: e.target.value })}
+                  className="w-full px-4 py-3 border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all cursor-pointer"
+                >
+                  {availableEmailSenders.map((sender) => (
+                    <option key={sender.email} value={sender.email}>
+                      {sender.label}
+                    </option>
+                  ))}
+                </select>
+                <p className="mt-1 text-xs text-gray-500">
+                  {t('smsApi.campaigns.emailSenderNote')}
                 </p>
               </div>
               )}

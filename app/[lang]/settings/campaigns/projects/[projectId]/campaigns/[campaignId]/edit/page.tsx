@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { useRouter, useParams } from 'next/navigation';
 import { projectsApi, Project } from '@/lib/api/projects';
-import { campaignsApi, Campaign, SegmentFilter, AttributeSchema, PlannedContact, setProjectToken } from '@/lib/api/campaigns';
+import { campaignsApi, Campaign, SegmentFilter, AttributeSchema, PlannedContact, setProjectToken, EmailSender } from '@/lib/api/campaigns';
 import SegmentBuilder from '@/components/sms/SegmentBuilder';
 import PlannedMessagesTable from '@/components/sms/PlannedMessagesTable';
 import { Link } from '@/lib/navigation';
@@ -53,6 +53,7 @@ export default function EditCampaignPage() {
   const [error, setError] = useState<string | null>(null);
   const [attributes, setAttributes] = useState<AttributeSchema[]>([]);
   const [availableSenders, setAvailableSenders] = useState<string[]>([]);
+  const [availableEmailSenders, setAvailableEmailSenders] = useState<EmailSender[]>([]);
   const [previewCount, setPreviewCount] = useState<number | null>(null);
 
   // Planned messages preview state
@@ -67,6 +68,7 @@ export default function EditCampaignPage() {
   const [formData, setFormData] = useState({
     name: '',
     sender: '',
+    email_sender: '',
     channel: 'sms' as 'sms' | 'email' | 'both',
     message_template: '',
     email_subject_template: '',
@@ -102,15 +104,17 @@ export default function EditCampaignPage() {
       // Set the project token for campaign API calls
       setProjectToken(projectData.project.api_token);
 
-      // Load campaign, senders, and attributes in parallel
-      const [campaignData, sendersData, attributesData] = await Promise.all([
+      // Load campaign, senders, email senders, and attributes in parallel
+      const [campaignData, sendersData, emailSendersData, attributesData] = await Promise.all([
         campaignsApi.get(parseInt(campaignId)),
         campaignsApi.getSenders(),
+        campaignsApi.getEmailSenders(),
         campaignsApi.getAttributes(),
       ]);
 
       setCampaign(campaignData.campaign);
       setAvailableSenders(sendersData.senders);
+      setAvailableEmailSenders(emailSendersData.senders);
       setAttributes(attributesData.attributes);
 
       // Populate form with campaign data
@@ -124,6 +128,7 @@ export default function EditCampaignPage() {
       setFormData({
         name: c.name || '',
         sender: c.sender || '',
+        email_sender: c.email_sender || emailSendersData.default?.email || '',
         channel: c.channel || 'sms',
         message_template: c.message_template || '',
         email_subject_template: c.email_subject_template || '',
@@ -226,6 +231,7 @@ export default function EditCampaignPage() {
       const payload: any = {
         name: formData.name,
         sender: formData.sender,
+        email_sender: formData.email_sender,
         channel: formData.channel,
         message_template: formData.message_template,
         email_subject_template: formData.email_subject_template,
@@ -566,6 +572,29 @@ export default function EditCampaignPage() {
               </div>
               )}
 
+              {/* Email Sender - only for Email/Both */}
+              {(formData.channel === 'email' || formData.channel === 'both') && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  {t('smsApi.campaigns.emailSender')} *
+                </label>
+                <select
+                  value={formData.email_sender}
+                  onChange={(e) => setFormData({ ...formData, email_sender: e.target.value })}
+                  className="w-full px-4 py-3 border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all cursor-pointer"
+                >
+                  {availableEmailSenders.map((sender) => (
+                    <option key={sender.email} value={sender.email}>
+                      {sender.label}
+                    </option>
+                  ))}
+                </select>
+                <p className="mt-1 text-xs text-gray-500">
+                  {t('smsApi.campaigns.emailSenderNote')}
+                </p>
+              </div>
+              )}
+
               {/* Campaign Type */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -830,6 +859,7 @@ export default function EditCampaignPage() {
                   smsTotal={previewSmsTotal}
                   emailTotal={previewEmailTotal}
                   onPageChange={setPreviewPage}
+                  emailSender={formData.email_sender}
                 />
               )}
             </div>
