@@ -8,6 +8,7 @@ import { campaignsApi, Campaign, SegmentFilter, AttributeSchema, PlannedContact,
 import SegmentBuilder from '@/components/sms/SegmentBuilder';
 import PlannedMessagesTable from '@/components/sms/PlannedMessagesTable';
 import { SmsPreview, EmailPreview } from '@/components/sms/CampaignPreview';
+import VariablePicker from '@/components/sms/VariablePicker';
 import { Link } from '@/lib/navigation';
 import { convertHourToUTC, convertHourFromUTC } from '@/lib/utils/date';
 import { hasUnicode } from '@/lib/utils/template-renderer';
@@ -179,9 +180,9 @@ export default function EditCampaignPage() {
     setPreviewPage(1);
   }, [formData.segment_filter, formData.channel]);
 
-  // Load preview messages when in audience step
+  // Load preview messages when in audience step (step 1) or review step (step 3)
   useEffect(() => {
-    if (!project || currentStep !== 1) return;
+    if (!project || (currentStep !== 1 && currentStep !== 3)) return;
 
     const loadPreviewMessages = async () => {
       if (formData.segment_filter.conditions.length === 0) {
@@ -199,8 +200,9 @@ export default function EditCampaignPage() {
           message_template: formData.message_template,
           email_subject_template: formData.email_subject_template,
           email_body_template: formData.email_body_template,
-          page: previewPage,
-          per_page: 10,
+          email_display_name: formData.email_display_name || availableEmailSenders.find(s => s.email === formData.email_sender)?.name || 'Alert.az',
+          page: currentStep === 3 ? 1 : previewPage,
+          per_page: currentStep === 3 ? 1 : 10,
         });
         setPreviewContacts(data.contacts);
         setPreviewTotal(data.total);
@@ -220,7 +222,7 @@ export default function EditCampaignPage() {
 
     const timer = setTimeout(loadPreviewMessages, 500);
     return () => clearTimeout(timer);
-  }, [formData.segment_filter, formData.channel, formData.message_template, formData.email_subject_template, formData.email_body_template, previewPage, currentStep, project]);
+  }, [formData.segment_filter, formData.channel, formData.message_template, formData.email_subject_template, formData.email_body_template, formData.email_display_name, formData.email_sender, availableEmailSenders, previewPage, currentStep, project]);
 
   const handleSubmit = async () => {
     if (!project || !campaign) return;
@@ -957,75 +959,30 @@ export default function EditCampaignPage() {
                 </>
               )}
 
+              {/* Variables Helper */}
               {attributes.length > 0 && (
-                <div className="p-4 rounded-xl bg-gray-50 dark:bg-gray-800/50">
-                  <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    {t('smsApi.campaigns.variables')}
-                  </h4>
-                  <p className="text-xs text-gray-500 mb-2">{t('smsApi.campaigns.variablesDesc')}</p>
-                  <p className="text-xs text-indigo-600 dark:text-indigo-400 mb-3">
-                    {t('smsApi.campaigns.variablesTarget')}: {
-                      activeField === 'sms' ? t('smsApi.campaigns.messageTemplate') :
-                      activeField === 'email_subject' ? t('smsApi.campaigns.emailSubject') :
-                      t('smsApi.campaigns.emailBody')
+                <VariablePicker
+                  attributes={attributes}
+                  activeField={activeField}
+                  onInsertVariable={(variable) => {
+                    if (activeField === 'sms') {
+                      setFormData({
+                        ...formData,
+                        message_template: (formData.message_template || '') + variable,
+                      });
+                    } else if (activeField === 'email_subject') {
+                      setFormData({
+                        ...formData,
+                        email_subject_template: (formData.email_subject_template || '') + variable,
+                      });
+                    } else {
+                      setFormData({
+                        ...formData,
+                        email_body_template: (formData.email_body_template || '') + variable,
+                      });
                     }
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    {attributes.map((attr) => (
-                      <button
-                        key={attr.key}
-                        type="button"
-                        onClick={() => {
-                          const variable = `{{${attr.key}}}`;
-                          if (activeField === 'sms') {
-                            setFormData({
-                              ...formData,
-                              message_template: (formData.message_template || '') + variable,
-                            });
-                          } else if (activeField === 'email_subject') {
-                            setFormData({
-                              ...formData,
-                              email_subject_template: (formData.email_subject_template || '') + variable,
-                            });
-                          } else {
-                            setFormData({
-                              ...formData,
-                              email_body_template: (formData.email_body_template || '') + variable,
-                            });
-                          }
-                        }}
-                        className="cursor-pointer px-3 py-1.5 rounded-lg text-xs font-mono bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-200 dark:hover:bg-indigo-900/50 transition-colors"
-                      >
-                        {`{{${attr.key}}}`}
-                      </button>
-                    ))}
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const variable = '{{phone}}';
-                        if (activeField === 'sms') {
-                          setFormData({
-                            ...formData,
-                            message_template: (formData.message_template || '') + variable,
-                          });
-                        } else if (activeField === 'email_subject') {
-                          setFormData({
-                            ...formData,
-                            email_subject_template: (formData.email_subject_template || '') + variable,
-                          });
-                        } else {
-                          setFormData({
-                            ...formData,
-                            email_body_template: (formData.email_body_template || '') + variable,
-                          });
-                        }
-                      }}
-                      className="cursor-pointer px-3 py-1.5 rounded-lg text-xs font-mono bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-200 dark:hover:bg-indigo-900/50 transition-colors"
-                    >
-                      {'{{phone}}'}
-                    </button>
-                  </div>
-                </div>
+                  }}
+                />
               )}
             </div>
           )}
@@ -1073,20 +1030,15 @@ export default function EditCampaignPage() {
               {/* SMS Preview */}
               {(formData.channel === 'sms' || formData.channel === 'both') && (
                 <SmsPreview
-                  message={formData.message_template}
-                  attributes={previewContacts[0] ? { phone: previewContacts[0].phone, email: previewContacts[0].email, ...previewContacts[0].attributes } : undefined}
-                  segmentFilter={formData.segment_filter}
+                  renderedMessage={previewContacts[0]?.message ?? null}
                 />
               )}
 
               {/* Email Preview */}
               {(formData.channel === 'email' || formData.channel === 'both') && (
                 <EmailPreview
-                  subject={formData.email_subject_template}
-                  body={formData.email_body_template}
-                  displayName={formData.email_display_name || availableEmailSenders.find(s => s.email === formData.email_sender)?.name || 'Alert.az'}
-                  attributes={previewContacts[0] ? { phone: previewContacts[0].phone, email: previewContacts[0].email, ...previewContacts[0].attributes } : undefined}
-                  segmentFilter={formData.segment_filter}
+                  renderedSubject={previewContacts[0]?.email_subject ?? null}
+                  renderedBodyHtml={previewContacts[0]?.email_body_html ?? null}
                 />
               )}
 

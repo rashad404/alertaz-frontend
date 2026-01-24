@@ -4,9 +4,10 @@ import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { useRouter, useParams } from 'next/navigation';
 import { projectsApi, Project } from '@/lib/api/projects';
-import { campaignsApi, SegmentFilter, AttributeSchema, setProjectToken, CampaignChannel, EmailSender } from '@/lib/api/campaigns';
+import { campaignsApi, SegmentFilter, AttributeSchema, setProjectToken, CampaignChannel, EmailSender, PlannedContact } from '@/lib/api/campaigns';
 import SegmentBuilder from '@/components/sms/SegmentBuilder';
 import { SmsPreview, EmailPreview } from '@/components/sms/CampaignPreview';
+import VariablePicker from '@/components/sms/VariablePicker';
 import { Link } from '@/lib/navigation';
 import { convertHourToUTC } from '@/lib/utils/date';
 import { hasUnicode } from '@/lib/utils/template-renderer';
@@ -49,7 +50,7 @@ export default function CreateCampaignPage() {
   const [availableSenders, setAvailableSenders] = useState<string[]>([]);
   const [availableEmailSenders, setAvailableEmailSenders] = useState<EmailSender[]>([]);
   const [previewCount, setPreviewCount] = useState<number | null>(null);
-  const [sampleContact, setSampleContact] = useState<Record<string, any> | null>(null);
+  const [previewContact, setPreviewContact] = useState<PlannedContact | null>(null);
   const [activeField, setActiveField] = useState<'sms' | 'email_subject' | 'email_body'>('sms');
 
   const [formData, setFormData] = useState({
@@ -144,11 +145,11 @@ export default function CreateCampaignPage() {
     const loadPreview = async () => {
       if (formData.segment_filter.conditions.length === 0) {
         setPreviewCount(null);
-        setSampleContact(null);
+        setPreviewContact(null);
         return;
       }
       try {
-        // Get count and sample contact for preview
+        // Get count and sample contact with rendered messages for preview
         const [countData, messagesData] = await Promise.all([
           campaignsApi.previewSegment(formData.segment_filter, 1),
           campaignsApi.previewSegmentMessages({
@@ -157,29 +158,27 @@ export default function CreateCampaignPage() {
             message_template: formData.message_template,
             email_subject_template: formData.email_subject_template,
             email_body_template: formData.email_body_template,
+            email_display_name: formData.email_display_name || availableEmailSenders.find(s => s.email === formData.email_sender)?.name || 'Alert.az',
             page: 1,
             per_page: 1,
           }),
         ]);
         setPreviewCount(countData.total_count);
-        // Use first contact as sample for preview - keep full attributes structure
+        // Store full contact with backend-rendered messages
         if (messagesData.contacts && messagesData.contacts.length > 0) {
-          const contact = messagesData.contacts[0];
-          setSampleContact({
-            phone: contact.phone,
-            email: contact.email,
-            ...(contact.attributes || {}),
-          });
+          setPreviewContact(messagesData.contacts[0]);
+        } else {
+          setPreviewContact(null);
         }
       } catch (err) {
         setPreviewCount(null);
-        setSampleContact(null);
+        setPreviewContact(null);
       }
     };
 
     const timer = setTimeout(loadPreview, 500);
     return () => clearTimeout(timer);
-  }, [formData.segment_filter, formData.channel, project]);
+  }, [formData.segment_filter, formData.channel, formData.message_template, formData.email_subject_template, formData.email_body_template, formData.email_display_name, formData.email_sender, availableEmailSenders, project]);
 
   const handleSubmit = async () => {
     if (!project) return;
@@ -893,73 +892,19 @@ export default function CreateCampaignPage() {
 
               {/* Variables Helper */}
               {attributes.length > 0 && (
-                <div className="p-4 rounded-xl bg-gray-50 dark:bg-gray-800/50">
-                  <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    {t('smsApi.campaigns.variables')}
-                  </h4>
-                  <p className="text-xs text-gray-500 mb-2">{t('smsApi.campaigns.variablesDesc')}</p>
-                  <p className="text-xs text-indigo-600 dark:text-indigo-400 mb-3">
-                    {t('smsApi.campaigns.variablesTarget')}: {' '}
-                    <span className="font-medium">
-                      {activeField === 'sms' && t('smsApi.campaigns.messageTemplate')}
-                      {activeField === 'email_subject' && t('smsApi.campaigns.emailSubject')}
-                      {activeField === 'email_body' && t('smsApi.campaigns.emailBody')}
-                    </span>
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    {attributes.map((attr) => (
-                      <button
-                        key={attr.key}
-                        type="button"
-                        onClick={() => {
-                          const variable = `{{${attr.key}}}`;
-                          if (activeField === 'sms') {
-                            setFormData({ ...formData, message_template: formData.message_template + variable });
-                          } else if (activeField === 'email_subject') {
-                            setFormData({ ...formData, email_subject_template: formData.email_subject_template + variable });
-                          } else {
-                            setFormData({ ...formData, email_body_template: formData.email_body_template + variable });
-                          }
-                        }}
-                        className="cursor-pointer px-3 py-1.5 rounded-lg text-xs font-mono bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-200 dark:hover:bg-indigo-900/50 transition-colors"
-                      >
-                        {`{{${attr.key}}}`}
-                      </button>
-                    ))}
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const variable = '{{phone}}';
-                        if (activeField === 'sms') {
-                          setFormData({ ...formData, message_template: formData.message_template + variable });
-                        } else if (activeField === 'email_subject') {
-                          setFormData({ ...formData, email_subject_template: formData.email_subject_template + variable });
-                        } else {
-                          setFormData({ ...formData, email_body_template: formData.email_body_template + variable });
-                        }
-                      }}
-                      className="cursor-pointer px-3 py-1.5 rounded-lg text-xs font-mono bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-200 dark:hover:bg-indigo-900/50 transition-colors"
-                    >
-                      {'{{phone}}'}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const variable = '{{email}}';
-                        if (activeField === 'sms') {
-                          setFormData({ ...formData, message_template: formData.message_template + variable });
-                        } else if (activeField === 'email_subject') {
-                          setFormData({ ...formData, email_subject_template: formData.email_subject_template + variable });
-                        } else {
-                          setFormData({ ...formData, email_body_template: formData.email_body_template + variable });
-                        }
-                      }}
-                      className="cursor-pointer px-3 py-1.5 rounded-lg text-xs font-mono bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-200 dark:hover:bg-emerald-900/50 transition-colors"
-                    >
-                      {'{{email}}'}
-                    </button>
-                  </div>
-                </div>
+                <VariablePicker
+                  attributes={attributes}
+                  activeField={activeField}
+                  onInsertVariable={(variable) => {
+                    if (activeField === 'sms') {
+                      setFormData({ ...formData, message_template: formData.message_template + variable });
+                    } else if (activeField === 'email_subject') {
+                      setFormData({ ...formData, email_subject_template: formData.email_subject_template + variable });
+                    } else {
+                      setFormData({ ...formData, email_body_template: formData.email_body_template + variable });
+                    }
+                  }}
+                />
               )}
             </div>
           )}
@@ -1024,20 +969,15 @@ export default function CreateCampaignPage() {
               {/* SMS Message Preview - only for SMS/Both */}
               {(formData.channel === 'sms' || formData.channel === 'both') && (
                 <SmsPreview
-                  message={formData.message_template}
-                  attributes={sampleContact || undefined}
-                  segmentFilter={formData.segment_filter}
+                  renderedMessage={previewContact?.message ?? null}
                 />
               )}
 
               {/* Email Preview - only for Email/Both */}
               {(formData.channel === 'email' || formData.channel === 'both') && (
                 <EmailPreview
-                  subject={formData.email_subject_template}
-                  body={formData.email_body_template}
-                  displayName={formData.email_display_name || availableEmailSenders.find(s => s.email === formData.email_sender)?.name || 'Alert.az'}
-                  attributes={sampleContact || undefined}
-                  segmentFilter={formData.segment_filter}
+                  renderedSubject={previewContact?.email_subject ?? null}
+                  renderedBodyHtml={previewContact?.email_body_html ?? null}
                 />
               )}
 

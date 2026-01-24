@@ -74,6 +74,7 @@ export interface AttributeSchema {
   conditions: string[];
   options?: any[];
   item_type?: string;
+  properties?: Record<string, string>;
   required: boolean;
 }
 
@@ -226,6 +227,7 @@ export const campaignsApi = {
     message_template?: string;
     email_subject_template?: string;
     email_body_template?: string;
+    email_display_name?: string;
     page?: number;
     per_page?: number;
   }): Promise<{
