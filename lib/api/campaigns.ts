@@ -111,15 +111,23 @@ export interface CampaignStats {
 
 export interface CampaignMessage {
   id: number;
-  phone: string;
-  message: string;
-  sender: string;
+  phone?: string | null;
+  message?: string | null;
+  sender?: string;
   cost: number;
   status: 'pending' | 'sent' | 'delivered' | 'failed';
   is_test: boolean;
   sent_at: string | null;
   delivered_at: string | null;
   created_at: string;
+  // Additional fields for unified SMS/Email handling
+  type?: 'sms' | 'email';
+  recipient?: string | null;
+  content?: string | null;
+  email?: string | null;
+  subject?: string | null;
+  body?: string | null;
+  segments?: number;
   contact?: {
     id: number;
     phone: string | null;

@@ -7,6 +7,7 @@ import { projectsApi, Project } from '@/lib/api/projects';
 import { campaignsApi, Campaign, CampaignMessage, PlannedContact, AttributeSchema, setProjectToken, CampaignChannel } from '@/lib/api/campaigns';
 import { Link } from '@/lib/navigation';
 import PlannedMessagesTable from '@/components/sms/PlannedMessagesTable';
+import SentMessagesTable from '@/components/sms/SentMessagesTable';
 import { formatDateInTimezone, convertRunHoursToTimezone } from '@/lib/utils/date';
 import { useTimezone } from '@/providers/timezone-provider';
 import {
@@ -225,19 +226,6 @@ export default function CampaignDetailPage() {
       console.error('Failed to load messages:', err);
     } finally {
       setMessagesLoading(false);
-    }
-  };
-
-  const getMessageStatusColor = (status: string) => {
-    switch (status) {
-      case 'delivered':
-        return 'text-green-600 bg-green-50 dark:bg-green-900/20';
-      case 'sent':
-        return 'text-blue-600 bg-blue-50 dark:bg-blue-900/20';
-      case 'failed':
-        return 'text-red-600 bg-red-50 dark:bg-red-900/20';
-      default:
-        return 'text-gray-600 bg-gray-50 dark:bg-gray-900/20';
     }
   };
 
@@ -1071,142 +1059,18 @@ export default function CampaignDetailPage() {
         )}
 
         {/* Sent Messages History (for all campaigns) */}
-        <div className="rounded-3xl p-6 bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-              {campaign.channel === 'email' ? (
-                <Mail className="w-5 h-5 text-emerald-500" />
-              ) : campaign.channel === 'both' ? (
-                <Layers className="w-5 h-5 text-purple-500" />
-              ) : (
-                <Smartphone className="w-5 h-5 text-indigo-500" />
-              )}
-              {t('smsApi.campaigns.sentMessages')}
-            </h2>
-            <span className="text-sm text-gray-500 dark:text-gray-400">
-              {campaign.channel === 'email'
-                ? `${campaign.email_sent_count || 0} ${t('smsApi.campaigns.emailsSent')}`
-                : campaign.channel === 'both'
-                ? `${campaign.sent_count} SMS, ${campaign.email_sent_count || 0} ${t('smsApi.campaigns.emails')}`
-                : `${campaign.sent_count} ${t('smsApi.message').toLowerCase()}`
-              }
-            </span>
-          </div>
-
-          {messagesLoading ? (
-            <div className="text-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto"></div>
-            </div>
-          ) : messages.length === 0 ? (
-            <div className="text-center py-8">
-              {campaign.channel === 'email' ? (
-                <Mail className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
-              ) : (
-                <MessageSquare className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
-              )}
-              <p className="text-gray-500 dark:text-gray-400">
-                {campaign.channel === 'email'
-                  ? t('smsApi.campaigns.noEmailsSent')
-                  : t('smsApi.noMessages')
-                }
-              </p>
-            </div>
-          ) : (
-              <>
-                <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                    <thead className="bg-gray-50 dark:bg-gray-900/50">
-                      <tr>
-                        {campaign.channel === 'both' && (
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                            {t('smsApi.campaigns.channel')}
-                          </th>
-                        )}
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                          {campaign.channel === 'email' ? t('smsApi.email') : campaign.channel === 'both' ? t('smsApi.campaigns.recipient') : t('smsApi.phone')}
-                        </th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                          {t('smsApi.message')}
-                        </th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                          {t('smsApi.status')}
-                        </th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                          {t('smsApi.cost')}
-                        </th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                          {t('smsApi.sentAt')}
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                      {messages.map((msg: any) => (
-                        <tr key={`${msg.type}-${msg.id}`} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
-                          {campaign.channel === 'both' && (
-                            <td className="px-4 py-3 whitespace-nowrap">
-                              {msg.type === 'email' ? (
-                                <Mail className="w-4 h-4 text-emerald-500" />
-                              ) : (
-                                <Smartphone className="w-4 h-4 text-indigo-500" />
-                              )}
-                            </td>
-                          )}
-                          <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
-                            {msg.recipient || msg.phone}
-                          </td>
-                          <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300 max-w-xs truncate">
-                            {msg.content || msg.message}
-                          </td>
-                          <td className="px-4 py-3 whitespace-nowrap">
-                            <div className="flex items-center gap-2">
-                              <span className={`px-2 py-1 text-xs font-semibold rounded-full ${getMessageStatusColor(msg.status)}`}>
-                                {msg.status}
-                              </span>
-                              {msg.is_test && (
-                                <span className="inline-flex items-center gap-1 px-2 py-1 text-xs font-semibold rounded-full bg-amber-100 text-amber-700 dark:bg-amber-900/20 dark:text-amber-400">
-                                  <FlaskConical className="w-3 h-3" />
-                                  {t('smsApi.testMode')}
-                                </span>
-                              )}
-                            </div>
-                          </td>
-                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">
-                            {msg.cost} AZN
-                          </td>
-                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                            {msg.sent_at ? formatDate(msg.sent_at) : '-'}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-
-                {/* Pagination */}
-                {messagesTotalPages > 1 && (
-                  <div className="px-4 py-4 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between mt-4">
-                    <button
-                      onClick={() => setMessagesPage(p => Math.max(1, p - 1))}
-                      disabled={messagesPage === 1}
-                      className="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed text-sm"
-                    >
-                      {t('common.previous')}
-                    </button>
-                    <span className="text-sm text-gray-600 dark:text-gray-400">
-                      {t('common.pageOf', { current: messagesPage, total: messagesTotalPages })}
-                    </span>
-                    <button
-                      onClick={() => setMessagesPage(p => Math.min(messagesTotalPages, p + 1))}
-                      disabled={messagesPage === messagesTotalPages}
-                      className="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed text-sm"
-                    >
-                      {t('common.next')}
-                    </button>
-                  </div>
-                )}
-              </>
-            )}
-        </div>
+        <SentMessagesTable
+          messages={messages}
+          channel={campaign.channel as CampaignChannel}
+          isLoading={messagesLoading}
+          page={messagesPage}
+          totalPages={messagesTotalPages}
+          smsCount={campaign.sent_count}
+          emailCount={campaign.email_sent_count || 0}
+          onPageChange={setMessagesPage}
+          formatDate={formatDate}
+          emailSender={campaign.email_sender || undefined}
+        />
 
         {/* Test Send Modal */}
         {showTestSendModal && (
