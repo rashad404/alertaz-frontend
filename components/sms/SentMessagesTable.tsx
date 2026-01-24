@@ -25,6 +25,7 @@ interface MessageModalData {
   message?: string | null;
   subject?: string | null;
   body?: string | null;
+  bodyHtml?: string | null;
   segments?: number;
   status?: string;
   cost?: number;
@@ -96,6 +97,7 @@ export default function SentMessagesTable({
       email: msg.recipient || msg.email,
       subject: msg.subject,
       body: msg.content || msg.message,
+      bodyHtml: msg.body,
       status: msg.status,
       cost: msg.cost,
       sentAt: msg.sent_at,
@@ -454,11 +456,22 @@ export default function SentMessagesTable({
                     <label className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                       {t('smsApi.campaigns.emailBody')}
                     </label>
-                    <div className="mt-2 p-4 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
-                      <p className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap break-words">
-                        {modalData.body || '-'}
-                      </p>
-                    </div>
+                    {modalData.bodyHtml ? (
+                      <div className="mt-2 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+                        <iframe
+                          srcDoc={modalData.bodyHtml}
+                          className="w-full bg-white"
+                          style={{ minHeight: '300px', border: 'none' }}
+                          title="Email Preview"
+                        />
+                      </div>
+                    ) : (
+                      <div className="mt-2 p-4 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+                        <p className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap break-words">
+                          {modalData.body || '-'}
+                        </p>
+                      </div>
+                    )}
                   </div>
                   <div className="grid grid-cols-2 gap-4 text-sm pt-2 border-t border-gray-200 dark:border-gray-700">
                     <div>

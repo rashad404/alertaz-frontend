@@ -747,6 +747,7 @@
       "messagePlaceholder": "Привет '{{name}}', ваша подписка истекает '{{expiry_date}}'...",
       "variables": "Доступные переменные",
       "variablesDesc": "Используйте синтаксис '{{variable}}' в сообщении",
+      "variablesTarget": "Будет добавлено в",
       "targetAudience": "Целевая аудитория",
       "schedule": "Расписание",
       "scheduleNow": "Отправить сейчас",

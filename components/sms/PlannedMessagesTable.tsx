@@ -27,6 +27,7 @@ interface MessageModalData {
   message?: string | null;
   subject?: string | null;
   body?: string | null;
+  bodyHtml?: string | null;
   segments?: number;
 }
 
@@ -88,6 +89,7 @@ export default function PlannedMessagesTable({
       email: contact.email,
       subject: contact.email_subject,
       body: contact.email_body,
+      bodyHtml: contact.email_body_html,
     });
   };
 
@@ -388,11 +390,22 @@ export default function PlannedMessagesTable({
                     <label className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                       {t('smsApi.campaigns.emailBody')}
                     </label>
-                    <div className="mt-2 p-4 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
-                      <p className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap break-words">
-                        {modalData.body || '-'}
-                      </p>
-                    </div>
+                    {modalData.bodyHtml ? (
+                      <div className="mt-2 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+                        <iframe
+                          srcDoc={modalData.bodyHtml}
+                          className="w-full bg-white"
+                          style={{ minHeight: '300px', border: 'none' }}
+                          title="Email Preview"
+                        />
+                      </div>
+                    ) : (
+                      <div className="mt-2 p-4 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+                        <p className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap break-words">
+                          {modalData.body || '-'}
+                        </p>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}

@@ -164,6 +164,7 @@ export interface PlannedContact {
   message: string | null;
   email_subject: string | null;
   email_body: string | null;
+  email_body_html: string | null;
   segments: number;
   attributes: Record<string, any>;
 }

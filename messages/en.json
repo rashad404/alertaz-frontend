@@ -747,6 +747,7 @@
       "messagePlaceholder": "Hello '{{name}}', your subscription expires on '{{expiry_date}}'...",
       "variables": "Available Variables",
       "variablesDesc": "Use '{{variable}}' syntax in your message",
+      "variablesTarget": "Will be added to",
       "targetAudience": "Target Audience",
       "schedule": "Schedule",
       "scheduleNow": "Send Now",

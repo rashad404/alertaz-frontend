@@ -747,6 +747,7 @@
       "messagePlaceholder": "Salam '{{name}}', abunəliyiniz '{{expiry_date}}' tarixində bitir...",
       "variables": "Mövcud Dəyişənlər",
       "variablesDesc": "Mesajınızda '{{variable}}' sintaksisindən istifadə edin",
+      "variablesTarget": "Əlavə ediləcək",
       "targetAudience": "Hədəf Auditoriya",
       "schedule": "Planlaşdırma",
       "scheduleNow": "İndi Göndər",
