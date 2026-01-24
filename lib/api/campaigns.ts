@@ -20,6 +20,7 @@ export interface Campaign {
   name: string;
   sender: string;
   email_sender: string | null;
+  email_display_name: string | null;
   message_template: string;
   channel: CampaignChannel;
   email_subject_template: string | null;
@@ -256,6 +257,8 @@ export const campaignsApi = {
     name: string;
     channel: CampaignChannel;
     sender?: string;
+    email_sender?: string;
+    email_display_name?: string;
     message_template?: string;
     email_subject_template?: string;
     email_body_template?: string;

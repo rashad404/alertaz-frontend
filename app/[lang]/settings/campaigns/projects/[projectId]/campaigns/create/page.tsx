@@ -59,6 +59,7 @@ export default function CreateCampaignPage() {
     channel: 'sms' as CampaignChannel,
     sender: '',
     email_sender: '',
+    email_display_name: '',
     message_template: '',
     email_subject_template: '',
     email_body_template: '',
@@ -183,6 +184,7 @@ export default function CreateCampaignPage() {
       // Email fields (if channel is email or both)
       if (formData.channel === 'email' || formData.channel === 'both') {
         payload.email_sender = formData.email_sender;
+        payload.email_display_name = formData.email_display_name || null;
         payload.email_subject_template = formData.email_subject_template;
         payload.email_body_template = formData.email_body_template;
       }
@@ -511,6 +513,25 @@ export default function CreateCampaignPage() {
                 </select>
                 <p className="mt-1 text-xs text-gray-500">
                   {t('smsApi.campaigns.emailSenderNote')}
+                </p>
+              </div>
+              )}
+
+              {/* Email Display Name - only for Email/Both */}
+              {(formData.channel === 'email' || formData.channel === 'both') && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  {t('smsApi.campaigns.emailDisplayName')}
+                </label>
+                <input
+                  type="text"
+                  value={formData.email_display_name}
+                  onChange={(e) => setFormData({ ...formData, email_display_name: e.target.value })}
+                  placeholder={t('smsApi.campaigns.emailDisplayNamePlaceholder')}
+                  className="w-full px-4 py-3 border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
+                />
+                <p className="mt-1 text-xs text-gray-500">
+                  {t('smsApi.campaigns.emailDisplayNameHint')}
                 </p>
               </div>
               )}
