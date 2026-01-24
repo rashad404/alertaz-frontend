@@ -784,6 +784,7 @@
       "emailSubjectPlaceholder": "Ваша подписка скоро истекает",
       "emailBody": "Текст Email",
       "emailBodyPlaceholder": "Напишите содержимое email. Можно использовать '{{переменные}}' из атрибутов контакта.",
+      "emailBodyHint": "Используйте синтаксис '{{переменная}}' для персонализации email атрибутами контакта",
       "actions": {
         "edit": "Редактировать",
         "delete": "Удалить",
@@ -833,6 +834,10 @@
       "emailsSent": "писем отправлено",
       "emails": "писем",
       "nextRunAt": "Следующий запуск",
+      "smsTab": "SMS",
+      "emailTab": "Email",
+      "smsRecipients": "Получатели SMS",
+      "emailRecipients": "Получатели Email",
       "showingSamples": "Показано {count} из {total} примеров",
       "noMatchingContacts": "{count} подходящих контактов",
       "noContactsToSend": "Нет контактов соответствующих текущему фильтру сегмента",

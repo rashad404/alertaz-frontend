@@ -4,8 +4,9 @@ import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useParams } from 'next/navigation';
 import { projectsApi, Project } from '@/lib/api/projects';
-import { campaignsApi, Campaign, CampaignMessage, PlannedContact, AttributeSchema, setProjectToken } from '@/lib/api/campaigns';
+import { campaignsApi, Campaign, CampaignMessage, PlannedContact, AttributeSchema, setProjectToken, CampaignChannel } from '@/lib/api/campaigns';
 import { Link } from '@/lib/navigation';
+import PlannedMessagesTable from '@/components/sms/PlannedMessagesTable';
 import { formatDateInTimezone, convertRunHoursToTimezone } from '@/lib/utils/date';
 import { useTimezone } from '@/providers/timezone-provider';
 import {
@@ -985,106 +986,17 @@ export default function CampaignDetailPage() {
 
         {/* Planned Messages (for draft, scheduled, active, paused - contacts that will receive messages) */}
         {['draft', 'scheduled', 'active', 'paused'].includes(campaign.status) && (
-          <div className="rounded-3xl p-6 bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50 mb-6">
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-                  {t('smsApi.campaigns.plannedMessages')}
-                </h2>
-                {nextRunAt && (
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 flex items-center gap-1">
-                    <Clock className="w-3 h-3" />
-                    {t('smsApi.campaigns.nextRunAt')}: {formatDate(nextRunAt)}
-                  </p>
-                )}
-              </div>
-              <span className="text-sm text-gray-500 dark:text-gray-400">
-                {t('smsApi.campaigns.plannedForNextRun', { count: plannedTotal })}
-              </span>
-            </div>
-
-            {plannedLoading ? (
-              <div className="text-center py-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto"></div>
-              </div>
-            ) : plannedContacts.length > 0 ? (
-              <>
-                <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                    <thead className="bg-gray-50 dark:bg-gray-900/50">
-                      <tr>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                          {campaign.channel === 'email' ? t('smsApi.contacts.email') : t('smsApi.phone')}
-                        </th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                          {campaign.channel === 'email' ? t('smsApi.campaigns.emailSubject') : t('smsApi.message')}
-                        </th>
-                        {campaign.channel !== 'email' && (
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                            {t('smsApi.campaigns.segments')}
-                          </th>
-                        )}
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                      {plannedContacts.map((contact) => (
-                        <tr key={contact.contact_id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
-                          <td className="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
-                            {campaign.channel === 'email' ? contact.email : contact.phone}
-                          </td>
-                          <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300 max-w-md">
-                            {campaign.channel === 'email' ? (
-                              <div>
-                                <p className="font-medium truncate">{contact.email_subject}</p>
-                                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 line-clamp-2">
-                                  {contact.email_body?.slice(0, 200)}{contact.email_body && contact.email_body.length > 200 ? '...' : ''}
-                                </p>
-                              </div>
-                            ) : contact.message}
-                          </td>
-                          {campaign.channel !== 'email' && (
-                            <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                              {contact.segments}
-                            </td>
-                          )}
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-
-                {/* Pagination */}
-                {plannedTotalPages > 1 && (
-                  <div className="px-4 py-4 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between mt-4">
-                    <button
-                      onClick={() => setPlannedPage(p => Math.max(1, p - 1))}
-                      disabled={plannedPage === 1}
-                      className="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed text-sm"
-                    >
-                      {t('common.previous')}
-                    </button>
-                    <span className="text-sm text-gray-600 dark:text-gray-400">
-                      {t('common.pageOf', { current: plannedPage, total: plannedTotalPages })}
-                    </span>
-                    <button
-                      onClick={() => setPlannedPage(p => Math.min(plannedTotalPages, p + 1))}
-                      disabled={plannedPage === plannedTotalPages}
-                      className="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed text-sm"
-                    >
-                      {t('common.next')}
-                    </button>
-                  </div>
-                )}
-              </>
-            ) : (
-              <div className="text-center py-8">
-                <Users className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
-                <p className="text-gray-500 dark:text-gray-400">
-                  {t('smsApi.campaigns.noPlannedContacts')}
-                </p>
-              </div>
-            )}
-          </div>
+          <PlannedMessagesTable
+            contacts={plannedContacts}
+            channel={campaign.channel as CampaignChannel}
+            isLoading={plannedLoading}
+            page={plannedPage}
+            totalPages={plannedTotalPages}
+            total={plannedTotal}
+            onPageChange={setPlannedPage}
+            nextRunAt={nextRunAt}
+            formatDate={formatDate}
+          />
         )}
 
         {/* Sent Messages History (for all campaigns) */}

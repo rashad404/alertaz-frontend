@@ -4,8 +4,9 @@ import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { useRouter, useParams } from 'next/navigation';
 import { projectsApi, Project } from '@/lib/api/projects';
-import { campaignsApi, Campaign, SegmentFilter, AttributeSchema, setProjectToken } from '@/lib/api/campaigns';
+import { campaignsApi, Campaign, SegmentFilter, AttributeSchema, PlannedContact, setProjectToken } from '@/lib/api/campaigns';
 import SegmentBuilder from '@/components/sms/SegmentBuilder';
+import PlannedMessagesTable from '@/components/sms/PlannedMessagesTable';
 import { Link } from '@/lib/navigation';
 import { convertHourToUTC, convertHourFromUTC } from '@/lib/utils/date';
 import { useTimezone } from '@/providers/timezone-provider';
@@ -53,6 +54,13 @@ export default function EditCampaignPage() {
   const [attributes, setAttributes] = useState<AttributeSchema[]>([]);
   const [availableSenders, setAvailableSenders] = useState<string[]>([]);
   const [previewCount, setPreviewCount] = useState<number | null>(null);
+
+  // Planned messages preview state
+  const [previewContacts, setPreviewContacts] = useState<PlannedContact[]>([]);
+  const [previewTotal, setPreviewTotal] = useState(0);
+  const [previewPage, setPreviewPage] = useState(1);
+  const [previewTotalPages, setPreviewTotalPages] = useState(1);
+  const [previewLoading, setPreviewLoading] = useState(false);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -157,6 +165,50 @@ export default function EditCampaignPage() {
     const timer = setTimeout(loadPreview, 500);
     return () => clearTimeout(timer);
   }, [formData.segment_filter, project]);
+
+  // Reset preview page when filter changes
+  useEffect(() => {
+    setPreviewPage(1);
+  }, [formData.segment_filter, formData.channel]);
+
+  // Load preview messages when in audience step
+  useEffect(() => {
+    if (!project || currentStep !== 1) return;
+
+    const loadPreviewMessages = async () => {
+      if (formData.segment_filter.conditions.length === 0) {
+        setPreviewContacts([]);
+        setPreviewTotal(0);
+        setPreviewTotalPages(1);
+        return;
+      }
+
+      setPreviewLoading(true);
+      try {
+        const data = await campaignsApi.previewSegmentMessages({
+          filter: formData.segment_filter,
+          channel: formData.channel,
+          message_template: formData.message_template,
+          email_subject_template: formData.email_subject_template,
+          email_body_template: formData.email_body_template,
+          page: previewPage,
+          per_page: 10,
+        });
+        setPreviewContacts(data.contacts);
+        setPreviewTotal(data.total);
+        setPreviewTotalPages(data.total_pages);
+      } catch (err) {
+        setPreviewContacts([]);
+        setPreviewTotal(0);
+        setPreviewTotalPages(1);
+      } finally {
+        setPreviewLoading(false);
+      }
+    };
+
+    const timer = setTimeout(loadPreviewMessages, 500);
+    return () => clearTimeout(timer);
+  }, [formData.segment_filter, formData.channel, formData.message_template, formData.email_subject_template, formData.email_body_template, previewPage, currentStep, project]);
 
   const handleSubmit = async () => {
     if (!project || !campaign) return;
@@ -753,11 +805,26 @@ export default function EditCampaignPage() {
 
           {/* Step 2: Audience */}
           {currentStep === 1 && (
-            <SegmentBuilder
-              value={formData.segment_filter}
-              onChange={(filter) => setFormData({ ...formData, segment_filter: filter })}
-              showPreview={true}
-            />
+            <div className="space-y-6">
+              <SegmentBuilder
+                value={formData.segment_filter}
+                onChange={(filter) => setFormData({ ...formData, segment_filter: filter })}
+                showPreview={true}
+              />
+
+              {/* Preview Messages Table */}
+              {formData.segment_filter.conditions.length > 0 && (
+                <PlannedMessagesTable
+                  contacts={previewContacts}
+                  channel={formData.channel}
+                  isLoading={previewLoading}
+                  page={previewPage}
+                  totalPages={previewTotalPages}
+                  total={previewTotal}
+                  onPageChange={setPreviewPage}
+                />
+              )}
+            </div>
           )}
 
           {/* Step 3: Message */}

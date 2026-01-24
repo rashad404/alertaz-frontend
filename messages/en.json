@@ -784,6 +784,7 @@
       "emailSubjectPlaceholder": "Your subscription expires soon",
       "emailBody": "Email Body",
       "emailBodyPlaceholder": "Write your email content here. You can use '{{variables}}' from contact attributes.",
+      "emailBodyHint": "Use '{{variable}}' syntax to personalize the email with contact attributes",
       "actions": {
         "edit": "Edit",
         "delete": "Delete",
@@ -833,6 +834,10 @@
       "emailsSent": "emails sent",
       "emails": "emails",
       "nextRunAt": "Next Run",
+      "smsTab": "SMS",
+      "emailTab": "Email",
+      "smsRecipients": "SMS Recipients",
+      "emailRecipients": "Email Recipients",
       "showingSamples": "Showing {count} of {total} samples",
       "noMatchingContacts": "{count} matching contacts",
       "noContactsToSend": "No contacts match the current segment filter",

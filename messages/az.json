@@ -784,6 +784,7 @@
       "emailSubjectPlaceholder": "Abunəliyiniz tezliklə bitir",
       "emailBody": "Email Məzmunu",
       "emailBodyPlaceholder": "Email məzmununuzu bura yazın. Kontakt atributlarından '{{dəyişənlər}}' istifadə edə bilərsiniz.",
+      "emailBodyHint": "Emaili kontakt atributları ilə fərdiləşdirmək üçün '{{dəyişən}}' sintaksisindən istifadə edin",
       "actions": {
         "edit": "Redaktə",
         "delete": "Sil",
@@ -836,6 +837,10 @@
       "emailsSent": "email göndərildi",
       "emails": "email",
       "nextRunAt": "Növbəti icra",
+      "smsTab": "SMS",
+      "emailTab": "Email",
+      "smsRecipients": "SMS Alıcıları",
+      "emailRecipients": "Email Alıcıları",
       "smsSegments": "SMS Seqmentləri",
       "segments": "SMS Sayı",
       "estimatedCost": "Təxmini Qiymət",

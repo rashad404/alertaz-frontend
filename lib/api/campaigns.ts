@@ -149,6 +149,8 @@ export interface PlannedContact {
   contact_id: number;
   phone: string | null;
   email: string | null;
+  can_receive_sms: boolean;
+  can_receive_email: boolean;
   message: string | null;
   email_subject: string | null;
   email_body: string | null;
@@ -191,6 +193,26 @@ export const campaignsApi = {
       filter,
       preview_limit: previewLimit,
     }, { headers: getHeaders() });
+    return response.data.data;
+  },
+
+  // Preview segment with rendered messages
+  previewSegmentMessages: async (params: {
+    filter: SegmentFilter;
+    channel: CampaignChannel;
+    message_template?: string;
+    email_subject_template?: string;
+    email_body_template?: string;
+    page?: number;
+    per_page?: number;
+  }): Promise<{
+    contacts: PlannedContact[];
+    total: number;
+    page: number;
+    per_page: number;
+    total_pages: number;
+  }> => {
+    const response = await campaignClient.post('/segments/preview-messages', params, { headers: getHeaders() });
     return response.data.data;
   },
 
