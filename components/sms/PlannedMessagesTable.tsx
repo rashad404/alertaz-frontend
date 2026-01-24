@@ -12,6 +12,8 @@ interface PlannedMessagesTableProps {
   page: number;
   totalPages: number;
   total: number;
+  smsTotal?: number;
+  emailTotal?: number;
   onPageChange: (page: number) => void;
   nextRunAt?: string | null;
   formatDate?: (date: string) => string;
@@ -34,6 +36,8 @@ export default function PlannedMessagesTable({
   page,
   totalPages,
   total,
+  smsTotal,
+  emailTotal,
   onPageChange,
   nextRunAt,
   formatDate,
@@ -53,16 +57,9 @@ export default function PlannedMessagesTable({
     }
   }, [contacts, channel, activeTab]);
 
-  // Count recipients for each channel (for "both" mode)
-  const smsCount = useMemo(() => {
-    if (channel !== 'both') return total;
-    return contacts.filter(c => c.can_receive_sms).length;
-  }, [contacts, channel, total]);
-
-  const emailCount = useMemo(() => {
-    if (channel !== 'both') return total;
-    return contacts.filter(c => c.can_receive_email).length;
-  }, [contacts, channel, total]);
+  // Use backend totals for tab badges (fixes bug where only current page was counted)
+  const smsCount = smsTotal ?? total;
+  const emailCount = emailTotal ?? total;
 
   const defaultFormatDate = (date: string) => {
     return new Date(date).toLocaleString();
@@ -112,7 +109,20 @@ export default function PlannedMessagesTable({
             )}
           </div>
           <span className="text-sm text-gray-500 dark:text-gray-400">
-            {t('smsApi.campaigns.plannedForNextRun', { count: total })}
+            {channel === 'both' ? (
+              <span className="flex items-center gap-3">
+                <span className="flex items-center gap-1">
+                  <Smartphone className="w-3 h-3 text-indigo-500" />
+                  {smsCount} SMS
+                </span>
+                <span className="flex items-center gap-1">
+                  <Mail className="w-3 h-3 text-emerald-500" />
+                  {emailCount} Email
+                </span>
+              </span>
+            ) : (
+              t('smsApi.campaigns.plannedForNextRun', { count: total })
+            )}
           </span>
         </div>
 

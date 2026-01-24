@@ -208,6 +208,8 @@ export const campaignsApi = {
   }): Promise<{
     contacts: PlannedContact[];
     total: number;
+    sms_total: number;
+    email_total: number;
     page: number;
     per_page: number;
     total_pages: number;
@@ -336,7 +338,7 @@ export const campaignsApi = {
   },
 
   // Preview campaign messages (considers cooldown)
-  previewMessages: async (id: number, limit: number = 5): Promise<{ previews: MessagePreview[]; campaign: Campaign; total_count: number }> => {
+  previewMessages: async (id: number, limit: number = 5): Promise<{ previews: MessagePreview[]; campaign: Campaign; total_count: number; sms_total: number; email_total: number }> => {
     const response = await campaignClient.get(`/campaigns/${id}/preview`, {
       params: { limit },
       headers: getHeaders(),
@@ -441,6 +443,8 @@ export const campaignsApi = {
       last_page: number;
       per_page: number;
       total: number;
+      sms_total: number;
+      email_total: number;
     };
     next_run_at: string | null;
   }> => {

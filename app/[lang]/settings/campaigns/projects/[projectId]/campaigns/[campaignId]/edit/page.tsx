@@ -58,6 +58,8 @@ export default function EditCampaignPage() {
   // Planned messages preview state
   const [previewContacts, setPreviewContacts] = useState<PlannedContact[]>([]);
   const [previewTotal, setPreviewTotal] = useState(0);
+  const [previewSmsTotal, setPreviewSmsTotal] = useState(0);
+  const [previewEmailTotal, setPreviewEmailTotal] = useState(0);
   const [previewPage, setPreviewPage] = useState(1);
   const [previewTotalPages, setPreviewTotalPages] = useState(1);
   const [previewLoading, setPreviewLoading] = useState(false);
@@ -196,10 +198,14 @@ export default function EditCampaignPage() {
         });
         setPreviewContacts(data.contacts);
         setPreviewTotal(data.total);
+        setPreviewSmsTotal(data.sms_total);
+        setPreviewEmailTotal(data.email_total);
         setPreviewTotalPages(data.total_pages);
       } catch (err) {
         setPreviewContacts([]);
         setPreviewTotal(0);
+        setPreviewSmsTotal(0);
+        setPreviewEmailTotal(0);
         setPreviewTotalPages(1);
       } finally {
         setPreviewLoading(false);
@@ -821,6 +827,8 @@ export default function EditCampaignPage() {
                   page={previewPage}
                   totalPages={previewTotalPages}
                   total={previewTotal}
+                  smsTotal={previewSmsTotal}
+                  emailTotal={previewEmailTotal}
                   onPageChange={setPreviewPage}
                 />
               )}

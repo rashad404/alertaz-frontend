@@ -89,6 +89,8 @@ export default function CampaignDetailPage() {
   const [plannedPage, setPlannedPage] = useState(1);
   const [plannedTotalPages, setPlannedTotalPages] = useState(1);
   const [plannedTotal, setPlannedTotal] = useState(0);
+  const [plannedSmsTotal, setPlannedSmsTotal] = useState(0);
+  const [plannedEmailTotal, setPlannedEmailTotal] = useState(0);
   const [plannedLoading, setPlannedLoading] = useState(false);
   const [nextRunAt, setNextRunAt] = useState<string | null>(null);
 
@@ -199,6 +201,8 @@ export default function CampaignDetailPage() {
       setPlannedContacts(data.contacts);
       setPlannedTotalPages(data.pagination.last_page);
       setPlannedTotal(data.pagination.total);
+      setPlannedSmsTotal(data.pagination.sms_total);
+      setPlannedEmailTotal(data.pagination.email_total);
       setNextRunAt(data.next_run_at);
       // Also update currentCount to reflect planned count
       setCurrentCount(data.pagination.total);
@@ -675,8 +679,8 @@ export default function CampaignDetailPage() {
               <Copy className="w-4 h-4" />
               {t('smsApi.campaigns.actions.duplicate')}
             </button>
-            {/* Delete - for draft campaigns */}
-            {campaign.status === 'draft' && (
+            {/* Delete - for all except active/sending */}
+            {!['active', 'sending'].includes(campaign.status) && (
               <button
                 onClick={handleDelete}
                 className="cursor-pointer flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all text-sm"
@@ -724,6 +728,7 @@ export default function CampaignDetailPage() {
 
         {/* Stats Grid */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+          {/* Planned/Target */}
           <div className="rounded-2xl p-4 bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center">
@@ -731,11 +736,25 @@ export default function CampaignDetailPage() {
               </div>
               <div>
                 <p className="text-xs text-gray-500 dark:text-gray-400">{t('smsApi.campaigns.stats.target')}</p>
-                <p className="text-xl font-bold text-gray-900 dark:text-white">{currentCount ?? campaign.target_count}</p>
+                {campaign.channel === 'both' ? (
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <Smartphone className="w-3 h-3 text-indigo-500" />
+                      <span className="text-lg font-bold text-gray-900 dark:text-white">{plannedSmsTotal}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Mail className="w-3 h-3 text-emerald-500" />
+                      <span className="text-lg font-bold text-gray-900 dark:text-white">{plannedEmailTotal}</span>
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-xl font-bold text-gray-900 dark:text-white">{currentCount ?? campaign.target_count}</p>
+                )}
               </div>
             </div>
           </div>
 
+          {/* Sent */}
           <div className="rounded-2xl p-4 bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
@@ -743,14 +762,32 @@ export default function CampaignDetailPage() {
               </div>
               <div>
                 <p className="text-xs text-gray-500 dark:text-gray-400">{t('smsApi.campaigns.stats.sent')}</p>
-                <p className="text-xl font-bold text-gray-900 dark:text-white">{campaign.sent_count}</p>
-                <p className="text-xs text-blue-600 dark:text-blue-400 mt-0.5">
-                  {t('smsApi.campaigns.stats.sentToday')}: {campaign.sent_today_count}
-                </p>
+                {campaign.channel === 'both' ? (
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <Smartphone className="w-3 h-3 text-indigo-500" />
+                      <span className="text-lg font-bold text-gray-900 dark:text-white">{campaign.sent_count}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Mail className="w-3 h-3 text-emerald-500" />
+                      <span className="text-lg font-bold text-gray-900 dark:text-white">{campaign.email_sent_count || 0}</span>
+                    </div>
+                  </div>
+                ) : campaign.channel === 'email' ? (
+                  <p className="text-xl font-bold text-gray-900 dark:text-white">{campaign.email_sent_count || 0}</p>
+                ) : (
+                  <>
+                    <p className="text-xl font-bold text-gray-900 dark:text-white">{campaign.sent_count}</p>
+                    <p className="text-xs text-blue-600 dark:text-blue-400 mt-0.5">
+                      {t('smsApi.campaigns.stats.sentToday')}: {campaign.sent_today_count}
+                    </p>
+                  </>
+                )}
               </div>
             </div>
           </div>
 
+          {/* Delivered */}
           <div className="rounded-2xl p-4 bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
@@ -758,11 +795,27 @@ export default function CampaignDetailPage() {
               </div>
               <div>
                 <p className="text-xs text-gray-500 dark:text-gray-400">{t('smsApi.campaigns.stats.delivered')}</p>
-                <p className="text-xl font-bold text-gray-900 dark:text-white">{campaign.delivered_count}</p>
+                {campaign.channel === 'both' ? (
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <Smartphone className="w-3 h-3 text-indigo-500" />
+                      <span className="text-lg font-bold text-gray-900 dark:text-white">{campaign.delivered_count}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Mail className="w-3 h-3 text-emerald-500" />
+                      <span className="text-lg font-bold text-gray-900 dark:text-white">{campaign.email_delivered_count || 0}</span>
+                    </div>
+                  </div>
+                ) : campaign.channel === 'email' ? (
+                  <p className="text-xl font-bold text-gray-900 dark:text-white">{campaign.email_delivered_count || 0}</p>
+                ) : (
+                  <p className="text-xl font-bold text-gray-900 dark:text-white">{campaign.delivered_count}</p>
+                )}
               </div>
             </div>
           </div>
 
+          {/* Failed */}
           <div className="rounded-2xl p-4 bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
@@ -770,7 +823,22 @@ export default function CampaignDetailPage() {
               </div>
               <div>
                 <p className="text-xs text-gray-500 dark:text-gray-400">{t('smsApi.campaigns.stats.failed')}</p>
-                <p className="text-xl font-bold text-gray-900 dark:text-white">{campaign.failed_count}</p>
+                {campaign.channel === 'both' ? (
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <Smartphone className="w-3 h-3 text-indigo-500" />
+                      <span className="text-lg font-bold text-gray-900 dark:text-white">{campaign.failed_count}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Mail className="w-3 h-3 text-emerald-500" />
+                      <span className="text-lg font-bold text-gray-900 dark:text-white">{campaign.email_failed_count || 0}</span>
+                    </div>
+                  </div>
+                ) : campaign.channel === 'email' ? (
+                  <p className="text-xl font-bold text-gray-900 dark:text-white">{campaign.email_failed_count || 0}</p>
+                ) : (
+                  <p className="text-xl font-bold text-gray-900 dark:text-white">{campaign.failed_count}</p>
+                )}
               </div>
             </div>
           </div>
@@ -993,6 +1061,8 @@ export default function CampaignDetailPage() {
             page={plannedPage}
             totalPages={plannedTotalPages}
             total={plannedTotal}
+            smsTotal={plannedSmsTotal}
+            emailTotal={plannedEmailTotal}
             onPageChange={setPlannedPage}
             nextRunAt={nextRunAt}
             formatDate={formatDate}
