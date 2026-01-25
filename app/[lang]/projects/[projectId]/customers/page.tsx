@@ -161,7 +161,7 @@ export default function CustomersPage() {
       key: 'created_at',
       header: 'Created',
       sortable: true,
-      render: (customer) => new Date(customer.created_at).toLocaleDateString(),
+      render: (customer) => customer.created_at || '-',
     },
   ];
 

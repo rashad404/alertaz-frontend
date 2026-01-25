@@ -157,11 +157,11 @@ export default function ServicesPage() {
             Active
           </span>
         );
-      case 'suspended':
+      case 'inactive':
         return (
-          <span className="inline-flex items-center gap-1 px-2 py-1 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 rounded-full text-xs">
-            <AlertTriangle className="w-3 h-3" />
-            Suspended
+          <span className="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 rounded-full text-xs">
+            <XCircle className="w-3 h-3" />
+            Inactive
           </span>
         );
       case 'expired':
