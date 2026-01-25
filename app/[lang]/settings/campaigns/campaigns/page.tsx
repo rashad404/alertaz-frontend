@@ -125,7 +125,7 @@ export default function CampaignsPage() {
               {t('smsApi.projects.noProjectsDesc')}
             </p>
             <Link
-              href={`/settings/campaigns/projects`}
+              href={`/projects`}
               className="cursor-pointer px-8 py-3 rounded-2xl font-medium text-white bg-gradient-to-r from-indigo-500 to-purple-500 hover:shadow-lg transition-all duration-300 hover:scale-105 inline-block"
             >
               {t('smsApi.projects.createProject')}

@@ -1,14 +1,15 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import { useParams } from 'next/navigation';
 import { projectsApi, Project } from '@/lib/api/projects';
-import { campaignsApi, Campaign, CampaignMessage, PlannedContact, AttributeSchema, setProjectToken, CampaignChannel } from '@/lib/api/campaigns';
+import { campaignsApi, CampaignMessage, PlannedContact, AttributeSchema, CampaignChannel } from '@/lib/api/campaigns';
+import type { Campaign } from '@/lib/types/api';
 import { Link } from '@/lib/navigation';
-import PlannedMessagesTable from '@/components/sms/PlannedMessagesTable';
-import SentMessagesTable from '@/components/sms/SentMessagesTable';
+import MessageTable from '@/components/sms/MessageTable';
 import { formatDateInTimezone, convertRunHoursToTimezone } from '@/lib/utils/date';
+import { DEFAULT_SMS_SENDER, DEFAULT_EMAIL_SENDER } from '@/lib/config/defaults';
 import { useTimezone } from '@/providers/timezone-provider';
 import {
   ArrowLeft,
@@ -61,11 +62,13 @@ const statusColors: Record<string, string> = {
   paused: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400',
 };
 
-interface MessagePreview {
-  phone: string;
-  message: string;
-  segments: number;
-  attributes: Record<string, any>;
+interface LocalMessagePreview {
+  phone?: string;
+  email?: string;
+  message?: string;
+  subject?: string;
+  segments?: number;
+  attributes?: Record<string, any>;
 }
 
 export default function CampaignDetailPage() {
@@ -78,7 +81,7 @@ export default function CampaignDetailPage() {
 
   const [project, setProject] = useState<Project | null>(null);
   const [campaign, setCampaign] = useState<Campaign | null>(null);
-  const [previews, setPreviews] = useState<MessagePreview[]>([]);
+  const [previews, setPreviews] = useState<LocalMessagePreview[]>([]);
   const [currentCount, setCurrentCount] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -108,7 +111,8 @@ export default function CampaignDetailPage() {
   const [showTestSendModal, setShowTestSendModal] = useState(false);
   const [testSendCount, setTestSendCount] = useState(5);
   const [testSendLoading, setTestSendLoading] = useState(false);
-  const [testSendResults, setTestSendResults] = useState<Array<{ phone: string; message: string; status: string; error?: string }> | null>(null);
+  const [testSendResults, setTestSendResults] = useState<Array<{ phone?: string; email?: string; message?: string; subject?: string; segments?: number; cost?: number; status: string; error?: string }> | null>(null);
+
 
   // Custom test send state (supports both phone and email)
   const [showCustomTestModal, setShowCustomTestModal] = useState(false);
@@ -122,6 +126,26 @@ export default function CampaignDetailPage() {
 
   // Retry failed state
   const [retryLoading, setRetryLoading] = useState(false);
+
+  // Helper to calculate SMS segments from message content
+  const calculateSegments = (content: string | undefined | null): number => {
+    if (!content) return 1;
+    const hasUnicode = /[^\x00-\x7F]/.test(content);
+    const charLimit = hasUnicode ? 70 : 160;
+    const multipartLimit = hasUnicode ? 67 : 153;
+    if (content.length <= charLimit) return 1;
+    return Math.ceil(content.length / multipartLimit);
+  };
+
+  // Transform messages to ensure sender and segments are included
+  const transformedMessages = useMemo(() => {
+    if (!campaign) return messages;
+    return messages.map(msg => ({
+      ...msg,
+      sender: msg.sender || (msg.type === 'sms' ? (campaign.sender || DEFAULT_SMS_SENDER) : (campaign.email_sender || DEFAULT_EMAIL_SENDER)),
+      segments: msg.segments ?? (msg.type === 'sms' ? calculateSegments(msg.content) : undefined),
+    }));
+  }, [messages, campaign]);
 
   useEffect(() => {
     loadData();
@@ -144,23 +168,28 @@ export default function CampaignDetailPage() {
   const loadData = async () => {
     try {
       setIsLoading(true);
+      const projId = parseInt(projectId);
+      const campId = parseInt(campaignId);
 
       // Load project first
-      const projectData = await projectsApi.get(parseInt(projectId));
+      const projectData = await projectsApi.get(projId);
       setProject(projectData.project);
-      setProjectToken(projectData.project.api_token);
 
       // Load campaign and attributes in parallel
       const [campaignData, attributesData] = await Promise.all([
-        campaignsApi.get(parseInt(campaignId)),
-        campaignsApi.getAttributes().catch(() => ({ attributes: [] })),
+        campaignsApi.get(projId, campId),
+        campaignsApi.getAttributes(projId).catch(() => ({ customer: [], service: [], service_types: [] })),
       ]);
-      setCampaign(campaignData.campaign);
-      setAttributes(attributesData.attributes || []);
+      setCampaign(campaignData);
+      // Load attributes based on campaign target type
+      const attrs = campaignData.target_type === 'service'
+        ? attributesData.service
+        : attributesData.customer;
+      setAttributes(attrs || []);
 
       // Load message previews and current count (from same API call)
       try {
-        const previewData = await campaignsApi.previewMessages(parseInt(campaignId), 5);
+        const previewData = await campaignsApi.previewMessages(projId, campId, 5);
         setPreviews(previewData.previews || []);
         // Use fresh count from preview response
         if (previewData.total_count !== undefined) {
@@ -183,8 +212,9 @@ export default function CampaignDetailPage() {
 
     try {
       setIsRefreshing(true);
+      const projId = parseInt(projectId);
       // Use previewMessages which includes cooldown calculation for accurate planned count
-      const data = await campaignsApi.previewMessages(c.id, 1);
+      const data = await campaignsApi.previewMessages(projId, c.id, 1);
       setCurrentCount(data.total_count);
     } catch (err) {
       console.error('Failed to refresh count:', err);
@@ -198,13 +228,20 @@ export default function CampaignDetailPage() {
 
     try {
       setPlannedLoading(true);
-      const data = await campaignsApi.getPlannedMessages(campaign.id, plannedPage, 10);
+      const projId = parseInt(projectId);
+      const data = await campaignsApi.getPlannedMessages(projId, campaign.id, plannedPage, 10);
       setPlannedContacts(data.contacts);
       setPlannedTotalPages(data.pagination.last_page);
       setPlannedTotal(data.pagination.total);
-      setPlannedSmsTotal(data.pagination.sms_total);
-      setPlannedEmailTotal(data.pagination.email_total);
-      setNextRunAt(data.next_run_at);
+      if (data.pagination.sms_total !== undefined) {
+        setPlannedSmsTotal(data.pagination.sms_total);
+      }
+      if (data.pagination.email_total !== undefined) {
+        setPlannedEmailTotal(data.pagination.email_total);
+      }
+      if (data.next_run_at) {
+        setNextRunAt(data.next_run_at);
+      }
       // Also update currentCount to reflect planned count
       setCurrentCount(data.pagination.total);
     } catch (err) {
@@ -219,7 +256,8 @@ export default function CampaignDetailPage() {
 
     try {
       setMessagesLoading(true);
-      const data = await campaignsApi.getCampaignMessages(campaign.id, messagesPage, 10);
+      const projId = parseInt(projectId);
+      const data = await campaignsApi.getCampaignMessages(projId, campaign.id, messagesPage, 10);
       setMessages(data.messages);
       setMessagesTotalPages(data.pagination.last_page);
     } catch (err) {
@@ -265,12 +303,13 @@ export default function CampaignDetailPage() {
     setSuccessMessage(null);
 
     try {
-      const result = await campaignsApi.execute(campaign.id);
+      const projId = parseInt(projectId);
+      const result = await campaignsApi.execute(projId, campaign.id);
 
       // Show appropriate success message based on test mode
-      if (result.data?.global_test_mode) {
+      if ((result as any).global_test_mode) {
         setSuccessMessage(t('smsApi.campaigns.executionSuccess.globalTestMode'));
-      } else if (result.data?.mock_mode) {
+      } else if ((result as any).mock_mode) {
         setSuccessMessage(t('smsApi.campaigns.executionSuccess.testMode'));
       } else {
         setSuccessMessage(t('smsApi.campaigns.executionSuccess.real'));
@@ -295,8 +334,9 @@ export default function CampaignDetailPage() {
     if (!confirm(t('smsApi.campaigns.confirmDelete'))) return;
 
     try {
-      await campaignsApi.delete(campaign.id);
-      window.location.href = `/settings/campaigns/projects/${projectId}/campaigns`;
+      const projId = parseInt(projectId);
+      await campaignsApi.delete(projId, campaign.id);
+      window.location.href = `/projects/${projectId}/campaigns`;
     } catch (err: any) {
       setError(err.response?.data?.message || 'Failed to delete campaign');
     }
@@ -307,7 +347,8 @@ export default function CampaignDetailPage() {
     if (!confirm(t('smsApi.campaigns.confirmCancel'))) return;
 
     try {
-      await campaignsApi.cancel(campaign.id);
+      const projId = parseInt(projectId);
+      await campaignsApi.cancel(projId, campaign.id);
       await loadData();
     } catch (err: any) {
       setError(err.response?.data?.message || 'Failed to cancel campaign');
@@ -318,9 +359,10 @@ export default function CampaignDetailPage() {
     if (!campaign) return;
 
     try {
-      const result = await campaignsApi.duplicate(campaign.id);
+      const projId = parseInt(projectId);
+      const result = await campaignsApi.duplicate(projId, campaign.id);
       // Redirect to the new campaign
-      window.location.href = `/settings/campaigns/projects/${projectId}/campaigns/${result.campaign.id}`;
+      window.location.href = `/projects/${projectId}/campaigns/${result.id}`;
     } catch (err: any) {
       setError(err.response?.data?.message || 'Failed to duplicate campaign');
     }
@@ -336,7 +378,8 @@ export default function CampaignDetailPage() {
     setSuccessMessage(null);
 
     try {
-      await campaignsApi.activate(campaign.id, confirmed);
+      const projId = parseInt(projectId);
+      await campaignsApi.activate(projId, campaign.id);
       setSuccessMessage(t('smsApi.campaigns.activateSuccess'));
       await loadData();
     } catch (err: any) {
@@ -391,7 +434,8 @@ export default function CampaignDetailPage() {
     setSuccessMessage(null);
 
     try {
-      await campaignsApi.pause(campaign.id);
+      const projId = parseInt(projectId);
+      await campaignsApi.pause(projId, campaign.id);
       setSuccessMessage(t('smsApi.campaigns.pauseSuccess'));
       await loadData();
     } catch (err: any) {
@@ -407,7 +451,8 @@ export default function CampaignDetailPage() {
     setError(null);
 
     try {
-      const result = await campaignsApi.testSend(campaign.id, testSendCount);
+      const projId = parseInt(projectId);
+      const result = await campaignsApi.testSend(projId, campaign.id, testSendCount);
       setTestSendResults(result.messages);
       setSuccessMessage(t('smsApi.campaigns.testSendSuccess', { count: result.sent }));
     } catch (err: any) {
@@ -433,7 +478,8 @@ export default function CampaignDetailPage() {
     setError(null);
 
     try {
-      const result = await campaignsApi.testSendCustom(campaign.id, {
+      const projId = parseInt(projectId);
+      const result = await campaignsApi.testSendCustom(projId, campaign.id, {
         phone: customPhone || undefined,
         email: customEmail || undefined,
       });
@@ -454,8 +500,9 @@ export default function CampaignDetailPage() {
     setError(null);
 
     try {
-      const result = await campaignsApi.retryFailed(campaign.id);
-      setSuccessMessage(t('smsApi.campaigns.retrySuccess', { retried: result.retried, skipped: result.skipped }));
+      const projId = parseInt(projectId);
+      const result = await campaignsApi.retryFailed(projId, campaign.id);
+      setSuccessMessage(t('smsApi.campaigns.retrySuccess', { retried: result.queued, skipped: result.skipped }));
       await loadData();
       await loadMessages();
     } catch (err: any) {
@@ -467,6 +514,22 @@ export default function CampaignDetailPage() {
 
   const formatDate = (dateString: string | null) => {
     return formatDateInTimezone(dateString, timezone, { includeTime: true, locale: lang });
+  };
+
+  // Helper function for dynamic target labels based on campaign target_type
+  const getTargetLabel = (targetType: string | undefined, plural: boolean = true) => {
+    if (targetType === 'service') {
+      return plural ? t('smsApi.campaigns.services') : t('smsApi.campaigns.service');
+    }
+    return plural ? t('smsApi.campaigns.customers') : t('smsApi.campaigns.customer');
+  };
+
+  // Helper for no conditions message based on target_type
+  const getNoConditionsMessage = (targetType: string | undefined) => {
+    if (targetType === 'service') {
+      return t('smsApi.campaigns.noConditionsServices');
+    }
+    return t('smsApi.campaigns.noConditionsCustomers');
   };
 
   if (isLoading) {
@@ -497,7 +560,7 @@ export default function CampaignDetailPage() {
           </h3>
           <p className="text-gray-600 dark:text-gray-400 mb-8">{error}</p>
           <Link
-            href={`/settings/campaigns/projects/${projectId}/campaigns`}
+            href={`/projects/${projectId}/campaigns`}
             className="cursor-pointer px-8 py-3 rounded-2xl font-medium text-white bg-gradient-to-r from-indigo-500 to-purple-500 hover:shadow-lg transition-all duration-300 hover:scale-105 inline-block"
           >
             {t('common.back')}
@@ -513,7 +576,7 @@ export default function CampaignDetailPage() {
         {/* Header */}
         <div className="mb-8">
           <Link
-            href={`/settings/campaigns/projects/${projectId}/campaigns`}
+            href={`/projects/${projectId}/campaigns`}
             className="inline-flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors cursor-pointer mb-4"
           >
             <ArrowLeft className="w-4 h-4" />
@@ -527,156 +590,191 @@ export default function CampaignDetailPage() {
         </div>
 
         {/* Campaign Header */}
-        <div className="rounded-3xl p-6 md:p-8 bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50 mb-6">
-          {/* Title and Status */}
-          <div className="mb-6">
-            <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-2">
-              {campaign.name}
-            </h1>
-            <div className="flex flex-wrap items-center gap-3">
-              {/* Channel Badge */}
-              <span className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium ${
-                campaign.channel === 'sms'
-                  ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400'
-                  : campaign.channel === 'email'
-                  ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
-                  : 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400'
-              }`}>
-                {campaign.channel === 'sms' && <Smartphone className="w-4 h-4" />}
-                {campaign.channel === 'email' && <Mail className="w-4 h-4" />}
-                {campaign.channel === 'both' && <Layers className="w-4 h-4" />}
-                {campaign.channel === 'sms' && t('smsApi.campaigns.channelSms')}
-                {campaign.channel === 'email' && t('smsApi.campaigns.channelEmail')}
-                {campaign.channel === 'both' && t('smsApi.campaigns.channelBoth')}
-              </span>
-              <span className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium ${statusColors[campaign.status]}`}>
-                {statusIcons[campaign.status]}
-                {t(`smsApi.campaigns.statuses.${campaign.status}`)}
-              </span>
-              <span className="text-sm text-gray-500 dark:text-gray-400">
-                {formatDate(campaign.created_at)}
-              </span>
+        <div className="rounded-3xl bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50 mb-6 overflow-hidden">
+          {/* Top Section - Name + Primary Action */}
+          <div className="p-6 md:p-8">
+            <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+              {/* Left - Campaign Info */}
+              <div className="flex-1">
+                <div className="flex items-center gap-3 mb-3">
+                  {/* Status Badge - Prominent */}
+                  <span className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-semibold ${statusColors[campaign.status]}`}>
+                    {statusIcons[campaign.status]}
+                    {t(`smsApi.campaigns.statuses.${campaign.status}`)}
+                  </span>
+                  {/* Campaign Type Badge */}
+                  <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${
+                    campaign.type === 'automated'
+                      ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400'
+                      : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'
+                  }`}>
+                    {campaign.type === 'automated' ? <RefreshCw className="w-3 h-3" /> : <Send className="w-3 h-3" />}
+                    {campaign.type === 'automated' ? 'Automated' : 'One-time'}
+                  </span>
+                </div>
+                <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-4">
+                  {campaign.name}
+                </h1>
+                {/* Info Pills */}
+                <div className="flex flex-wrap items-center gap-2">
+                  {/* Channel */}
+                  <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm ${
+                    campaign.channel === 'sms'
+                      ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-900/20 dark:text-indigo-400'
+                      : campaign.channel === 'email'
+                      ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-400'
+                      : 'bg-purple-50 text-purple-700 dark:bg-purple-900/20 dark:text-purple-400'
+                  }`}>
+                    {campaign.channel === 'sms' && <Smartphone className="w-4 h-4" />}
+                    {campaign.channel === 'email' && <Mail className="w-4 h-4" />}
+                    {campaign.channel === 'both' && <Layers className="w-4 h-4" />}
+                    {campaign.channel === 'sms' && t('smsApi.campaigns.channelSms')}
+                    {campaign.channel === 'email' && t('smsApi.campaigns.channelEmail')}
+                    {campaign.channel === 'both' && t('smsApi.campaigns.channelBoth')}
+                  </div>
+                  {/* Target Type */}
+                  <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm bg-gray-50 text-gray-600 dark:bg-gray-800 dark:text-gray-400">
+                    <Users className="w-4 h-4" />
+                    {campaign.target_type === 'service'
+                      ? (campaign.service_type?.label?.[lang] || campaign.service_type?.label?.en || 'Services')
+                      : 'Customers'}
+                  </div>
+                  {/* Created Date */}
+                  <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm bg-gray-50 text-gray-500 dark:bg-gray-800 dark:text-gray-500">
+                    <Calendar className="w-4 h-4" />
+                    {formatDate(campaign.created_at)}
+                  </div>
+                </div>
+              </div>
+
+              {/* Right - Primary Action */}
+              <div className="flex flex-col gap-2">
+                {/* Draft campaign - Execute/Activate */}
+                {campaign.status === 'draft' && (
+                  campaign.type === 'automated' ? (
+                    <button
+                      onClick={() => handleActivate()}
+                      className="flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-semibold bg-gradient-to-r from-emerald-500 to-teal-500 text-white hover:shadow-lg hover:shadow-emerald-500/25 transition-all"
+                    >
+                      <Play className="w-5 h-5" />
+                      {t('smsApi.campaigns.actions.activate')}
+                    </button>
+                  ) : (
+                    <button
+                      onClick={handleExecute}
+                      className="flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-semibold bg-gradient-to-r from-emerald-500 to-teal-500 text-white hover:shadow-lg hover:shadow-emerald-500/25 transition-all"
+                    >
+                      <Play className="w-5 h-5" />
+                      {t('smsApi.campaigns.actions.execute')}
+                    </button>
+                  )
+                )}
+                {/* Active campaign - Pause */}
+                {campaign.status === 'active' && campaign.type === 'automated' && (
+                  <button
+                    onClick={handlePause}
+                    className="flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-semibold bg-amber-500 text-white hover:bg-amber-600 transition-all"
+                  >
+                    <Pause className="w-5 h-5" />
+                    {t('smsApi.campaigns.actions.pause')}
+                  </button>
+                )}
+                {/* Paused campaign - Activate */}
+                {campaign.status === 'paused' && campaign.type === 'automated' && (
+                  <button
+                    onClick={() => handleActivate()}
+                    className="flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-semibold bg-gradient-to-r from-emerald-500 to-teal-500 text-white hover:shadow-lg hover:shadow-emerald-500/25 transition-all"
+                  >
+                    <Play className="w-5 h-5" />
+                    {t('smsApi.campaigns.actions.activate')}
+                  </button>
+                )}
+                {/* Sending/Scheduled - Cancel */}
+                {(campaign.status === 'scheduled' || campaign.status === 'sending') && (
+                  <button
+                    onClick={handleCancel}
+                    className="flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-semibold bg-amber-500 text-white hover:bg-amber-600 transition-all"
+                  >
+                    <XCircle className="w-5 h-5" />
+                    {t('smsApi.campaigns.actions.cancel')}
+                  </button>
+                )}
+              </div>
             </div>
           </div>
 
-          {/* Primary Actions */}
-          <div className="flex flex-wrap gap-3 mb-4">
-            {/* Draft campaign - Edit + Execute/Activate */}
-            {campaign.status === 'draft' && (
-              <>
+          {/* Bottom Section - Action Bar */}
+          <div className="px-6 md:px-8 py-4 bg-gray-50/50 dark:bg-gray-800/30 border-t border-gray-200/50 dark:border-gray-700/50">
+            <div className="flex flex-wrap items-center gap-2">
+              {/* Edit - for draft/paused */}
+              {['draft', 'paused'].includes(campaign.status) && (
                 <Link
-                  href={`/settings/campaigns/projects/${projectId}/campaigns/${campaignId}/edit`}
-                  className="cursor-pointer flex items-center gap-2 px-5 py-2.5 rounded-xl font-medium bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all text-sm"
+                  href={`/projects/${projectId}/campaigns/${campaignId}/edit`}
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all text-sm"
                 >
                   <Pencil className="w-4 h-4" />
                   {t('smsApi.campaigns.actions.edit')}
                 </Link>
-                {campaign.type === 'automated' ? (
-                  <button
-                    onClick={() => handleActivate()}
-                    className="cursor-pointer flex items-center gap-2 px-5 py-2.5 rounded-xl font-medium bg-gradient-to-r from-emerald-500 to-teal-500 text-white hover:shadow-lg transition-all text-sm"
-                  >
-                    <Play className="w-4 h-4" />
-                    {t('smsApi.campaigns.actions.activate')}
-                  </button>
-                ) : (
-                  <button
-                    onClick={handleExecute}
-                    className="cursor-pointer flex items-center gap-2 px-5 py-2.5 rounded-xl font-medium bg-gradient-to-r from-emerald-500 to-teal-500 text-white hover:shadow-lg transition-all text-sm"
-                  >
-                    <Play className="w-4 h-4" />
-                    {t('smsApi.campaigns.actions.execute')}
-                  </button>
-                )}
-              </>
-            )}
-            {/* Active campaign - Pause */}
-            {campaign.status === 'active' && campaign.type === 'automated' && (
-              <button
-                onClick={handlePause}
-                className="cursor-pointer flex items-center gap-2 px-5 py-2.5 rounded-xl font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 hover:bg-amber-200 dark:hover:bg-amber-900/50 transition-all text-sm"
-              >
-                <Pause className="w-4 h-4" />
-                {t('smsApi.campaigns.actions.pause')}
-              </button>
-            )}
-            {/* Paused campaign - Edit + Activate */}
-            {campaign.status === 'paused' && campaign.type === 'automated' && (
-              <>
-                <Link
-                  href={`/settings/campaigns/projects/${projectId}/campaigns/${campaignId}/edit`}
-                  className="cursor-pointer flex items-center gap-2 px-5 py-2.5 rounded-xl font-medium bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all text-sm"
-                >
-                  <Pencil className="w-4 h-4" />
-                  {t('smsApi.campaigns.actions.edit')}
-                </Link>
-                <button
-                  onClick={() => handleActivate()}
-                  className="cursor-pointer flex items-center gap-2 px-5 py-2.5 rounded-xl font-medium bg-gradient-to-r from-emerald-500 to-teal-500 text-white hover:shadow-lg transition-all text-sm"
-                >
-                  <Play className="w-4 h-4" />
-                  {t('smsApi.campaigns.actions.activate')}
-                </button>
-              </>
-            )}
-            {/* Sending/Scheduled - Cancel */}
-            {(campaign.status === 'scheduled' || campaign.status === 'sending') && (
-              <button
-                onClick={handleCancel}
-                className="cursor-pointer flex items-center gap-2 px-5 py-2.5 rounded-xl font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 hover:bg-amber-200 dark:hover:bg-amber-900/50 transition-all text-sm"
-              >
-                <XCircle className="w-4 h-4" />
-                {t('smsApi.campaigns.actions.cancel')}
-              </button>
-            )}
-          </div>
+              )}
 
-          {/* Secondary Actions */}
-          <div className="flex flex-wrap gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
-            {/* Test buttons - available for all campaign statuses */}
-            <button
-              onClick={() => setShowTestSendModal(true)}
-              className="cursor-pointer flex items-center gap-2 px-4 py-2 rounded-lg font-medium bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300 hover:bg-purple-100 dark:hover:bg-purple-900/30 transition-all text-sm"
-            >
-              <TestTube className="w-4 h-4" />
-              {t('smsApi.campaigns.actions.testSend')}
-            </button>
-            <button
-              onClick={() => setShowCustomTestModal(true)}
-              className="cursor-pointer flex items-center gap-2 px-4 py-2 rounded-lg font-medium bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-all text-sm"
-            >
-              {campaign.channel === 'email' ? <Mail className="w-4 h-4" /> : <Phone className="w-4 h-4" />}
-              {t('smsApi.campaigns.actions.testCustom')}
-            </button>
-            {/* Retry failed - for campaigns with failures */}
-            {campaign.failed_count > 0 && ['completed', 'failed', 'active', 'paused'].includes(campaign.status) && (
+              {/* Divider */}
+              {['draft', 'paused'].includes(campaign.status) && (
+                <div className="w-px h-6 bg-gray-200 dark:bg-gray-700 mx-1" />
+              )}
+
+              {/* Test Send */}
               <button
-                onClick={handleRetryFailed}
-                disabled={retryLoading}
-                className="cursor-pointer flex items-center gap-2 px-4 py-2 rounded-lg font-medium bg-orange-50 dark:bg-orange-900/20 text-orange-700 dark:text-orange-300 hover:bg-orange-100 dark:hover:bg-orange-900/30 transition-all text-sm disabled:opacity-50"
+                onClick={() => setShowTestSendModal(true)}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-purple-700 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-all text-sm"
               >
-                <RotateCcw className={`w-4 h-4 ${retryLoading ? 'animate-spin' : ''}`} />
-                {t('smsApi.campaigns.actions.retryFailed')} ({campaign.failed_count})
+                <TestTube className="w-4 h-4" />
+                {t('smsApi.campaigns.actions.testSend')}
               </button>
-            )}
-            {/* Duplicate - always visible */}
-            <button
-              onClick={handleDuplicate}
-              className="cursor-pointer flex items-center gap-2 px-4 py-2 rounded-lg font-medium bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all text-sm"
-            >
-              <Copy className="w-4 h-4" />
-              {t('smsApi.campaigns.actions.duplicate')}
-            </button>
-            {/* Delete - for all except active/sending */}
-            {!['active', 'sending'].includes(campaign.status) && (
+
+              {/* Custom Test */}
               <button
-                onClick={handleDelete}
-                className="cursor-pointer flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all text-sm"
+                onClick={() => setShowCustomTestModal(true)}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-blue-700 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all text-sm"
               >
-                <Trash2 className="w-4 h-4" />
-                {t('smsApi.campaigns.actions.delete')}
+                {campaign.channel === 'email' ? <Mail className="w-4 h-4" /> : <Phone className="w-4 h-4" />}
+                {t('smsApi.campaigns.actions.testCustom')}
               </button>
-            )}
+
+              {/* Retry Failed */}
+              {campaign.failed_count > 0 && ['completed', 'failed', 'active', 'paused'].includes(campaign.status) && (
+                <button
+                  onClick={handleRetryFailed}
+                  disabled={retryLoading}
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-orange-700 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-all text-sm disabled:opacity-50"
+                >
+                  <RotateCcw className={`w-4 h-4 ${retryLoading ? 'animate-spin' : ''}`} />
+                  {t('smsApi.campaigns.actions.retryFailed')} ({campaign.failed_count})
+                </button>
+              )}
+
+              {/* Spacer */}
+              <div className="flex-1" />
+
+              {/* Duplicate */}
+              <button
+                onClick={handleDuplicate}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all text-sm"
+              >
+                <Copy className="w-4 h-4" />
+                {t('smsApi.campaigns.actions.duplicate')}
+              </button>
+
+              {/* Delete */}
+              {!['active', 'sending'].includes(campaign.status) && (
+                <button
+                  onClick={handleDelete}
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all text-sm"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  {t('smsApi.campaigns.actions.delete')}
+                </button>
+              )}
+            </div>
           </div>
         </div>
 
@@ -713,124 +811,6 @@ export default function CampaignDetailPage() {
             <p className="text-red-800 dark:text-red-200">{error}</p>
           </div>
         )}
-
-        {/* Stats Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-          {/* Planned/Target */}
-          <div className="rounded-2xl p-4 bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center">
-                <Users className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
-              </div>
-              <div>
-                <p className="text-xs text-gray-500 dark:text-gray-400">{t('smsApi.campaigns.stats.target')}</p>
-                {campaign.channel === 'both' ? (
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <Smartphone className="w-3 h-3 text-indigo-500" />
-                      <span className="text-lg font-bold text-gray-900 dark:text-white">{plannedSmsTotal}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Mail className="w-3 h-3 text-emerald-500" />
-                      <span className="text-lg font-bold text-gray-900 dark:text-white">{plannedEmailTotal}</span>
-                    </div>
-                  </div>
-                ) : (
-                  <p className="text-xl font-bold text-gray-900 dark:text-white">{currentCount ?? campaign.target_count}</p>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* Sent */}
-          <div className="rounded-2xl p-4 bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-                <Send className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-              </div>
-              <div>
-                <p className="text-xs text-gray-500 dark:text-gray-400">{t('smsApi.campaigns.stats.sent')}</p>
-                {campaign.channel === 'both' ? (
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <Smartphone className="w-3 h-3 text-indigo-500" />
-                      <span className="text-lg font-bold text-gray-900 dark:text-white">{campaign.sent_count}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Mail className="w-3 h-3 text-emerald-500" />
-                      <span className="text-lg font-bold text-gray-900 dark:text-white">{campaign.email_sent_count || 0}</span>
-                    </div>
-                  </div>
-                ) : campaign.channel === 'email' ? (
-                  <p className="text-xl font-bold text-gray-900 dark:text-white">{campaign.email_sent_count || 0}</p>
-                ) : (
-                  <>
-                    <p className="text-xl font-bold text-gray-900 dark:text-white">{campaign.sent_count}</p>
-                    <p className="text-xs text-blue-600 dark:text-blue-400 mt-0.5">
-                      {t('smsApi.campaigns.stats.sentToday')}: {campaign.sent_today_count}
-                    </p>
-                  </>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* Delivered */}
-          <div className="rounded-2xl p-4 bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
-                <CheckCircle className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-              </div>
-              <div>
-                <p className="text-xs text-gray-500 dark:text-gray-400">{t('smsApi.campaigns.stats.delivered')}</p>
-                {campaign.channel === 'both' ? (
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <Smartphone className="w-3 h-3 text-indigo-500" />
-                      <span className="text-lg font-bold text-gray-900 dark:text-white">{campaign.delivered_count}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Mail className="w-3 h-3 text-emerald-500" />
-                      <span className="text-lg font-bold text-gray-900 dark:text-white">{campaign.email_delivered_count || 0}</span>
-                    </div>
-                  </div>
-                ) : campaign.channel === 'email' ? (
-                  <p className="text-xl font-bold text-gray-900 dark:text-white">{campaign.email_delivered_count || 0}</p>
-                ) : (
-                  <p className="text-xl font-bold text-gray-900 dark:text-white">{campaign.delivered_count}</p>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* Failed */}
-          <div className="rounded-2xl p-4 bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
-                <XCircle className="w-5 h-5 text-red-600 dark:text-red-400" />
-              </div>
-              <div>
-                <p className="text-xs text-gray-500 dark:text-gray-400">{t('smsApi.campaigns.stats.failed')}</p>
-                {campaign.channel === 'both' ? (
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <Smartphone className="w-3 h-3 text-indigo-500" />
-                      <span className="text-lg font-bold text-gray-900 dark:text-white">{campaign.failed_count}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Mail className="w-3 h-3 text-emerald-500" />
-                      <span className="text-lg font-bold text-gray-900 dark:text-white">{campaign.email_failed_count || 0}</span>
-                    </div>
-                  </div>
-                ) : campaign.channel === 'email' ? (
-                  <p className="text-xl font-bold text-gray-900 dark:text-white">{campaign.email_failed_count || 0}</p>
-                ) : (
-                  <p className="text-xl font-bold text-gray-900 dark:text-white">{campaign.failed_count}</p>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
 
         {/* Current Count Warning (for drafts) */}
         {campaign.status === 'draft' && currentCount !== null && currentCount !== campaign.target_count && (
@@ -914,11 +894,11 @@ export default function CampaignDetailPage() {
                 <div className="space-y-3">
                   <div className="p-3 rounded-lg bg-white dark:bg-gray-800">
                     <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">{t('smsApi.campaigns.emailSubject')}</p>
-                    <p className="text-gray-900 dark:text-white font-medium">{campaign.email_subject_template || '-'}</p>
+                    <p className="text-gray-900 dark:text-white font-medium">{campaign.email_subject_template || campaign.email_subject || '-'}</p>
                   </div>
                   <div className="p-3 rounded-lg bg-white dark:bg-gray-800">
                     <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">{t('smsApi.campaigns.emailBody')}</p>
-                    <p className="text-gray-900 dark:text-white whitespace-pre-wrap text-sm">{campaign.email_body_template || '-'}</p>
+                    <p className="text-gray-900 dark:text-white whitespace-pre-wrap text-sm">{campaign.email_body_template || campaign.email_body || '-'}</p>
                   </div>
                 </div>
               </div>
@@ -934,8 +914,8 @@ export default function CampaignDetailPage() {
                 {campaign.segment_filter?.conditions?.length > 0 ? (
                   <div className="space-y-2">
                     {campaign.segment_filter.conditions.map((condition: any, index: number) => {
-                      const attr = attributes.find(a => a.key === condition.key);
-                      const label = attr?.label || condition.key;
+                      const attr = attributes.find(a => a.key === condition.field);
+                      const label = attr?.label || condition.field;
                       return (
                         <div key={index} className="flex items-center gap-2 text-sm">
                           {index > 0 && (
@@ -955,19 +935,25 @@ export default function CampaignDetailPage() {
                     })}
                   </div>
                 ) : (
-                  <p className="text-sm text-gray-500 dark:text-gray-400">{t('smsApi.campaigns.noConditions')}</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">{getNoConditionsMessage(campaign.target_type)}</p>
                 )}
               </div>
             </div>
 
-            {/* Current Target Count with Refresh */}
+            {/* Current Target Count with List */}
             {campaign.status === 'draft' && (
               <div className="p-4 rounded-xl bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200/30 dark:border-indigo-800/30">
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-3">
                     <Users className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
                     <div>
-                      <p className="text-sm text-indigo-700 dark:text-indigo-300">{t('smsApi.campaigns.currentTargetCount')}</p>
+                      <p className="text-sm text-indigo-700 dark:text-indigo-300">
+                        {campaign.target_type === 'service'
+                          ? t('smsApi.campaigns.currentTargeted', {
+                              type: campaign.service_type?.label?.[lang] || campaign.service_type?.label?.en || t('smsApi.campaigns.services')
+                            })
+                          : t('smsApi.campaigns.currentTargetCustomers')}
+                      </p>
                       <p className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">
                         {currentCount !== null ? currentCount : campaign.target_count}
                       </p>
@@ -982,6 +968,84 @@ export default function CampaignDetailPage() {
                     {t('smsApi.campaigns.refreshCount')}
                   </button>
                 </div>
+
+                {/* Targeted Records List */}
+                {plannedContacts.length > 0 && (
+                  <div className="border-t border-indigo-200/50 dark:border-indigo-700/50 pt-4">
+                    <div className="space-y-2 max-h-60 overflow-y-auto">
+                      {plannedContacts.map((contact, index) => {
+                        const displayName = contact.name || contact.attributes?.name || contact.phone || contact.email || `#${contact.id}`;
+                        const serviceTypeKey = campaign.service_type?.key || 'hosting';
+                        const searchUrl = `/projects/${projectId}/services/${serviceTypeKey}?search=${encodeURIComponent(displayName)}`;
+
+                        // Format expiry date - handle DD.MM.YYYY format
+                        let expiryDisplay = '';
+                        const expiryRaw = contact.attributes?.expiry_at || contact.attributes?.expiry_date;
+                        if (expiryRaw) {
+                          // Check if it's DD.MM.YYYY format
+                          if (typeof expiryRaw === 'string' && expiryRaw.match(/^\d{2}\.\d{2}\.\d{4}$/)) {
+                            expiryDisplay = expiryRaw; // Already formatted
+                          } else {
+                            const expiryDate = new Date(expiryRaw);
+                            if (!isNaN(expiryDate.getTime())) {
+                              expiryDisplay = expiryDate.toLocaleDateString();
+                            }
+                          }
+                        }
+
+                        return (
+                          <div
+                            key={contact.id || index}
+                            className="flex items-center justify-between p-3 rounded-lg bg-white/50 dark:bg-gray-800/50"
+                          >
+                            <div className="flex items-center gap-3">
+                              <div className="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center text-indigo-600 dark:text-indigo-400 text-sm font-medium">
+                                {index + 1}
+                              </div>
+                              <div>
+                                <Link
+                                  href={searchUrl}
+                                  className="text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:underline"
+                                >
+                                  {displayName}
+                                </Link>
+                                {contact.phone && (
+                                  <p className="text-xs text-gray-500 dark:text-gray-400">{contact.phone}</p>
+                                )}
+                              </div>
+                            </div>
+                            {expiryDisplay && (
+                              <span className="text-xs text-gray-500 dark:text-gray-400">
+                                {t('smsApi.campaigns.expiresAt')}: {expiryDisplay}
+                              </span>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                    {plannedTotalPages > 1 && (
+                      <div className="flex items-center justify-center gap-2 mt-3 pt-3 border-t border-indigo-200/50 dark:border-indigo-700/50">
+                        <button
+                          onClick={() => setPlannedPage(p => Math.max(1, p - 1))}
+                          disabled={plannedPage === 1}
+                          className="px-3 py-1 text-xs rounded-lg bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 disabled:opacity-50"
+                        >
+                          {t('common.previous')}
+                        </button>
+                        <span className="text-xs text-indigo-600 dark:text-indigo-400">
+                          {plannedPage} / {plannedTotalPages}
+                        </span>
+                        <button
+                          onClick={() => setPlannedPage(p => Math.min(plannedTotalPages, p + 1))}
+                          disabled={plannedPage === plannedTotalPages}
+                          className="px-3 py-1 text-xs rounded-lg bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 disabled:opacity-50"
+                        >
+                          {t('common.next')}
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -1042,25 +1106,30 @@ export default function CampaignDetailPage() {
 
         {/* Planned Messages (for draft, scheduled, active, paused - contacts that will receive messages) */}
         {['draft', 'scheduled', 'active', 'paused'].includes(campaign.status) && (
-          <PlannedMessagesTable
-            contacts={plannedContacts}
-            channel={campaign.channel as CampaignChannel}
-            isLoading={plannedLoading}
-            page={plannedPage}
-            totalPages={plannedTotalPages}
-            total={plannedTotal}
-            smsTotal={plannedSmsTotal}
-            emailTotal={plannedEmailTotal}
-            onPageChange={setPlannedPage}
-            nextRunAt={nextRunAt}
-            formatDate={formatDate}
-            emailSender={campaign.email_sender || undefined}
-          />
+          <div className="mb-6">
+            <MessageTable
+              messages={plannedContacts}
+              channel={campaign.channel as CampaignChannel}
+              isLoading={plannedLoading}
+              page={plannedPage}
+              totalPages={plannedTotalPages}
+              total={plannedTotal}
+              smsCount={plannedSmsTotal}
+              emailCount={plannedEmailTotal}
+              onPageChange={setPlannedPage}
+              formatDate={formatDate}
+              nextRunAt={nextRunAt}
+              emailSender={campaign.email_sender || DEFAULT_EMAIL_SENDER}
+              smsSender={campaign.sender || DEFAULT_SMS_SENDER}
+              mode="planned"
+              emptyMessage={t('smsApi.campaigns.noPlannedContacts')}
+            />
+          </div>
         )}
 
         {/* Sent Messages History (for all campaigns) */}
-        <SentMessagesTable
-          messages={messages}
+        <MessageTable
+          messages={transformedMessages}
           channel={campaign.channel as CampaignChannel}
           isLoading={messagesLoading}
           page={messagesPage}
@@ -1069,7 +1138,9 @@ export default function CampaignDetailPage() {
           emailCount={campaign.email_sent_count || 0}
           onPageChange={setMessagesPage}
           formatDate={formatDate}
-          emailSender={campaign.email_sender || undefined}
+          emailSender={campaign.email_sender || DEFAULT_EMAIL_SENDER}
+          smsSender={campaign.sender || DEFAULT_SMS_SENDER}
+          mode="sent"
         />
 
         {/* Test Send Modal */}
@@ -1336,6 +1407,7 @@ export default function CampaignDetailPage() {
             </div>
           </div>
         )}
+
       </div>
     </div>
   );

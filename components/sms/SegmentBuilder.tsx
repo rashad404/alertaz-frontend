@@ -3,12 +3,15 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
 import { Plus, Trash2, Users, ChevronDown, Filter, Copy, Check } from 'lucide-react';
-import { campaignsApi, AttributeSchema, SegmentFilter, Condition } from '@/lib/api/campaigns';
+import { campaignsApi, AttributeSchema } from '@/lib/api/campaigns';
+import type { FilterConfig, FilterCondition } from '@/lib/types/api';
 
 interface SegmentBuilderProps {
-  value: SegmentFilter;
-  onChange: (filter: SegmentFilter) => void;
+  value: FilterConfig;
+  onChange: (filter: FilterConfig) => void;
   showPreview?: boolean;
+  projectId: number;
+  targetType?: 'customer' | 'service';
 }
 
 interface PreviewData {
@@ -28,7 +31,7 @@ const OPERATORS_WITHOUT_VALUE = [
   'not_empty', 'any_expiry_today'
 ];
 
-export default function SegmentBuilder({ value, onChange, showPreview = true }: SegmentBuilderProps) {
+export default function SegmentBuilder({ value, onChange, showPreview = true, projectId, targetType = 'customer' }: SegmentBuilderProps) {
   const t = useTranslations();
   const [attributes, setAttributes] = useState<AttributeSchema[]>([]);
   const [isLoadingAttributes, setIsLoadingAttributes] = useState(true);
@@ -66,14 +69,18 @@ export default function SegmentBuilder({ value, onChange, showPreview = true }: 
   };
 
   useEffect(() => {
-    loadAttributes();
-  }, []);
+    if (projectId) {
+      loadAttributes();
+    }
+  }, [projectId, targetType]);
 
   const loadAttributes = async () => {
     try {
       setIsLoadingAttributes(true);
-      const data = await campaignsApi.getAttributes();
-      setAttributes(data.attributes);
+      const data = await campaignsApi.getAttributes(projectId);
+      // Load attributes based on targetType
+      const attrs = targetType === 'service' ? data.service : data.customer;
+      setAttributes(attrs || []);
     } catch (err: any) {
       setError(err.response?.data?.message || 'Failed to load attributes');
     } finally {
@@ -88,7 +95,7 @@ export default function SegmentBuilder({ value, onChange, showPreview = true }: 
     }
 
     const hasIncompleteConditions = value.conditions.some(
-      (c) => !c.key || !c.operator || (!OPERATORS_WITHOUT_VALUE.includes(c.operator) && (c.value === undefined || c.value === null || c.value === ''))
+      (c) => !c.field || !c.operator || (!OPERATORS_WITHOUT_VALUE.includes(c.operator) && (c.value === undefined || c.value === null || c.value === ''))
     );
 
     if (hasIncompleteConditions) {
@@ -97,14 +104,23 @@ export default function SegmentBuilder({ value, onChange, showPreview = true }: 
 
     try {
       setIsLoadingPreview(true);
-      const data = await campaignsApi.previewSegment(value, 5);
-      setPreview(data);
+      const data = await campaignsApi.preview(projectId, {
+        target_type: targetType,
+        filter: value,
+      });
+      setPreview({
+        total_count: data.count,
+        preview_count: data.sample?.length || 0,
+        preview_contacts: data.sample || [],
+        debug_sql: data.debug_sql,
+        debug_filter: data.debug_filter,
+      });
     } catch (err: any) {
       console.error('Preview failed:', err);
     } finally {
       setIsLoadingPreview(false);
     }
-  }, [value]);
+  }, [value, projectId, targetType]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -116,7 +132,7 @@ export default function SegmentBuilder({ value, onChange, showPreview = true }: 
   }, [value, showPreview, loadPreview]);
 
   const addCondition = () => {
-    const newConditions = [...value.conditions, { key: '', operator: '', value: '' }];
+    const newConditions = [...value.conditions, { field: '', operator: '', value: '' }];
     onChange({ ...value, conditions: newConditions });
   };
 
@@ -125,22 +141,22 @@ export default function SegmentBuilder({ value, onChange, showPreview = true }: 
     onChange({ ...value, conditions: newConditions });
   };
 
-  const updateCondition = (index: number, field: keyof Condition, fieldValue: any) => {
+  const updateCondition = (index: number, fieldName: keyof FilterCondition, fieldValue: any) => {
     const newConditions = [...value.conditions];
-    newConditions[index] = { ...newConditions[index], [field]: fieldValue };
+    newConditions[index] = { ...newConditions[index], [fieldName]: fieldValue };
 
     // Reset value when operator doesn't need it
-    if (field === 'operator' && OPERATORS_WITHOUT_VALUE.includes(fieldValue)) {
+    if (fieldName === 'operator' && OPERATORS_WITHOUT_VALUE.includes(fieldValue)) {
       delete newConditions[index].value;
     }
 
     // Reset value when operator changes (different operators expect different value formats)
-    if (field === 'operator' && !OPERATORS_WITHOUT_VALUE.includes(fieldValue)) {
+    if (fieldName === 'operator' && !OPERATORS_WITHOUT_VALUE.includes(fieldValue)) {
       newConditions[index].value = null;
     }
 
     // Reset operator and value when attribute changes
-    if (field === 'key') {
+    if (fieldName === 'field') {
       newConditions[index].operator = '';
       newConditions[index].value = null;
     }
@@ -162,12 +178,12 @@ export default function SegmentBuilder({ value, onChange, showPreview = true }: 
     return translation === key ? operator.replace(/_/g, ' ') : translation;
   };
 
-  const renderValueInput = (condition: Condition, index: number) => {
+  const renderValueInput = (condition: FilterCondition, index: number) => {
     if (OPERATORS_WITHOUT_VALUE.includes(condition.operator)) {
       return null;
     }
 
-    const attribute = getAttributeByKey(condition.key);
+    const attribute = getAttributeByKey(condition.field);
     if (!attribute) return null;
 
     // Array operators that need days input
@@ -383,7 +399,7 @@ export default function SegmentBuilder({ value, onChange, showPreview = true }: 
           </div>
         ) : (
           value.conditions.map((condition, index) => {
-            const attribute = getAttributeByKey(condition.key);
+            const attribute = getAttributeByKey(condition.field);
             return (
               <div
                 key={index}
@@ -392,8 +408,8 @@ export default function SegmentBuilder({ value, onChange, showPreview = true }: 
                 {/* Attribute Selector */}
                 <div className="relative min-w-[180px]">
                   <select
-                    value={condition.key}
-                    onChange={(e) => updateCondition(index, 'key', e.target.value)}
+                    value={condition.field}
+                    onChange={(e) => updateCondition(index, 'field', e.target.value)}
                     className="w-full px-3 py-2.5 pr-8 border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm appearance-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
                   >
                     <option value="">{t('smsApi.segments.selectAttribute')}</option>
@@ -407,7 +423,7 @@ export default function SegmentBuilder({ value, onChange, showPreview = true }: 
                 </div>
 
                 {/* Operator Selector */}
-                {condition.key && attribute && (
+                {condition.field && attribute && (
                   <div className="relative min-w-[160px]">
                     <select
                       value={condition.operator}
@@ -415,7 +431,7 @@ export default function SegmentBuilder({ value, onChange, showPreview = true }: 
                       className="w-full px-3 py-2.5 pr-8 border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm appearance-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
                     >
                       <option value="">{t('smsApi.segments.selectOperator')}</option>
-                      {attribute.conditions.map((op) => (
+                      {attribute.conditions?.map((op) => (
                         <option key={op} value={op}>
                           {getOperatorLabel(op)}
                         </option>

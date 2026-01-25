@@ -51,9 +51,10 @@ export default function CreateCampaignPage() {
   }, [selectedProject]);
 
   const loadAttributes = async () => {
+    if (!selectedProject) return;
     try {
-      const data = await campaignsApi.getAttributes();
-      setAttributes(data.attributes);
+      const data = await campaignsApi.getAttributes(selectedProject.id);
+      setAttributes(data.customer || []);
     } catch (err) {
       console.error('Failed to load attributes:', err);
     }
@@ -61,13 +62,16 @@ export default function CreateCampaignPage() {
 
   useEffect(() => {
     const loadPreview = async () => {
-      if (formData.segment_filter.conditions.length === 0) {
+      if (!selectedProject || formData.segment_filter.conditions.length === 0) {
         setPreviewCount(null);
         return;
       }
       try {
-        const data = await campaignsApi.previewSegment(formData.segment_filter, 1);
-        setPreviewCount(data.total_count);
+        const data = await campaignsApi.preview(selectedProject.id, {
+          target_type: 'customer',
+          filter: formData.segment_filter,
+        });
+        setPreviewCount(data.count);
       } catch (err) {
         setPreviewCount(null);
       }
@@ -75,7 +79,7 @@ export default function CreateCampaignPage() {
 
     const timer = setTimeout(loadPreview, 500);
     return () => clearTimeout(timer);
-  }, [formData.segment_filter]);
+  }, [formData.segment_filter, selectedProject]);
 
   const handleSubmit = async () => {
     if (!selectedProject) return;
@@ -95,7 +99,7 @@ export default function CreateCampaignPage() {
         payload.scheduled_at = formData.scheduled_at;
       }
 
-      await campaignsApi.create(payload);
+      await campaignsApi.create(selectedProject.id, payload);
       router.push(`/${lang}/settings/campaigns/campaigns`);
     } catch (err: any) {
       setError(err.response?.data?.message || 'Failed to create campaign');
@@ -289,11 +293,12 @@ export default function CreateCampaignPage() {
           )}
 
           {/* Step 2: Audience */}
-          {currentStep === 1 && (
+          {currentStep === 1 && selectedProject && (
             <SegmentBuilder
               value={formData.segment_filter}
               onChange={(filter) => setFormData({ ...formData, segment_filter: filter })}
               showPreview={true}
+              projectId={selectedProject.id}
             />
           )}
 

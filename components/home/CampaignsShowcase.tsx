@@ -190,7 +190,7 @@ export default function CampaignsShowcase() {
                 {/* CTA Button */}
                 {isLoggedIn ? (
                   <Link
-                    href="/settings/campaigns/projects"
+                    href="/projects"
                     className="cursor-pointer inline-flex items-center gap-2 px-6 py-3 rounded-2xl font-medium text-white bg-gradient-to-r from-purple-500 to-pink-500 hover:shadow-lg hover:shadow-purple-500/30 hover:scale-105 transition-all duration-300"
                   >
                     {t('campaigns.cta')}

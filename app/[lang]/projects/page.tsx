@@ -289,7 +289,7 @@ export default function ProjectsPage() {
                     {/* Actions */}
                     <div className="mt-auto space-y-2">
                       <Link
-                        href={`/settings/campaigns/projects/${project.id}/campaigns`}
+                        href={`/projects/${project.id}`}
                         className="w-full px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer bg-gradient-to-r from-pink-500 to-rose-500 text-white shadow-lg hover:shadow-xl hover:scale-[1.02]"
                       >
                         <Megaphone className="w-4 h-4" />

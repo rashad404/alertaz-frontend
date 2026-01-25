@@ -228,7 +228,7 @@ export default function EmailHistoryPage() {
               {t('emailApi.apiToken')}
             </h2>
             <Link
-              href="/settings/campaigns/projects"
+              href="/projects"
               className="text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
             >
               {t('emailApi.manageProjects')}

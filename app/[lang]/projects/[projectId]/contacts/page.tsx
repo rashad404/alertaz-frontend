@@ -371,7 +371,7 @@ export default function ProjectContactsPage() {
             {t('smsApi.projects.notFound')}
           </h3>
           <Link
-            href={`/settings/campaigns/projects`}
+            href={`/projects`}
             className="cursor-pointer px-8 py-3 rounded-2xl font-medium text-white bg-gradient-to-r from-indigo-500 to-purple-500 hover:shadow-lg transition-all duration-300 hover:scale-105 inline-block"
           >
             {t('common.back')}
@@ -387,7 +387,7 @@ export default function ProjectContactsPage() {
         {/* Header Navigation */}
         <div className="mb-6">
           <Link
-            href={`/settings/campaigns/projects/${projectId}/campaigns`}
+            href={`/projects/${projectId}/campaigns`}
             className="inline-flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors cursor-pointer mb-4"
           >
             <ArrowLeft className="w-4 h-4" />
@@ -530,7 +530,7 @@ export default function ProjectContactsPage() {
                 </div>
                 <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">{t('smsApi.contacts.quickStart.step4Desc')}</p>
                 <Link
-                  href={`/settings/campaigns/projects/${projectId}/campaigns/create`}
+                  href={`/projects/${projectId}/campaigns/create`}
                   className="text-sm text-indigo-600 dark:text-indigo-400 hover:underline"
                 >
                   {t('smsApi.campaigns.createCampaign')} →

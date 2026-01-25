@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Bell, X, Check, CheckCheck } from 'lucide-react';
 import axios from 'axios';
 import { useTranslations } from 'next-intl';
@@ -25,8 +25,13 @@ export default function NotificationCenter() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
+  const initialFetchDone = useRef(false);
 
   useEffect(() => {
+    // Prevent double fetch in StrictMode
+    if (initialFetchDone.current) return;
+    initialFetchDone.current = true;
+
     fetchUnreadCount();
 
     // Poll for new notifications every 30 seconds (backup mechanism)
