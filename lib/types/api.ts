@@ -202,7 +202,8 @@ export interface SendResult {
 export interface ServiceStats {
   total: number;
   active: number;
-  suspended: number;
+  inactive: number;
+  suspended?: number; // Legacy, use inactive instead
   expired: number;
   expiring_7_days: number;
   expiring_30_days: number;

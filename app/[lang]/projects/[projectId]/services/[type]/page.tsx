@@ -269,30 +269,72 @@ export default function ServicesPage() {
         {/* Stats */}
         {stats && (
           <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
-            <div className="relative rounded-2xl p-4 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50">
+            <button
+              onClick={() => { setStatusFilter(''); setExpiryFilter(null); }}
+              className={`relative rounded-2xl p-4 text-left transition-all duration-200 ${
+                statusFilter === '' && expiryFilter === null
+                  ? 'bg-gray-100 dark:bg-gray-800 border-2 border-gray-400 dark:border-gray-500'
+                  : 'bg-white/80 dark:bg-gray-900/80 border border-gray-200/50 dark:border-gray-700/50 hover:border-gray-300 dark:hover:border-gray-600'
+              } backdrop-blur-xl`}
+            >
               <div className="text-2xl font-bold text-gray-900 dark:text-white">{stats.total}</div>
               <div className="text-sm text-gray-600 dark:text-gray-400">Total</div>
-            </div>
-            <div className="relative rounded-2xl p-4 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50">
+            </button>
+            <button
+              onClick={() => { setStatusFilter('active'); setExpiryFilter(null); }}
+              className={`relative rounded-2xl p-4 text-left transition-all duration-200 ${
+                statusFilter === 'active' && expiryFilter === null
+                  ? 'bg-green-100 dark:bg-green-900/30 border-2 border-green-400 dark:border-green-500'
+                  : 'bg-white/80 dark:bg-gray-900/80 border border-gray-200/50 dark:border-gray-700/50 hover:border-green-300 dark:hover:border-green-600'
+              } backdrop-blur-xl`}
+            >
               <div className="text-2xl font-bold text-green-600 dark:text-green-400">{stats.active}</div>
               <div className="text-sm text-gray-600 dark:text-gray-400">Active</div>
-            </div>
-            <div className="relative rounded-2xl p-4 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50">
-              <div className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">{stats.suspended}</div>
-              <div className="text-sm text-gray-600 dark:text-gray-400">Suspended</div>
-            </div>
-            <div className="relative rounded-2xl p-4 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50">
+            </button>
+            <button
+              onClick={() => { setStatusFilter('inactive'); setExpiryFilter(null); }}
+              className={`relative rounded-2xl p-4 text-left transition-all duration-200 ${
+                statusFilter === 'inactive' && expiryFilter === null
+                  ? 'bg-gray-200 dark:bg-gray-700 border-2 border-gray-400 dark:border-gray-500'
+                  : 'bg-white/80 dark:bg-gray-900/80 border border-gray-200/50 dark:border-gray-700/50 hover:border-gray-300 dark:hover:border-gray-600'
+              } backdrop-blur-xl`}
+            >
+              <div className="text-2xl font-bold text-gray-600 dark:text-gray-400">{stats.inactive || stats.suspended || 0}</div>
+              <div className="text-sm text-gray-600 dark:text-gray-400">Inactive</div>
+            </button>
+            <button
+              onClick={() => { setStatusFilter('expired'); setExpiryFilter(null); }}
+              className={`relative rounded-2xl p-4 text-left transition-all duration-200 ${
+                statusFilter === 'expired' && expiryFilter === null
+                  ? 'bg-red-100 dark:bg-red-900/30 border-2 border-red-400 dark:border-red-500'
+                  : 'bg-white/80 dark:bg-gray-900/80 border border-gray-200/50 dark:border-gray-700/50 hover:border-red-300 dark:hover:border-red-600'
+              } backdrop-blur-xl`}
+            >
               <div className="text-2xl font-bold text-red-600 dark:text-red-400">{stats.expired}</div>
               <div className="text-sm text-gray-600 dark:text-gray-400">Expired</div>
-            </div>
-            <div className="relative rounded-2xl p-4 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50">
+            </button>
+            <button
+              onClick={() => { setStatusFilter(''); setExpiryFilter(7); }}
+              className={`relative rounded-2xl p-4 text-left transition-all duration-200 ${
+                expiryFilter === 7
+                  ? 'bg-orange-100 dark:bg-orange-900/30 border-2 border-orange-400 dark:border-orange-500'
+                  : 'bg-white/80 dark:bg-gray-900/80 border border-gray-200/50 dark:border-gray-700/50 hover:border-orange-300 dark:hover:border-orange-600'
+              } backdrop-blur-xl`}
+            >
               <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">{stats.expiring_7_days}</div>
               <div className="text-sm text-gray-600 dark:text-gray-400">Expiring 7d</div>
-            </div>
-            <div className="relative rounded-2xl p-4 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border border-gray-200/50 dark:border-gray-700/50">
+            </button>
+            <button
+              onClick={() => { setStatusFilter(''); setExpiryFilter(30); }}
+              className={`relative rounded-2xl p-4 text-left transition-all duration-200 ${
+                expiryFilter === 30
+                  ? 'bg-blue-100 dark:bg-blue-900/30 border-2 border-blue-400 dark:border-blue-500'
+                  : 'bg-white/80 dark:bg-gray-900/80 border border-gray-200/50 dark:border-gray-700/50 hover:border-blue-300 dark:hover:border-blue-600'
+              } backdrop-blur-xl`}
+            >
               <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">{stats.expiring_30_days}</div>
               <div className="text-sm text-gray-600 dark:text-gray-400">Expiring 30d</div>
-            </div>
+            </button>
           </div>
         )}
 
@@ -305,7 +347,7 @@ export default function ServicesPage() {
           >
             <option value="">All Status</option>
             <option value="active">Active</option>
-            <option value="suspended">Suspended</option>
+            <option value="inactive">Inactive</option>
             <option value="expired">Expired</option>
           </select>
           <select
