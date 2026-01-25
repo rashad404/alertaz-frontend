@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams } from 'next/navigation';
 import { Link, useRouter } from '@/lib/navigation';
 import {
@@ -68,6 +68,57 @@ export default function CreateCampaignPage() {
   const [previewLoading, setPreviewLoading] = useState(false);
   const [copiedSql, setCopiedSql] = useState(false);
   const [copiedJson, setCopiedJson] = useState(false);
+
+  // Refs for textareas to enable focus after variable insertion
+  const smsTextareaRef = useRef<HTMLTextAreaElement>(null);
+  const emailSubjectRef = useRef<HTMLInputElement>(null);
+  const emailBodyRef = useRef<HTMLTextAreaElement>(null);
+
+  // Track which field is currently active for variable insertion
+  const [activeField, setActiveField] = useState<'sms' | 'email_subject' | 'email_body'>('sms');
+
+  // Update activeField default when channel changes
+  useEffect(() => {
+    if (formData.channel === 'email') {
+      setActiveField('email_subject');
+    } else {
+      setActiveField('sms');
+    }
+  }, [formData.channel]);
+
+  // Insert variable into the active field and focus at the end
+  const insertVariable = (variable: string) => {
+    const varText = `{{${variable}}}`;
+
+    if (activeField === 'sms') {
+      setFormData({ ...formData, message_template: formData.message_template + varText });
+      setTimeout(() => {
+        if (smsTextareaRef.current) {
+          smsTextareaRef.current.focus();
+          const len = (formData.message_template + varText).length;
+          smsTextareaRef.current.setSelectionRange(len, len);
+        }
+      }, 0);
+    } else if (activeField === 'email_subject') {
+      setFormData({ ...formData, email_subject: formData.email_subject + varText });
+      setTimeout(() => {
+        if (emailSubjectRef.current) {
+          emailSubjectRef.current.focus();
+          const len = (formData.email_subject + varText).length;
+          emailSubjectRef.current.setSelectionRange(len, len);
+        }
+      }, 0);
+    } else {
+      setFormData({ ...formData, email_body: formData.email_body + varText });
+      setTimeout(() => {
+        if (emailBodyRef.current) {
+          emailBodyRef.current.focus();
+          const len = (formData.email_body + varText).length;
+          emailBodyRef.current.setSelectionRange(len, len);
+        }
+      }, 0);
+    }
+  };
 
 
   const copyToClipboard = (text: string, type: 'sql' | 'json') => {
@@ -890,13 +941,7 @@ export default function CreateCampaignPage() {
                         <button
                           key={v}
                           type="button"
-                          onClick={() => {
-                            if (formData.channel === 'sms' || formData.channel === 'both') {
-                              setFormData({ ...formData, message_template: formData.message_template + `{{${v}}}` });
-                            } else {
-                              setFormData({ ...formData, email_body: formData.email_body + `{{${v}}}` });
-                            }
-                          }}
+                          onClick={() => insertVariable(v)}
                           className="px-2 py-1 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 rounded text-xs text-gray-700 dark:text-gray-300 cursor-pointer transition-colors"
                         >
                           {`{{${v}}}`}
@@ -909,13 +954,7 @@ export default function CreateCampaignPage() {
                         <button
                           key={v}
                           type="button"
-                          onClick={() => {
-                            if (formData.channel === 'sms' || formData.channel === 'both') {
-                              setFormData({ ...formData, message_template: formData.message_template + `{{${v}}}` });
-                            } else {
-                              setFormData({ ...formData, email_body: formData.email_body + `{{${v}}}` });
-                            }
-                          }}
+                          onClick={() => insertVariable(v)}
                           className="px-2 py-1 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 rounded text-xs text-gray-700 dark:text-gray-300 cursor-pointer transition-colors"
                         >
                           {`{{${v}}}`}
@@ -926,13 +965,7 @@ export default function CreateCampaignPage() {
                           <button
                             key={f}
                             type="button"
-                            onClick={() => {
-                              if (formData.channel === 'sms' || formData.channel === 'both') {
-                                setFormData({ ...formData, message_template: formData.message_template + `{{${f}}}` });
-                              } else {
-                                setFormData({ ...formData, email_body: formData.email_body + `{{${f}}}` });
-                              }
-                            }}
+                            onClick={() => insertVariable(f)}
                             className="px-2 py-1 bg-blue-100 dark:bg-blue-900/30 hover:bg-blue-200 dark:hover:bg-blue-800/50 rounded text-xs text-blue-700 dark:text-blue-300 cursor-pointer transition-colors"
                           >
                             {`{{${f}}}`}
@@ -950,8 +983,10 @@ export default function CreateCampaignPage() {
                     SMS Message *
                   </label>
                   <textarea
+                    ref={smsTextareaRef}
                     value={formData.message_template}
                     onChange={(e) => setFormData({ ...formData, message_template: e.target.value })}
+                    onFocus={() => setActiveField('sms')}
                     rows={4}
                     placeholder="Dear {{name}}, your service {{name}} expires on {{expiry_at}}..."
                     className="w-full px-4 py-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:border-indigo-500 resize-none"
@@ -970,9 +1005,11 @@ export default function CreateCampaignPage() {
                       Email Subject *
                     </label>
                     <input
+                      ref={emailSubjectRef}
                       type="text"
                       value={formData.email_subject}
                       onChange={(e) => setFormData({ ...formData, email_subject: e.target.value })}
+                      onFocus={() => setActiveField('email_subject')}
                       placeholder="Your service expires soon"
                       className="w-full px-4 py-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:border-indigo-500"
                     />
@@ -982,8 +1019,10 @@ export default function CreateCampaignPage() {
                       Email Body *
                     </label>
                     <textarea
+                      ref={emailBodyRef}
                       value={formData.email_body}
                       onChange={(e) => setFormData({ ...formData, email_body: e.target.value })}
+                      onFocus={() => setActiveField('email_body')}
                       rows={8}
                       placeholder="Dear {{name}},\n\nYour service will expire soon..."
                       className="w-full px-4 py-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:border-indigo-500 resize-none"
