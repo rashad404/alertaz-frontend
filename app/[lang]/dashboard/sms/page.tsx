@@ -1,34 +1,14 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
-import { useRouter } from 'next/navigation';
-import { MessageSquare, Copy, Check, Code, Filter, X, Search, Eye, EyeOff, FlaskConical, Loader2 } from 'lucide-react';
+import { MessageSquare, Copy, Check, Code, Filter, X, Search, Eye, EyeOff, RefreshCw, Loader2 } from 'lucide-react';
 import { Link } from '@/lib/navigation';
 import axios from 'axios';
 import { formatDateInTimezone } from '@/lib/utils/date';
 import { useTimezone } from '@/providers/timezone-provider';
 import AuthRequiredCard from '@/components/auth/AuthRequiredCard';
-
-interface Campaign {
-  id: number;
-  name: string;
-}
-
-interface SMSMessage {
-  id: number;
-  source: 'api' | 'campaign';
-  phone: string;
-  message: string;
-  sender: string;
-  cost: number;
-  status: string;
-  is_test: boolean;
-  created_at: string;
-  sent_at: string | null;
-  delivered_at: string | null;
-  campaign?: Campaign | null;
-}
+import MessageTable, { MessageData } from '@/components/sms/MessageTable';
 
 interface Filters {
   source: string;
@@ -40,9 +20,8 @@ interface Filters {
 
 export default function SMSHistoryPage() {
   const t = useTranslations();
-  const router = useRouter();
   const { timezone } = useTimezone();
-  const [messages, setMessages] = useState<SMSMessage[]>([]);
+  const [messages, setMessages] = useState<MessageData[]>([]);
   const [loading, setLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [apiToken, setApiToken] = useState<string>('');
@@ -66,11 +45,7 @@ export default function SMSHistoryPage() {
     setCurrentPage(1);
   }, [filters]);
 
-  useEffect(() => {
-    fetchData();
-  }, [currentPage, filters]);
-
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       const token = localStorage.getItem('token');
       if (!token) {
@@ -94,7 +69,7 @@ export default function SMSHistoryPage() {
 
       // Build query params
       const params = new URLSearchParams();
-      params.append('per_page', '10');
+      params.append('per_page', '20');
       params.append('page', currentPage.toString());
 
       if (filters.source) params.append('source', filters.source);
@@ -106,7 +81,25 @@ export default function SMSHistoryPage() {
       const historyRes = await axios.get(`${API_URL}/sms/history?${params.toString()}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      setMessages(historyRes.data.data.messages);
+
+      // Transform API response to MessageData format
+      const transformedMessages: MessageData[] = historyRes.data.data.messages.map((msg: any) => ({
+        id: msg.id,
+        type: 'sms' as const,
+        phone: msg.recipient,
+        recipient: msg.recipient,
+        message: msg.content,
+        content: msg.content,
+        sender: msg.sender,
+        segments: msg.segments,
+        status: msg.status,
+        cost: msg.cost,
+        sent_at: msg.sent_at || msg.created_at,
+        is_test: msg.is_test,
+        source: msg.source,
+      }));
+
+      setMessages(transformedMessages);
       setTotalPages(historyRes.data.data.pagination.last_page);
       setTotal(historyRes.data.data.pagination.total);
 
@@ -118,7 +111,11 @@ export default function SMSHistoryPage() {
       }
       setLoading(false);
     }
-  };
+  }, [API_URL, currentPage, filters]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   const copyToken = async () => {
     try {
@@ -144,34 +141,6 @@ export default function SMSHistoryPage() {
     }
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'delivered':
-        return 'text-green-600 bg-green-50 dark:bg-green-900/20';
-      case 'sent':
-        return 'text-blue-600 bg-blue-50 dark:bg-blue-900/20';
-      case 'failed':
-        return 'text-red-600 bg-red-50 dark:bg-red-900/20';
-      default:
-        return 'text-gray-600 bg-gray-50 dark:bg-gray-900/20';
-    }
-  };
-
-  const getSourceBadge = (source: string) => {
-    if (source === 'campaign') {
-      return (
-        <span className="px-2 py-1 text-xs font-semibold rounded-full bg-purple-100 text-purple-600 dark:bg-purple-900/20">
-          {t('smsApi.sourceCampaign')}
-        </span>
-      );
-    }
-    return (
-      <span className="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-600 dark:bg-blue-900/20">
-        {t('smsApi.sourceApi')}
-      </span>
-    );
-  };
-
   const clearFilters = () => {
     setFilters({
       source: '',
@@ -183,6 +152,10 @@ export default function SMSHistoryPage() {
   };
 
   const hasActiveFilters = Object.values(filters).some(v => v !== '');
+
+  const formatDate = (dateStr: string) => {
+    return formatDateInTimezone(dateStr, timezone, { includeTime: true });
+  };
 
   // Show auth required card if not authenticated
   if (isAuthenticated === false) {
@@ -218,13 +191,22 @@ export default function SMSHistoryPage() {
               {t('smsApi.historyDescription')}
             </p>
           </div>
-          <Link
-            href="/sms-api"
-            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-500 text-white rounded-xl hover:shadow-lg transition-all"
-          >
-            <Code className="w-5 h-5" />
-            {t('smsApi.apiDocs')}
-          </Link>
+          <div className="flex gap-2">
+            <button
+              onClick={fetchData}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            >
+              <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+              {t('common.refresh')}
+            </button>
+            <Link
+              href="/sms-api"
+              className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-500 text-white rounded-xl hover:shadow-lg transition-all"
+            >
+              <Code className="w-5 h-5" />
+              {t('smsApi.apiDocs')}
+            </Link>
+          </div>
         </div>
 
         {/* API Token */}
@@ -277,11 +259,11 @@ export default function SMSHistoryPage() {
           </div>
         </div>
 
-        {/* SMS History */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
-          <div className="p-6 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+        {/* Filters */}
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow mb-6">
+          <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
             <div>
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white">{t('smsApi.history')}</h2>
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{t('smsApi.history')}</h2>
               <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
                 {total} {t('smsApi.message').toLowerCase()}
               </p>
@@ -299,7 +281,6 @@ export default function SMSHistoryPage() {
             </button>
           </div>
 
-          {/* Filters */}
           {showFilters && (
             <div className="p-6 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
               <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
@@ -316,6 +297,8 @@ export default function SMSHistoryPage() {
                     <option value="">{t('smsApi.allSources')}</option>
                     <option value="api">{t('smsApi.sourceApi')}</option>
                     <option value="campaign">{t('smsApi.sourceCampaign')}</option>
+                    <option value="service">{t('smsApi.sourceService')}</option>
+                    <option value="customer">{t('smsApi.sourceCustomer')}</option>
                   </select>
                 </div>
 
@@ -394,116 +377,21 @@ export default function SMSHistoryPage() {
               )}
             </div>
           )}
-
-          {messages.length === 0 ? (
-            <div className="p-12 text-center">
-              <MessageSquare className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-600 dark:text-gray-400">{t('smsApi.noMessages')}</p>
-              <Link href="/sms-api" className="text-blue-600 hover:underline text-sm mt-2 inline-block">
-                {t('smsApi.viewDocsToStart')}
-              </Link>
-            </div>
-          ) : (
-            <>
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                  <thead className="bg-gray-50 dark:bg-gray-900/50">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                        {t('smsApi.source')}
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                        {t('smsApi.phone')}
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                        {t('smsApi.message')}
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                        {t('smsApi.sender')}
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                        {t('smsApi.status')}
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                        {t('smsApi.cost')}
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                        {t('smsApi.date')}
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                    {messages.map((msg) => (
-                      <tr key={msg.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="flex flex-col gap-1">
-                            {getSourceBadge(msg.source)}
-                            {msg.campaign && (
-                              <span className="text-xs text-gray-500 dark:text-gray-400">
-                                {msg.campaign.name}
-                              </span>
-                            )}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
-                          {msg.phone}
-                        </td>
-                        <td className="px-6 py-4 text-sm text-gray-700 dark:text-gray-300 max-w-xs truncate">
-                          {msg.message}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">
-                          {msg.sender}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="flex items-center gap-2">
-                            <span className={`px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(msg.status)}`}>
-                              {msg.status}
-                            </span>
-                            {msg.is_test && (
-                              <span className="inline-flex items-center gap-1 px-2 py-1 text-xs font-semibold rounded-full bg-amber-100 text-amber-700 dark:bg-amber-900/20 dark:text-amber-400">
-                                <FlaskConical className="w-3 h-3" />
-                                {t('smsApi.testMode')}
-                              </span>
-                            )}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">
-                          {msg.cost} AZN
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                          {formatDateInTimezone(msg.created_at, timezone, { includeTime: true })}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-
-              {/* Pagination */}
-              {totalPages > 1 && (
-                <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between">
-                  <button
-                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                    disabled={currentPage === 1}
-                    className="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600"
-                  >
-                    {t('common.previous')}
-                  </button>
-                  <span className="text-sm text-gray-600 dark:text-gray-400">
-                    {t('common.pageOf', { current: currentPage, total: totalPages })}
-                  </span>
-                  <button
-                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                    disabled={currentPage === totalPages}
-                    className="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600"
-                  >
-                    {t('common.next')}
-                  </button>
-                </div>
-              )}
-            </>
-          )}
         </div>
+
+        {/* Messages Table with Preview */}
+        <MessageTable
+          messages={messages}
+          channel="sms"
+          isLoading={loading}
+          page={currentPage}
+          totalPages={totalPages}
+          total={total}
+          onPageChange={setCurrentPage}
+          formatDate={formatDate}
+          mode="sent"
+          title={t('smsApi.history')}
+        />
       </div>
     </div>
   );

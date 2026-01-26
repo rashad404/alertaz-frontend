@@ -4,14 +4,13 @@ import { useEffect, useState } from 'react';
 import { projectsApi, Project } from '@/lib/api/projects';
 import { useProject } from '@/contexts/ProjectContext';
 import { useTranslations } from 'next-intl';
-import { Plus, Edit2, RefreshCw, Trash2, Copy, Check, Server, Megaphone, ArrowRight } from 'lucide-react';
+import { Plus, Server, ArrowRight, Users, Package, Send } from 'lucide-react';
 import { Link } from '@/lib/navigation';
 
 export default function ProjectsPage() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
-  const [editingProject, setEditingProject] = useState<Project | null>(null);
   const [error, setError] = useState<string | null>(null);
   const { setSelectedProject, selectedProject } = useProject();
   const t = useTranslations();
@@ -20,7 +19,6 @@ export default function ProjectsPage() {
     name: '',
     description: '',
   });
-  const [copiedTokenId, setCopiedTokenId] = useState<number | null>(null);
 
   useEffect(() => {
     loadProjects();
@@ -42,83 +40,18 @@ export default function ProjectsPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      if (editingProject) {
-        await projectsApi.update(editingProject.id, formData);
-      } else {
-        const result = await projectsApi.create(formData);
-        setSelectedProject(result.project);
-      }
+      const result = await projectsApi.create(formData);
+      setSelectedProject(result.project);
       await loadProjects();
       setShowAddModal(false);
-      setEditingProject(null);
       setFormData({ name: '', description: '' });
     } catch (err: any) {
       setError(err.response?.data?.message || 'Failed to save project');
     }
   };
 
-  const handleDelete = async (id: number) => {
-    if (!confirm(t('smsApi.projects.confirmDelete'))) return;
-
-    try {
-      await projectsApi.delete(id);
-      await loadProjects();
-      if (selectedProject?.id === id) {
-        setSelectedProject(null);
-      }
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to delete project');
-    }
-  };
-
-  const handleRegenerateToken = async (id: number) => {
-    if (!confirm(t('smsApi.projects.confirmRegenerate'))) return;
-
-    try {
-      await projectsApi.regenerateToken(id);
-      await loadProjects();
-      alert(t('smsApi.projects.tokenRegenerated'));
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to regenerate token');
-    }
-  };
-
-  const copyToClipboard = async (text: string, projectId: number) => {
-    try {
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        await navigator.clipboard.writeText(text);
-      } else {
-        // Fallback for non-secure contexts
-        const textArea = document.createElement('textarea');
-        textArea.value = text;
-        textArea.style.position = 'fixed';
-        textArea.style.left = '-999999px';
-        textArea.style.top = '-999999px';
-        document.body.appendChild(textArea);
-        textArea.focus();
-        textArea.select();
-        document.execCommand('copy');
-        textArea.remove();
-      }
-      setCopiedTokenId(projectId);
-      setTimeout(() => setCopiedTokenId(null), 2000);
-    } catch (err) {
-      console.error('Failed to copy:', err);
-    }
-  };
-
   const openAddModal = () => {
-    setEditingProject(null);
     setFormData({ name: '', description: '' });
-    setShowAddModal(true);
-  };
-
-  const openEditModal = (project: Project) => {
-    setEditingProject(project);
-    setFormData({
-      name: project.name,
-      description: project.settings?.description || '',
-    });
     setShowAddModal(true);
   };
 
@@ -197,15 +130,16 @@ export default function ProjectsPage() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {projects.map((project) => (
-              <div
+              <Link
                 key={project.id}
-                className="group relative cursor-pointer"
+                href={`/projects/${project.id}`}
+                className="group relative block"
               >
                 {/* Glass Card */}
                 <div className={`relative h-full rounded-3xl p-6 bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl border transition-all duration-300 ${
                   selectedProject?.id === project.id
                     ? 'border-indigo-500/50 dark:border-indigo-400/50 shadow-lg shadow-indigo-500/20'
-                    : 'border-gray-200/50 dark:border-gray-700/50 hover:shadow-xl hover:shadow-indigo-500/10 dark:hover:shadow-indigo-400/10'
+                    : 'border-gray-200/50 dark:border-gray-700/50 hover:shadow-xl hover:shadow-indigo-500/10 dark:hover:shadow-indigo-400/10 hover:border-indigo-200 dark:hover:border-indigo-800'
                 }`}>
 
                   {/* Content */}
@@ -240,95 +174,50 @@ export default function ProjectsPage() {
                     {project.stats && (
                       <div className="grid grid-cols-3 gap-3 mb-5 pb-5 border-b border-gray-200/50 dark:border-gray-700/50">
                         <div className="text-center">
-                          <div className="text-2xl font-bold bg-gradient-to-br from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-1">
-                            {project.stats.contacts_count}
+                          <div className="flex items-center justify-center gap-1 mb-1">
+                            <Users className="w-4 h-4 text-indigo-500" />
+                            <div className="text-2xl font-bold bg-gradient-to-br from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                              {project.stats.customers_count}
+                            </div>
                           </div>
-                          <div className="text-xs text-gray-600 dark:text-gray-400">{t('smsApi.projects.contacts')}</div>
+                          <div className="text-xs text-gray-600 dark:text-gray-400">{t('smsApi.projects.customers')}</div>
                         </div>
                         <div className="text-center">
-                          <div className="text-2xl font-bold bg-gradient-to-br from-blue-600 to-cyan-600 bg-clip-text text-transparent mb-1">
-                            {project.stats.campaigns_count}
+                          <div className="flex items-center justify-center gap-1 mb-1">
+                            <Package className="w-4 h-4 text-blue-500" />
+                            <div className="text-2xl font-bold bg-gradient-to-br from-blue-600 to-cyan-600 bg-clip-text text-transparent">
+                              {project.stats.service_types_count}
+                            </div>
+                          </div>
+                          <div className="text-xs text-gray-600 dark:text-gray-400">{t('smsApi.projects.serviceTypes')}</div>
+                        </div>
+                        <div className="text-center">
+                          <div className="flex items-center justify-center gap-1 mb-1">
+                            <Send className="w-4 h-4 text-emerald-500" />
+                            <div className="text-2xl font-bold bg-gradient-to-br from-emerald-600 to-teal-600 bg-clip-text text-transparent">
+                              {project.stats.campaigns_count}
+                            </div>
                           </div>
                           <div className="text-xs text-gray-600 dark:text-gray-400">{t('smsApi.projects.campaigns')}</div>
-                        </div>
-                        <div className="text-center">
-                          <div className="text-2xl font-bold bg-gradient-to-br from-emerald-600 to-teal-600 bg-clip-text text-transparent mb-1">
-                            {project.stats.active_campaigns}
-                          </div>
-                          <div className="text-xs text-gray-600 dark:text-gray-400">{t('smsApi.projects.active')}</div>
                         </div>
                       </div>
                     )}
 
-                    {/* API Token */}
-                    <div className="mb-5">
-                      <label className="text-xs font-medium text-gray-600 dark:text-gray-400 block mb-2">
-                        {t('smsApi.projects.apiToken')}
-                      </label>
-                      <div className="flex gap-2">
-                        <input
-                          type="password"
-                          value={project.api_token}
-                          readOnly
-                          className="flex-1 text-sm bg-gray-50/50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2 text-gray-900 dark:text-white font-mono backdrop-blur-sm transition-colors"
-                        />
-                        <button
-                          onClick={() => copyToClipboard(project.api_token, project.id)}
-                          className={`p-2 rounded-xl transition-colors cursor-pointer ${
-                            copiedTokenId === project.id
-                              ? 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400'
-                              : 'bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300'
-                          }`}
-                          title={t('smsApi.projects.copyToken')}
-                        >
-                          {copiedTokenId === project.id ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* Actions */}
-                    <div className="mt-auto space-y-2">
-                      <Link
-                        href={`/projects/${project.id}`}
-                        className="w-full px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer bg-gradient-to-r from-pink-500 to-rose-500 text-white shadow-lg hover:shadow-xl hover:scale-[1.02]"
-                      >
-                        <Megaphone className="w-4 h-4" />
-                        {t('smsApi.campaigns.title')}
-                        <ArrowRight className="w-4 h-4" />
-                      </Link>
-
-                      <div className="grid grid-cols-3 gap-2">
-                        <button
-                          onClick={() => openEditModal(project)}
-                          className="px-3 py-2 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-xl transition-all duration-300 flex items-center justify-center cursor-pointer"
-                          title={t('common.edit')}
-                        >
-                          <Edit2 className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => handleRegenerateToken(project.id)}
-                          className="px-3 py-2 bg-amber-100 dark:bg-amber-900/30 hover:bg-amber-200 dark:hover:bg-amber-900/50 text-amber-700 dark:text-amber-400 rounded-xl transition-all duration-300 flex items-center justify-center cursor-pointer"
-                          title={t('smsApi.projects.regenerateToken')}
-                        >
-                          <RefreshCw className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(project.id)}
-                          className="px-3 py-2 bg-red-100 dark:bg-red-900/30 hover:bg-red-200 dark:hover:bg-red-900/50 text-red-700 dark:text-red-400 rounded-xl transition-all duration-300 flex items-center justify-center cursor-pointer"
-                          title={t('common.delete')}
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+                    {/* Open Project Button */}
+                    <div className="mt-auto">
+                      <div className="w-full px-4 py-3 rounded-xl text-sm font-medium transition-all duration-300 flex items-center justify-center gap-2 bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-lg group-hover:shadow-xl group-hover:scale-[1.02]">
+                        {t('smsApi.projects.openProject')}
+                        <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
                       </div>
                     </div>
                   </div>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         )}
 
-        {/* Add/Edit Modal */}
+        {/* Add Modal */}
         {showAddModal && (
           <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
             <div className="relative w-full max-w-md animate-in zoom-in duration-200">
@@ -339,7 +228,7 @@ export default function ProjectsPage() {
               <div className="relative rounded-3xl p-8 bg-white/90 dark:bg-gray-900/90 backdrop-blur-2xl border border-white/30 dark:border-gray-700/30 shadow-2xl">
                 <h2 className="text-2xl font-bold mb-6">
                   <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-                    {editingProject ? t('smsApi.projects.editProjectTitle') : t('smsApi.projects.addProjectTitle')}
+                    {t('smsApi.projects.addProjectTitle')}
                   </span>
                 </h2>
 
@@ -376,7 +265,6 @@ export default function ProjectsPage() {
                       type="button"
                       onClick={() => {
                         setShowAddModal(false);
-                        setEditingProject(null);
                         setFormData({ name: '', description: '' });
                       }}
                       className="cursor-pointer flex-1 px-6 py-3 border border-gray-200 dark:border-gray-700 rounded-2xl text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-300"
@@ -387,7 +275,7 @@ export default function ProjectsPage() {
                       type="submit"
                       className="cursor-pointer flex-1 px-6 py-3 bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white rounded-2xl font-medium shadow-lg hover:shadow-xl transition-all duration-300"
                     >
-                      {editingProject ? t('common.save') : t('common.create')}
+                      {t('common.create')}
                     </button>
                   </div>
                 </form>

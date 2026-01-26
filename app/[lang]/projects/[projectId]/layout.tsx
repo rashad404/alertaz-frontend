@@ -16,6 +16,7 @@ import {
   Menu,
   X,
   MessageSquare,
+  Code2,
 } from 'lucide-react';
 import { ProjectProvider, useProject } from './ProjectContext';
 
@@ -87,6 +88,12 @@ function ProjectLayoutContent({ children }: { children: React.ReactNode }) {
         label: 'Templates',
         href: `${basePath}/templates`,
         icon: <FileText className="w-5 h-5" />,
+      },
+      {
+        key: 'api',
+        label: 'API',
+        href: `${basePath}/api`,
+        icon: <Code2 className="w-5 h-5" />,
       },
       {
         key: 'settings',

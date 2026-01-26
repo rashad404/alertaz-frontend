@@ -81,7 +81,24 @@
     "smsCampaigns": "Layihələr",
     "smsCampaignsDescription": "Bildiriş layihələrinizi yaradın və idarə edin",
     "emailApi": "Email API",
-    "emailApiDescription": "Email göndərin və tarixçəyə baxın"
+    "emailApiDescription": "Email göndərin və tarixçəyə baxın",
+    "alertsSection": {
+      "title": "Bildirişlər",
+      "active": "aktiv",
+      "triggeredToday": "bu gün işləyib",
+      "noAlerts": "Hələ bildiriş yoxdur",
+      "noAlertsAction": "Monitorinqə başlamaq üçün ilk bildirişinizi yaradın",
+      "createAlert": "Bildiriş Yarat",
+      "viewAll": "Hamısına Bax"
+    },
+    "messagingSection": {
+      "title": "Biznes Alətləri",
+      "projects": "layihə",
+      "totalMessages": "mesaj göndərilib",
+      "projectsLink": "Layihələr",
+      "smsApi": "SMS API",
+      "emailApi": "Email API"
+    }
   },
   "alerts": {
     "createNew": "Yeni Bildiriş Yarat",
@@ -626,6 +643,8 @@
     "source": "Mənbə",
     "sourceApi": "API",
     "sourceCampaign": "Kampaniya",
+    "sourceService": "Servis",
+    "sourceCustomer": "Müştəri",
     "testMode": "Test",
     "filterBySource": "Mənbəyə görə",
     "filterByProject": "Layihəyə görə",
@@ -657,6 +676,9 @@
       "projectDescriptionPlaceholder": "Bu layihə nə üçündür?",
       "apiToken": "API Token",
       "contacts": "Kontaktlar",
+      "customers": "Müştərilər",
+      "services": "Servislər",
+      "serviceTypes": "Servis Növləri",
       "campaigns": "Kampaniyalar",
       "active": "Aktiv",
       "suspended": "Dayandırılıb",
@@ -670,7 +692,8 @@
       "confirmDelete": "Bu layihəni silmək istədiyinizə əminsiniz?",
       "addProjectTitle": "Yeni Layihə",
       "editProjectTitle": "Layihəni Redaktə Et",
-      "loadingProjects": "Layihələr yüklənir..."
+      "loadingProjects": "Layihələr yüklənir...",
+      "openProject": "Layihəni Aç"
     },
     "segments": {
       "title": "Seqment Qurucusu",
@@ -1137,6 +1160,8 @@
     "source": "Mənbə",
     "sourceApi": "API",
     "sourceCampaign": "Kampaniya",
+    "sourceService": "Servis",
+    "sourceCustomer": "Müştəri",
     "testMode": "Test",
     "filterByDate": "Tarixə görə filtr",
     "allSources": "Bütün mənbələr",
@@ -1194,5 +1219,113 @@
         "500": "Server xətası - sonra yenidən cəhd edin"
       }
     }
+  },
+  "projectApi": {
+    "title": "API",
+    "subtitle": "API vasitəsilə tətbiqlərinizlə inteqrasiya edin",
+    "regenerate": "Yenilə",
+    "documentation": "API Sənədləri",
+    "projectApiDocs": "Project API Sənədləri",
+    "projectApiDocsDesc": "Müştəriləri, xidmətləri sinxronlaşdırın və kampaniyaları idarə edin",
+    "smsApiDocs": "SMS API Sənədləri",
+    "smsApiDocsDesc": "Proqramlı şəkildə SMS göndərin",
+    "emailApiDocs": "Email API Sənədləri",
+    "emailApiDocsDesc": "Proqramlı şəkildə email göndərin",
+    "quickExample": "Sürətli Nümunə"
+  },
+  "projectApiDocs": {
+    "title": "Project API Sənədləri",
+    "subtitle": "Müştəriləri, xidmətləri sinxronlaşdırmaq və kampaniyaları idarə etmək üçün tam bələdçi",
+    "overview": {
+      "title": "İcmal",
+      "description": "Project API sizə müştəriləri və xidmətləri sisteminizlə sinxronlaşdırmağa, kampaniyalar yaratmağa və mesajlar göndərməyə imkan verir. Bu, tərəfdaşlar üçün əsas inteqrasiya nöqtəsidir."
+    },
+    "authentication": {
+      "title": "Autentifikasiya",
+      "description": "Bütün API sorğuları layihə tokeninizlə Authorization başlığı tələb edir:",
+      "getToken": "Tokeninizi Layihələr səhifəsindən əldə edin."
+    },
+    "serviceTypes": {
+      "title": "Xidmət Növləri",
+      "description": "Xidmətləri sinxronlaşdırmadan əvvəl xidmət növlərini təyin edin. Hər növ həmin növ xidmətlərinin hansı məlumat sahələrinə malik olacağını müəyyən edən sxemə malikdir.",
+      "listDesc": "Bütün xidmət növlərinin siyahısı",
+      "createDesc": "Sxemlə yeni xidmət növü yaradın"
+    },
+    "customers": {
+      "title": "Müştərilər",
+      "description": "Müştərilər mesajlarınızı alacaq şəxslərdir. Müştəri bazanızı Alert.az ilə sinxronlaşdırın.",
+      "listDesc": "Səhifələmə ilə müştərilərin siyahısı",
+      "createDesc": "Tək müştəri yaradın",
+      "syncDesc": "1000-ə qədər müştərini kütləvi sinxronlaşdırın",
+      "deleteDesc": "Müştərini silin",
+      "sync": "Müştəri Sinxronizasiyası",
+      "syncDescription": "Müştəriləri sisteminizlə sinxronlaşdırın. Mövcud müştərilər (telefon/email ilə) yenilənəcək, yeniləri yaradılacaq."
+    },
+    "services": {
+      "title": "Xidmətlər",
+      "description": "Xidmətlər müştərilərə aiddir (məsələn, domenlər, abunəliklər, müqavilələr). Hər xidmətin Xidmət Növlərində müəyyən edilmiş növü var.",
+      "listDesc": "Növ üzrə xidmətlərin siyahısı",
+      "syncDesc": "Növ üzrə xidmətləri kütləvi sinxronlaşdırın",
+      "deleteDesc": "Xidməti silin",
+      "sync": "Xidmət Sinxronizasiyası",
+      "syncDescription": "Müəyyən növ xidmətləri sinxronlaşdırın. customer_id vasitəsilə xidmətləri müştərilərə bağlayın."
+    },
+    "quickSend": {
+      "title": "Sürətli Göndərmə",
+      "description": "Kampaniya yaratmadan birbaşa müştəriyə və ya xidmət sahibinə mesaj göndərin.",
+      "customerDesc": "ID ilə müştəriyə göndərin",
+      "serviceDesc": "Növ və ID ilə xidmət sahibinə göndərin"
+    },
+    "campaigns": {
+      "title": "Kampaniyalar",
+      "description": "Seqmentasiya ilə mesaj kampaniyaları yaradın və idarə edin.",
+      "listDesc": "Bütün kampaniyaların siyahısı",
+      "createDesc": "Yeni kampaniya yaradın",
+      "templatesDesc": "Mesaj şablonlarının siyahısı"
+    },
+    "errorCodes": {
+      "title": "Xəta Kodları",
+      "code": "Kod",
+      "description": "Təsvir",
+      "400": "Doğrulama xətası - məlumat formatını yoxlayın",
+      "401": "İcazəsiz - yanlış və ya çatışmayan token",
+      "404": "Tapılmadı - resurs mövcud deyil",
+      "422": "İşlənə bilməyən obyekt - yanlış məlumat formatı",
+      "429": "Çox sorğu - limit aşıldı",
+      "500": "Server xətası - sonra yenidən cəhd edin"
+    },
+    "rateLimits": {
+      "title": "Sorğu Limitləri",
+      "description": "API hər layihə tokeni üçün dəqiqədə 60 sorğu ilə məhdudlaşdırılıb."
+    },
+    "segmentation": {
+      "title": "Seqmentasiya",
+      "description": "Hədəflənmiş kampaniyalar yaratmaq üçün müştəri və xidmət atributlarından istifadə edin:",
+      "example1": "city \"Bakı\" bərabərdir → Bakıdakı müştərilər",
+      "example2": "expiry_date 7 gün ərzində bitir → Tezliklə bitəcək xidmətlər",
+      "example3": "balance 100-dən çoxdur → Yüksək balans müştəriləri"
+    },
+    "response": "Cavab"
+  },
+  "projectSettings": {
+    "title": "Layihə Parametrləri",
+    "subtitle": "Layihə parametrlərini konfiqurasiya edin",
+    "general": "Ümumi",
+    "generalDesc": "Layihə adı və təsviri",
+    "deleteProject": "Layihəni Sil",
+    "serviceTypes": "Servis Növləri",
+    "serviceTypesDesc": "Müştərilərinizin malik olduğu servis növlərini təyin edin",
+    "addType": "Növ Əlavə Et",
+    "newServiceType": "Yeni Servis Növü",
+    "keyLabel": "Açar (unikal identifikator)",
+    "iconLabel": "İkon",
+    "customFields": "Xüsusi Sahələr",
+    "fieldName": "Sahə adı",
+    "displayLabel": "Göstərilən ad",
+    "required": "Məcburi",
+    "enumOptions": "Seçimlər (vergüllə ayrılmış)",
+    "noServiceTypes": "Hələ servis növü təyin edilməyib",
+    "noServiceTypesDesc": "Servislərinizi kateqoriyalaşdırmaq üçün servis növü yaradın",
+    "confirmDeleteServiceType": "Bu servis növünü silmək istədiyinizə əminsiniz?"
   }
 }

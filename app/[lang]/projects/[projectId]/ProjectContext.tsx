@@ -11,6 +11,7 @@ interface ProjectContextValue {
   serviceTypes: ServiceType[];
   serviceTypesLoading: boolean;
   refreshServiceTypes: () => Promise<void>;
+  refreshProject: () => Promise<void>;
 }
 
 const ProjectContext = createContext<ProjectContextValue | null>(null);
@@ -69,7 +70,7 @@ export function ProjectProvider({ projectId, children }: ProjectProviderProps) {
   }, [fetchProject, refreshServiceTypes]);
 
   return (
-    <ProjectContext.Provider value={{ projectId, project, projectLoading, serviceTypes, serviceTypesLoading, refreshServiceTypes }}>
+    <ProjectContext.Provider value={{ projectId, project, projectLoading, serviceTypes, serviceTypesLoading, refreshServiceTypes, refreshProject: fetchProject }}>
       {children}
     </ProjectContext.Provider>
   );

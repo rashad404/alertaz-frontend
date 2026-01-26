@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { Link } from '@/lib/navigation';
-import { Bell, Plus, TrendingUp, Activity, Bitcoin, Globe, BarChart3, MessageSquare, CreditCard, Megaphone, Mail, Wallet, Loader2 } from 'lucide-react';
+import { Bell, Plus, Bitcoin, Globe, BarChart3, MessageSquare, Mail, Loader2, ArrowRight, FolderOpen, TrendingUp, Activity, Play, Pause } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import AuthRequiredCard from '@/components/auth/AuthRequiredCard';
 import { getLocaleFromPathname } from '@/lib/utils/walletAuth';
@@ -16,14 +16,8 @@ interface Alert {
   name: string;
   service: AlertService;
   asset: string;
-  threshold: string;
-  operator: string;
-  field: string;
-  interval: string;
-  channels: string[];
   status: AlertStatus;
   lastTriggered?: Date;
-  createdAt: Date;
 }
 
 const serviceIcons = {
@@ -44,19 +38,6 @@ const serviceGradients = {
   flight: 'from-sky-500 to-blue-500',
 };
 
-// Helper function to normalize old interval formats to new ones
-const normalizeInterval = (interval: string): string => {
-  const intervalMap: { [key: string]: string } = {
-    '5m': '5min',
-    '15m': '15min',
-    '30m': '30min',
-    '1h': '1hour',
-    '6h': '6hours',
-    '24h': '24hours',
-  };
-  return intervalMap[interval] || interval;
-};
-
 export default function DashboardPage() {
   const t = useTranslations();
   const router = useRouter();
@@ -67,13 +48,19 @@ export default function DashboardPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [balance, setBalance] = useState<number | null>(null);
-  const [totalSpent, setTotalSpent] = useState<number>(0);
+  const [projectsCount, setProjectsCount] = useState<number>(0);
+  const [totalMessages, setTotalMessages] = useState<number>(0);
+  const [togglingAlert, setTogglingAlert] = useState<string | null>(null);
 
   const activeAlertsCount = alerts.filter(a => a.status === 'active').length;
-  const triggeredCount = alerts.filter(a => a.lastTriggered).length;
+  const triggeredTodayCount = alerts.filter(a => {
+    if (!a.lastTriggered) return false;
+    const today = new Date();
+    const triggered = new Date(a.lastTriggered);
+    return triggered.toDateString() === today.toDateString();
+  }).length;
 
   useEffect(() => {
-    // Check authentication
     const token = localStorage.getItem('token');
     if (!token) {
       setIsAuthenticated(false);
@@ -82,7 +69,6 @@ export default function DashboardPage() {
     }
     setIsAuthenticated(true);
 
-    // Fetch user data and alerts from API
     const fetchData = async () => {
       try {
         // Fetch user data
@@ -111,28 +97,20 @@ export default function DashboardPage() {
         if (alertsResponse.ok) {
           const alertsData = await alertsResponse.json();
           if (alertsData.status === 'success') {
-            // Laravel paginate returns data.data
             const alertsArray = Array.isArray(alertsData.data) ? alertsData.data : (alertsData.data?.data || []);
-
             const loadedAlerts = alertsArray.map((alert: any) => ({
               id: alert.id.toString(),
               name: alert.name,
               service: alert.service_type || 'crypto',
               asset: alert.asset || '',
-              threshold: alert.conditions?.value?.toString() || 'N/A',
-              operator: alert.conditions?.operator || '',
-              field: alert.conditions?.field || '',
-              interval: alert.check_frequency ? `${alert.check_frequency}s` : '5min',
-              channels: alert.notification_channels || [],
               status: alert.is_active ? 'active' : 'paused',
               lastTriggered: alert.last_triggered_at ? new Date(alert.last_triggered_at) : undefined,
-              createdAt: new Date(alert.created_at),
             }));
             setAlerts(loadedAlerts);
           }
         }
 
-        // Fetch user balance
+        // Fetch balance
         const balanceResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/sms/balance`, {
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -144,7 +122,37 @@ export default function DashboardPage() {
           const balanceData = await balanceResponse.json();
           if (balanceData.status === 'success') {
             setBalance(balanceData.data.balance);
-            setTotalSpent(balanceData.data.total_spent);
+          }
+        }
+
+        // Fetch projects count
+        const projectsResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/projects`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/json',
+          },
+        });
+
+        if (projectsResponse.ok) {
+          const projectsData = await projectsResponse.json();
+          if (projectsData.status === 'success') {
+            const projectsArray = projectsData.data?.projects || [];
+            setProjectsCount(projectsArray.length);
+          }
+        }
+
+        // Fetch total messages from SMS history
+        const historyResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/sms/history?per_page=1`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/json',
+          },
+        });
+
+        if (historyResponse.ok) {
+          const historyData = await historyResponse.json();
+          if (historyData.status === 'success') {
+            setTotalMessages(historyData.data?.pagination?.total || 0);
           }
         }
       } catch (error) {
@@ -157,10 +165,40 @@ export default function DashboardPage() {
     fetchData();
   }, [router]);
 
+  const toggleAlertStatus = async (alertId: string, currentStatus: AlertStatus) => {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
+    setTogglingAlert(alertId);
+    try {
+      const newStatus = currentStatus === 'active' ? false : true;
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/alerts/${alertId}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ is_active: newStatus }),
+      });
+
+      if (response.ok) {
+        setAlerts(prev => prev.map(alert =>
+          alert.id === alertId
+            ? { ...alert, status: newStatus ? 'active' : 'paused' }
+            : alert
+        ));
+      }
+    } catch (error) {
+      console.error('Failed to toggle alert:', error);
+    } finally {
+      setTogglingAlert(null);
+    }
+  };
+
   const handleWalletTopup = () => {
     if (!user?.wallet_id) return;
 
-    // Get client_id from env
     const clientId = process.env.NEXT_PUBLIC_WALLET_CLIENT_ID;
     if (!clientId) {
       console.error('NEXT_PUBLIC_WALLET_CLIENT_ID not configured');
@@ -169,7 +207,6 @@ export default function DashboardPage() {
 
     const walletUrl = process.env.NEXT_PUBLIC_WALLET_URL || 'http://100.89.150.50:3011';
 
-    // 1. Open popup IMMEDIATELY to loading page (prevents popup blocking on mobile)
     const width = 420;
     const height = 600;
     const left = (window.screen.width - width) / 2;
@@ -185,16 +222,13 @@ export default function DashboardPage() {
       return;
     }
 
-    // 2. Redirect popup to topup URL
     const topupUrl = `${walletUrl}/${locale}/oauth/topup?client_id=${clientId}`;
     popup.location.href = topupUrl;
 
-    // 3. Listen for topup result
     const handleMessage = (event: MessageEvent) => {
       if (event.data?.type === 'topup_completed') {
         window.removeEventListener('message', handleMessage);
         popup?.close();
-        // Refresh page after a short delay
         setTimeout(() => {
           window.location.reload();
         }, 1500);
@@ -216,7 +250,7 @@ export default function DashboardPage() {
     );
   }
 
-  // Show loading if still checking auth or loading data
+  // Show loading
   if (isAuthenticated === null || !user) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -235,284 +269,205 @@ export default function DashboardPage() {
         <div className="absolute inset-0 mesh-gradient opacity-30" />
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 py-12">
-        {/* Header */}
-        <div className="mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-2">
+      <div className="max-w-5xl mx-auto px-6 py-8">
+        {/* Compact Header Row */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+          <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
             {t('dashboard.welcome', { name: user.name })}
           </h1>
-          <p className="text-gray-600 dark:text-gray-400">
-            {t('dashboard.subtitle')}
-          </p>
-        </div>
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-          {/* Active Alerts */}
-          <div className="card-glass rounded-3xl p-6">
-            <div className="flex items-center justify-between mb-4">
-              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center">
-                <Bell className="w-6 h-6 text-white" />
-              </div>
-              <TrendingUp className="w-5 h-5 text-green-500" />
-            </div>
-            <div className="text-3xl font-bold text-gray-900 dark:text-white mb-1">{activeAlertsCount}</div>
-            <div className="text-sm text-gray-600 dark:text-gray-400">{t('dashboard.activeAlerts')}</div>
-          </div>
-
-          {/* Notifications Sent */}
-          <div className="card-glass rounded-3xl p-6">
-            <div className="flex items-center justify-between mb-4">
-              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
-                <Activity className="w-6 h-6 text-white" />
-              </div>
-            </div>
-            <div className="text-3xl font-bold text-gray-900 dark:text-white mb-1">{triggeredCount}</div>
-            <div className="text-sm text-gray-600 dark:text-gray-400">{t('dashboard.notificationsSent')}</div>
-          </div>
-
-          {/* Balance */}
-          <div className="card-glass rounded-3xl p-6">
-            <div className="flex items-center justify-between mb-4">
-              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center">
-                <CreditCard className="w-6 h-6 text-white" />
-              </div>
-              {user?.wallet_id && (
-                <button
-                  onClick={handleWalletTopup}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 text-sm font-medium hover:bg-emerald-200 dark:hover:bg-emerald-900/50 transition-colors"
-                >
-                  <Wallet className="w-4 h-4" />
-                  {t('dashboard.topup')}
-                </button>
-              )}
-            </div>
-            <div className="text-3xl font-bold text-gray-900 dark:text-white mb-1">
+          <div className="flex items-center gap-3">
+            <span className="text-lg font-medium text-gray-900 dark:text-white">
               {balance !== null ? `${Number(balance).toFixed(2)} AZN` : '0.00 AZN'}
-            </div>
-            <div className="text-sm text-gray-600 dark:text-gray-400">
-              {t('dashboard.balance')}
-            </div>
+            </span>
+            {user?.wallet_id && (
+              <button
+                onClick={handleWalletTopup}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 text-sm font-medium hover:bg-emerald-200 dark:hover:bg-emerald-900/50 transition-colors"
+              >
+                <Plus className="w-4 h-4" />
+                {t('dashboard.topup')}
+              </button>
+            )}
           </div>
         </div>
 
+        {/* Two-Column Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Alerts Section (B2C) */}
+          <div className="card-glass rounded-3xl p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-500 flex items-center justify-center">
+                <Bell className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+                  {t('dashboard.alertsSection.title')}
+                </h2>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  {activeAlertsCount} {t('dashboard.alertsSection.active')} · {triggeredTodayCount} {t('dashboard.alertsSection.triggeredToday')}
+                </p>
+              </div>
+            </div>
 
-        {/* Recent Alerts */}
-        <div className="card-glass rounded-3xl p-6 mb-12">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-              {t('dashboard.recentAlerts')}
-            </h2>
-            <Link
-              href="/alerts"
-              className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 text-sm font-medium"
-            >
-              {t('dashboard.viewAll')} →
-            </Link>
-          </div>
-
-          <div className="space-y-2">
             {alerts.length === 0 ? (
+              /* Empty State */
               <div className="text-center py-8">
-                <div className="inline-flex items-center justify-center w-12 h-12 mb-3 relative">
-                  <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-500 opacity-20 blur-lg" />
-                  <div className="relative w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-500 p-[1px]">
-                    <div className="w-full h-full rounded-2xl bg-white dark:bg-gray-900 flex items-center justify-center">
-                      <Bell className="w-6 h-6 text-gray-900 dark:text-white" />
-                    </div>
-                  </div>
+                <div className="inline-flex items-center justify-center w-16 h-16 mb-4 rounded-2xl bg-gradient-to-br from-indigo-500/10 to-purple-500/10">
+                  <Bell className="w-8 h-8 text-indigo-500 dark:text-indigo-400" />
                 </div>
-                <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-1">
-                  {t('dashboard.noAlertsYet')}
+                <h3 className="text-base font-medium text-gray-900 dark:text-white mb-1">
+                  {t('dashboard.alertsSection.noAlerts')}
                 </h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                  {t('dashboard.noAlertsDescription')}
+                <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                  {t('dashboard.alertsSection.noAlertsAction')}
                 </p>
                 <Link
                   href="/alerts/quick-setup"
                   className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium text-white bg-gradient-to-r from-indigo-500 to-purple-500 hover:shadow-lg hover:scale-105 transition-all duration-300"
                 >
                   <Plus className="w-4 h-4" />
-                  {t('dashboard.createFirstAlert')}
+                  {t('dashboard.alertsSection.createAlert')}
                 </Link>
               </div>
             ) : (
-              alerts.slice(0, 3).map((alert) => {
-                const ServiceIcon = serviceIcons[alert.service] || Bell;
-                const gradient = serviceGradients[alert.service] || 'from-gray-500 to-gray-600';
+              <>
+                {/* Alert List */}
+                <div className="space-y-2 mb-4">
+                  {alerts.slice(0, 4).map((alert) => {
+                    const ServiceIcon = serviceIcons[alert.service] || Bell;
+                    const gradient = serviceGradients[alert.service] || 'from-gray-500 to-gray-600';
+                    const isToggling = togglingAlert === alert.id;
 
-                return (
-                  <div
-                    key={alert.id}
-                    className="flex items-center gap-3 p-3 rounded-xl bg-white/50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 hover:bg-white dark:hover:bg-gray-800 transition-all"
-                  >
-                    {/* Icon */}
-                    <div className="relative flex-shrink-0">
-                      <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${gradient} p-[1px]`}>
-                        <div className="w-full h-full rounded-lg bg-white dark:bg-gray-900 flex items-center justify-center">
-                          <ServiceIcon className="w-5 h-5 text-gray-900 dark:text-white" />
+                    return (
+                      <div
+                        key={alert.id}
+                        className="flex items-center justify-between p-3 rounded-xl bg-white/50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className={`w-9 h-9 rounded-lg bg-gradient-to-br ${gradient} flex items-center justify-center`}>
+                            <ServiceIcon className="w-4 h-4 text-white" />
+                          </div>
+                          <div>
+                            <span className="text-sm font-medium text-gray-700 dark:text-gray-300 block">
+                              {alert.name}
+                            </span>
+                            <span className={`text-xs ${alert.status === 'active' ? 'text-green-600 dark:text-green-400' : 'text-gray-500 dark:text-gray-400'}`}>
+                              {alert.status === 'active' ? t('alerts.active') : t('alerts.paused')}
+                            </span>
+                          </div>
                         </div>
+                        <button
+                          onClick={() => toggleAlertStatus(alert.id, alert.status)}
+                          disabled={isToggling}
+                          className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all ${
+                            alert.status === 'active'
+                              ? 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 hover:bg-green-200 dark:hover:bg-green-900/50'
+                              : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
+                          }`}
+                        >
+                          {isToggling ? (
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                          ) : alert.status === 'active' ? (
+                            <Pause className="w-4 h-4" />
+                          ) : (
+                            <Play className="w-4 h-4" />
+                          )}
+                        </button>
                       </div>
-                    </div>
+                    );
+                  })}
+                </div>
 
-                    {/* Content */}
-                    <div className="flex-1 min-w-0">
-                      <h3 className="text-sm font-medium text-gray-900 dark:text-white">
-                        {alert.name}
-                      </h3>
-                      <p className="text-xs text-gray-600 dark:text-gray-400">
-                        {alert.service === 'website' ? (
-                          // Website: show URL - UP/DOWN
-                          <>
-                            {alert.asset} - {alert.field === 'is_up' ? t('alerts.statusUp') : t('alerts.statusDown')}
-                          </>
-                        ) : (
-                          // Crypto/Stocks/Currency: show price with operator
-                          <>
-                            {alert.asset && `${alert.asset} `}
-                            {alert.operator === 'greater' && '>'}
-                            {alert.operator === 'less' && '<'}
-                            {alert.operator === 'equals' && '='}
-                            {alert.operator === 'greater_equal' && '≥'}
-                            {alert.operator === 'less_equal' && '≤'}
-                            {' $'}{Number(alert.threshold).toLocaleString()}
-                          </>
-                        )}
-                      </p>
-                    </div>
-
-                    {/* Status */}
-                    <span className={`px-2 py-0.5 rounded-full text-xs font-medium whitespace-nowrap ${
-                      alert.status === 'active'
-                        ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
-                        : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
-                    }`}>
-                      {t(`alerts.${alert.status}`)}
-                    </span>
-                  </div>
-                );
-              })
+                {/* Actions */}
+                <div className="flex items-center gap-3">
+                  <Link
+                    href="/alerts/quick-setup"
+                    className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium text-white bg-gradient-to-r from-indigo-500 to-purple-500 hover:shadow-lg hover:scale-105 transition-all duration-300"
+                  >
+                    <Plus className="w-4 h-4" />
+                    {t('dashboard.alertsSection.createAlert')}
+                  </Link>
+                  <Link
+                    href="/alerts"
+                    className="flex items-center gap-1 text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300"
+                  >
+                    {t('dashboard.alertsSection.viewAll')}
+                    <ArrowRight className="w-4 h-4" />
+                  </Link>
+                </div>
+              </>
             )}
           </div>
-        </div>
 
-        {/* Two-Column Grid: B2C and B2B */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* B2C - Personal Monitoring */}
-          <div>
-            <div className="mb-4">
-              <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">
-                {t('dashboard.personalMonitoring')}
-              </h3>
-              <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
-                {t('dashboard.personalMonitoringDesc')}
-              </p>
+          {/* Messaging Section (B2B) */}
+          <div className="card-glass rounded-3xl p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-pink-500 to-rose-500 flex items-center justify-center">
+                <BarChart3 className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+                  {t('dashboard.messagingSection.title')}
+                </h2>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  {projectsCount} {t('dashboard.messagingSection.projects')} · {totalMessages} {t('dashboard.messagingSection.totalMessages')}
+                </p>
+              </div>
             </div>
-            <div className="space-y-3">
-              <Link
-                href="/alerts/quick-setup"
-                className="flex items-center gap-4 p-4 rounded-2xl bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 transition-all duration-300 hover:scale-[1.02]"
-              >
-                <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center">
-                  <Plus className="w-5 h-5 text-white" />
-                </div>
-                <div>
-                  <h4 className="text-base font-medium text-white">
-                    {t('alerts.createNew')}
-                  </h4>
-                  <p className="text-sm text-white/70">
-                    {t('alerts.quickSetup.subtitle')}
-                  </p>
-                </div>
-              </Link>
 
-              <Link
-                href="/alerts"
-                className="card-glass rounded-2xl p-4 hover:scale-[1.02] transition-transform duration-300"
-              >
-                <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-500 flex items-center justify-center">
-                    <Bell className="w-5 h-5 text-white" />
-                  </div>
-                  <div>
-                    <h4 className="text-base font-medium text-gray-900 dark:text-white">
-                      {t('dashboard.allAlerts')}
-                    </h4>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                      {t('dashboard.viewManageAlerts')}
-                    </p>
-                  </div>
-                </div>
-              </Link>
-            </div>
-          </div>
-
-          {/* B2B - Business Services */}
-          <div>
-            <div className="mb-4">
-              <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">
-                {t('dashboard.businessServices')}
-              </h3>
-              <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
-                {t('dashboard.businessServicesDesc')}
-              </p>
-            </div>
-            <div className="space-y-3">
+            {/* Link List */}
+            <div className="space-y-2">
               <Link
                 href="/projects"
-                className="card-glass rounded-2xl p-4 hover:scale-[1.02] transition-transform duration-300"
+                className="flex items-center justify-between p-3 rounded-xl bg-white/50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 hover:bg-white dark:hover:bg-gray-800 transition-all group"
               >
-                <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-pink-500 to-rose-500 flex items-center justify-center">
-                    <Megaphone className="w-5 h-5 text-white" />
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-pink-500 to-rose-500 flex items-center justify-center">
+                    <FolderOpen className="w-4 h-4 text-white" />
                   </div>
-                  <div>
-                    <h4 className="text-base font-medium text-gray-900 dark:text-white">
-                      {t('dashboard.smsCampaigns')}
-                    </h4>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                      {t('dashboard.smsCampaignsDescription')}
-                    </p>
-                  </div>
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    {t('dashboard.messagingSection.projectsLink')}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  {projectsCount > 0 && (
+                    <span className="px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-700 text-xs font-medium text-gray-600 dark:text-gray-300">
+                      {projectsCount}
+                    </span>
+                  )}
+                  <ArrowRight className="w-4 h-4 text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300 group-hover:translate-x-0.5 transition-all" />
                 </div>
               </Link>
 
               <Link
                 href="/dashboard/sms"
-                className="card-glass rounded-2xl p-4 hover:scale-[1.02] transition-transform duration-300"
+                className="flex items-center justify-between p-3 rounded-xl bg-white/50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 hover:bg-white dark:hover:bg-gray-800 transition-all group"
               >
-                <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center">
-                    <MessageSquare className="w-5 h-5 text-white" />
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center">
+                    <MessageSquare className="w-4 h-4 text-white" />
                   </div>
-                  <div>
-                    <h4 className="text-base font-medium text-gray-900 dark:text-white">
-                      {t('dashboard.smsApi')}
-                    </h4>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                      {t('dashboard.smsApiDescription')}
-                    </p>
-                  </div>
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    {t('dashboard.messagingSection.smsApi')}
+                  </span>
                 </div>
+                <ArrowRight className="w-4 h-4 text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300 group-hover:translate-x-0.5 transition-all" />
               </Link>
 
               <Link
                 href="/dashboard/email"
-                className="card-glass rounded-2xl p-4 hover:scale-[1.02] transition-transform duration-300"
+                className="flex items-center justify-between p-3 rounded-xl bg-white/50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 hover:bg-white dark:hover:bg-gray-800 transition-all group"
               >
-                <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-indigo-500 flex items-center justify-center">
-                    <Mail className="w-5 h-5 text-white" />
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-purple-500 to-indigo-500 flex items-center justify-center">
+                    <Mail className="w-4 h-4 text-white" />
                   </div>
-                  <div>
-                    <h4 className="text-base font-medium text-gray-900 dark:text-white">
-                      {t('dashboard.emailApi')}
-                    </h4>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                      {t('dashboard.emailApiDescription')}
-                    </p>
-                  </div>
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    {t('dashboard.messagingSection.emailApi')}
+                  </span>
                 </div>
+                <ArrowRight className="w-4 h-4 text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300 group-hover:translate-x-0.5 transition-all" />
               </Link>
             </div>
           </div>

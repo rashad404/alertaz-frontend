@@ -10,7 +10,8 @@ export interface Project {
   };
   created_at: string;
   stats?: {
-    contacts_count: number;
+    customers_count: number;
+    service_types_count: number;
     campaigns_count: number;
     active_campaigns: number;
   };

@@ -81,7 +81,24 @@
     "smsCampaigns": "Projects",
     "smsCampaignsDescription": "Create and manage your notification projects",
     "emailApi": "Email API",
-    "emailApiDescription": "Send emails and view history"
+    "emailApiDescription": "Send emails and view history",
+    "alertsSection": {
+      "title": "Alerts",
+      "active": "active",
+      "triggeredToday": "triggered today",
+      "noAlerts": "No alerts yet",
+      "noAlertsAction": "Create your first alert to start monitoring",
+      "createAlert": "Create Alert",
+      "viewAll": "View All"
+    },
+    "messagingSection": {
+      "title": "Business Tools",
+      "projects": "projects",
+      "totalMessages": "messages sent",
+      "projectsLink": "Projects",
+      "smsApi": "SMS API",
+      "emailApi": "Email API"
+    }
   },
   "alerts": {
     "createNew": "Create New Alert",
@@ -627,6 +644,8 @@
     "source": "Source",
     "sourceApi": "API",
     "sourceCampaign": "Campaign",
+    "sourceService": "Service",
+    "sourceCustomer": "Customer",
     "testMode": "Test",
     "filterBySource": "Filter by source",
     "filterByProject": "Filter by project",
@@ -658,6 +677,9 @@
       "projectDescriptionPlaceholder": "What is this project for?",
       "apiToken": "API Token",
       "contacts": "Contacts",
+      "customers": "Customers",
+      "services": "Services",
+      "serviceTypes": "Service Types",
       "campaigns": "Campaigns",
       "active": "Active",
       "suspended": "Suspended",
@@ -671,7 +693,8 @@
       "confirmDelete": "Are you sure you want to delete this project?",
       "addProjectTitle": "New Project",
       "editProjectTitle": "Edit Project",
-      "loadingProjects": "Loading projects..."
+      "loadingProjects": "Loading projects...",
+      "openProject": "Open Project"
     },
     "segments": {
       "title": "Segment Builder",
@@ -1139,6 +1162,8 @@
     "source": "Source",
     "sourceApi": "API",
     "sourceCampaign": "Campaign",
+    "sourceService": "Service",
+    "sourceCustomer": "Customer",
     "testMode": "Test",
     "filterByDate": "Filter by date",
     "allSources": "All sources",
@@ -1196,5 +1221,113 @@
         "500": "Server error - try again later"
       }
     }
+  },
+  "projectApi": {
+    "title": "API",
+    "subtitle": "Integrate with your applications using our API",
+    "regenerate": "Regenerate",
+    "documentation": "API Documentation",
+    "projectApiDocs": "Project API Documentation",
+    "projectApiDocsDesc": "Sync customers, services, and manage campaigns",
+    "smsApiDocs": "SMS API Documentation",
+    "smsApiDocsDesc": "Send SMS messages programmatically",
+    "emailApiDocs": "Email API Documentation",
+    "emailApiDocsDesc": "Send emails programmatically",
+    "quickExample": "Quick Example"
+  },
+  "projectApiDocs": {
+    "title": "Project API Documentation",
+    "subtitle": "Complete guide for syncing customers, services, and managing campaigns",
+    "overview": {
+      "title": "Overview",
+      "description": "The Project API allows you to sync customers and services from your system, create campaigns, and send messages. This is the main integration point for partners."
+    },
+    "authentication": {
+      "title": "Authentication",
+      "description": "All API requests require an Authorization header with your project token:",
+      "getToken": "Get your token from the Projects page."
+    },
+    "serviceTypes": {
+      "title": "Service Types",
+      "description": "Before syncing services, define your service types. Each type has a schema that defines what data fields services of that type will have.",
+      "listDesc": "List all service types",
+      "createDesc": "Create a new service type with schema"
+    },
+    "customers": {
+      "title": "Customers",
+      "description": "Customers are the people who will receive your messages. Sync your customer database to Alert.az.",
+      "listDesc": "List customers with pagination",
+      "createDesc": "Create a single customer",
+      "syncDesc": "Bulk sync up to 1000 customers",
+      "deleteDesc": "Delete a customer",
+      "sync": "Customer Sync",
+      "syncDescription": "Sync customers from your system. Existing customers (by phone/email) will be updated, new ones created."
+    },
+    "services": {
+      "title": "Services",
+      "description": "Services belong to customers (e.g., domains, subscriptions, contracts). Each service has a type defined in Service Types.",
+      "listDesc": "List services of a type",
+      "syncDesc": "Bulk sync services of a type",
+      "deleteDesc": "Delete a service",
+      "sync": "Service Sync",
+      "syncDescription": "Sync services of a specific type. Link services to customers using customer_id."
+    },
+    "quickSend": {
+      "title": "Quick Send",
+      "description": "Send a message directly to a customer or service owner without creating a campaign.",
+      "customerDesc": "Send to a customer by ID",
+      "serviceDesc": "Send to service owner by type and ID"
+    },
+    "campaigns": {
+      "title": "Campaigns",
+      "description": "Create and manage message campaigns with segmentation.",
+      "listDesc": "List all campaigns",
+      "createDesc": "Create a new campaign",
+      "templatesDesc": "List message templates"
+    },
+    "errorCodes": {
+      "title": "Error Codes",
+      "code": "Code",
+      "description": "Description",
+      "400": "Validation error - check data format",
+      "401": "Unauthorized - invalid or missing token",
+      "404": "Not found - resource does not exist",
+      "422": "Unprocessable entity - invalid data format",
+      "429": "Too many requests - rate limit exceeded",
+      "500": "Server error - try again later"
+    },
+    "rateLimits": {
+      "title": "Rate Limits",
+      "description": "API is limited to 60 requests per minute per project token."
+    },
+    "segmentation": {
+      "title": "Segmentation",
+      "description": "Use customer and service attributes to create targeted campaigns:",
+      "example1": "city equals \"Baku\" → Target customers in Baku",
+      "example2": "expiry_date expires within 7 days → Services expiring soon",
+      "example3": "balance greater than 100 → High-value customers"
+    },
+    "response": "Response"
+  },
+  "projectSettings": {
+    "title": "Project Settings",
+    "subtitle": "Configure your project settings",
+    "general": "General",
+    "generalDesc": "Project name and description",
+    "deleteProject": "Delete Project",
+    "serviceTypes": "Service Types",
+    "serviceTypesDesc": "Define the types of services your customers have",
+    "addType": "Add Type",
+    "newServiceType": "New Service Type",
+    "keyLabel": "Key (unique identifier)",
+    "iconLabel": "Icon",
+    "customFields": "Custom Fields",
+    "fieldName": "Field name",
+    "displayLabel": "Display label",
+    "required": "Required",
+    "enumOptions": "Options (comma separated)",
+    "noServiceTypes": "No service types defined yet",
+    "noServiceTypesDesc": "Create a service type to start categorizing your services",
+    "confirmDeleteServiceType": "Are you sure you want to delete this service type?"
   }
 }
