@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { Link } from '@/lib/navigation';
-import { Bell, Plus, TrendingUp, Activity, Settings, Bitcoin, Globe, BarChart3, Play, Pause, MessageSquare, CreditCard, Megaphone, Mail, Wallet, Loader2 } from 'lucide-react';
+import { Bell, Plus, TrendingUp, Activity, Bitcoin, Globe, BarChart3, MessageSquare, CreditCard, Megaphone, Mail, Wallet, Loader2 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import AuthRequiredCard from '@/components/auth/AuthRequiredCard';
 import { getLocaleFromPathname } from '@/lib/utils/walletAuth';
@@ -246,17 +246,6 @@ export default function DashboardPage() {
           </p>
         </div>
 
-        {/* Quick Actions */}
-        <div className="mb-12">
-          <Link
-            href="/alerts/quick-setup"
-            className="inline-flex items-center gap-2 btn-primary group"
-          >
-            <Plus className="w-5 h-5" />
-            <span>{t('alerts.createNew')}</span>
-          </Link>
-        </div>
-
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
           {/* Active Alerts */}
@@ -309,41 +298,41 @@ export default function DashboardPage() {
 
 
         {/* Recent Alerts */}
-        <div className="card-glass rounded-3xl p-8 mb-12">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-              {t('dashboard.yourAlerts')}
+        <div className="card-glass rounded-3xl p-6 mb-12">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+              {t('dashboard.recentAlerts')}
             </h2>
             <Link
               href="/alerts"
               className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 text-sm font-medium"
             >
-              {t('dashboard.allAlerts')} →
+              {t('dashboard.viewAll')} →
             </Link>
           </div>
 
-          <div className="space-y-4">
+          <div className="space-y-2">
             {alerts.length === 0 ? (
-              <div className="text-center py-12">
-                <div className="inline-flex items-center justify-center w-16 h-16 mb-4 relative">
-                  <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-indigo-500 to-purple-500 opacity-20 blur-xl" />
-                  <div className="relative w-16 h-16 rounded-3xl bg-gradient-to-br from-indigo-500 to-purple-500 p-[1px]">
-                    <div className="w-full h-full rounded-3xl bg-white dark:bg-gray-900 flex items-center justify-center">
-                      <Bell className="w-8 h-8 text-gray-900 dark:text-white" />
+              <div className="text-center py-8">
+                <div className="inline-flex items-center justify-center w-12 h-12 mb-3 relative">
+                  <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-500 opacity-20 blur-lg" />
+                  <div className="relative w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-500 p-[1px]">
+                    <div className="w-full h-full rounded-2xl bg-white dark:bg-gray-900 flex items-center justify-center">
+                      <Bell className="w-6 h-6 text-gray-900 dark:text-white" />
                     </div>
                   </div>
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+                <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-1">
                   {t('dashboard.noAlertsYet')}
                 </h3>
-                <p className="text-gray-600 dark:text-gray-400 mb-6">
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
                   {t('dashboard.noAlertsDescription')}
                 </p>
                 <Link
                   href="/alerts/quick-setup"
-                  className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl font-medium text-white bg-gradient-to-r from-indigo-500 to-purple-500 hover:shadow-lg hover:scale-105 transition-all duration-300"
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium text-white bg-gradient-to-r from-indigo-500 to-purple-500 hover:shadow-lg hover:scale-105 transition-all duration-300"
                 >
-                  <Plus className="w-5 h-5" />
+                  <Plus className="w-4 h-4" />
                   {t('dashboard.createFirstAlert')}
                 </Link>
               </div>
@@ -355,23 +344,23 @@ export default function DashboardPage() {
                 return (
                   <div
                     key={alert.id}
-                    className="flex items-center gap-4 p-4 rounded-2xl bg-white/50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 hover:bg-white dark:hover:bg-gray-800 transition-all"
+                    className="flex items-center gap-3 p-3 rounded-xl bg-white/50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 hover:bg-white dark:hover:bg-gray-800 transition-all"
                   >
                     {/* Icon */}
                     <div className="relative flex-shrink-0">
-                      <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${gradient} p-[1px]`}>
-                        <div className="w-full h-full rounded-xl bg-white dark:bg-gray-900 flex items-center justify-center">
-                          <ServiceIcon className="w-6 h-6 text-gray-900 dark:text-white" />
+                      <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${gradient} p-[1px]`}>
+                        <div className="w-full h-full rounded-lg bg-white dark:bg-gray-900 flex items-center justify-center">
+                          <ServiceIcon className="w-5 h-5 text-gray-900 dark:text-white" />
                         </div>
                       </div>
                     </div>
 
                     {/* Content */}
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold text-gray-900 dark:text-white mb-1">
+                      <h3 className="text-sm font-medium text-gray-900 dark:text-white">
                         {alert.name}
                       </h3>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                      <p className="text-xs text-gray-600 dark:text-gray-400">
                         {alert.service === 'website' ? (
                           // Website: show URL - UP/DOWN
                           <>
@@ -393,7 +382,7 @@ export default function DashboardPage() {
                     </div>
 
                     {/* Status */}
-                    <span className={`px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap ${
+                    <span className={`px-2 py-0.5 rounded-full text-xs font-medium whitespace-nowrap ${
                       alert.status === 'active'
                         ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
                         : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
@@ -407,102 +396,126 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Quick Links */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <Link
-            href="/settings"
-            className="card-glass rounded-3xl p-6 hover:scale-105 transition-transform duration-300"
-          >
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center">
-                <Settings className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-1">
-                  {t('nav.settings')}
-                </h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  {t('settings.manageAccount')}
-                </p>
-              </div>
+        {/* Two-Column Grid: B2C and B2B */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* B2C - Personal Monitoring */}
+          <div>
+            <div className="mb-4">
+              <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+                {t('dashboard.personalMonitoring')}
+              </h3>
+              <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
+                {t('dashboard.personalMonitoringDesc')}
+              </p>
             </div>
-          </Link>
+            <div className="space-y-3">
+              <Link
+                href="/alerts/quick-setup"
+                className="flex items-center gap-4 p-4 rounded-2xl bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 transition-all duration-300 hover:scale-[1.02]"
+              >
+                <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center">
+                  <Plus className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <h4 className="text-base font-medium text-white">
+                    {t('alerts.createNew')}
+                  </h4>
+                  <p className="text-sm text-white/70">
+                    {t('alerts.quickSetup.subtitle')}
+                  </p>
+                </div>
+              </Link>
 
-          <Link
-            href="/alerts"
-            className="card-glass rounded-3xl p-6 hover:scale-105 transition-transform duration-300"
-          >
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-500 flex items-center justify-center">
-                <Bell className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-1">
-                  {t('dashboard.allAlerts')}
-                </h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  {t('dashboard.viewManageAlerts')}
-                </p>
-              </div>
+              <Link
+                href="/alerts"
+                className="card-glass rounded-2xl p-4 hover:scale-[1.02] transition-transform duration-300"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-500 flex items-center justify-center">
+                    <Bell className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <h4 className="text-base font-medium text-gray-900 dark:text-white">
+                      {t('dashboard.allAlerts')}
+                    </h4>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      {t('dashboard.viewManageAlerts')}
+                    </p>
+                  </div>
+                </div>
+              </Link>
             </div>
-          </Link>
+          </div>
 
-          <Link
-            href="/dashboard/sms"
-            className="card-glass rounded-3xl p-6 hover:scale-105 transition-transform duration-300"
-          >
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center">
-                <MessageSquare className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-1">
-                  {t('dashboard.smsApi')}
-                </h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  {t('dashboard.smsApiDescription')}
-                </p>
-              </div>
+          {/* B2B - Business Services */}
+          <div>
+            <div className="mb-4">
+              <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+                {t('dashboard.businessServices')}
+              </h3>
+              <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
+                {t('dashboard.businessServicesDesc')}
+              </p>
             </div>
-          </Link>
+            <div className="space-y-3">
+              <Link
+                href="/projects"
+                className="card-glass rounded-2xl p-4 hover:scale-[1.02] transition-transform duration-300"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-pink-500 to-rose-500 flex items-center justify-center">
+                    <Megaphone className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <h4 className="text-base font-medium text-gray-900 dark:text-white">
+                      {t('dashboard.smsCampaigns')}
+                    </h4>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      {t('dashboard.smsCampaignsDescription')}
+                    </p>
+                  </div>
+                </div>
+              </Link>
 
-          <Link
-            href="/dashboard/email"
-            className="card-glass rounded-3xl p-6 hover:scale-105 transition-transform duration-300"
-          >
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-500 to-indigo-500 flex items-center justify-center">
-                <Mail className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-1">
-                  {t('dashboard.emailApi')}
-                </h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  {t('dashboard.emailApiDescription')}
-                </p>
-              </div>
-            </div>
-          </Link>
+              <Link
+                href="/dashboard/sms"
+                className="card-glass rounded-2xl p-4 hover:scale-[1.02] transition-transform duration-300"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center">
+                    <MessageSquare className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <h4 className="text-base font-medium text-gray-900 dark:text-white">
+                      {t('dashboard.smsApi')}
+                    </h4>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      {t('dashboard.smsApiDescription')}
+                    </p>
+                  </div>
+                </div>
+              </Link>
 
-          <Link
-            href="/projects"
-            className="card-glass rounded-3xl p-6 hover:scale-105 transition-transform duration-300"
-          >
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-pink-500 to-rose-500 flex items-center justify-center">
-                <Megaphone className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-1">
-                  {t('dashboard.smsCampaigns')}
-                </h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  {t('dashboard.smsCampaignsDescription')}
-                </p>
-              </div>
+              <Link
+                href="/dashboard/email"
+                className="card-glass rounded-2xl p-4 hover:scale-[1.02] transition-transform duration-300"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-indigo-500 flex items-center justify-center">
+                    <Mail className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <h4 className="text-base font-medium text-gray-900 dark:text-white">
+                      {t('dashboard.emailApi')}
+                    </h4>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      {t('dashboard.emailApiDescription')}
+                    </p>
+                  </div>
+                </div>
+              </Link>
             </div>
-          </Link>
+          </div>
         </div>
       </div>
     </div>
