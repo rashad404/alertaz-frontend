@@ -514,7 +514,7 @@ export default function MessageTable({
                     <div>
                       <span className="text-gray-500 dark:text-gray-400">{t('smsApi.cost')}:</span>
                       <span className="ml-2 font-medium text-gray-900 dark:text-white">
-                        {modalData.status === 'planned' ? '~' : ''}{(modalData.cost ?? 0).toFixed(4)} AZN
+                        {modalData.status === 'planned' ? '~' : ''}{Number(modalData.cost ?? 0).toFixed(4)} AZN
                       </span>
                     </div>
                     {modalData.sentAt && (

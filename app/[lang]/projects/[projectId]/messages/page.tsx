@@ -14,7 +14,6 @@ export default function SentMessagesPage() {
 
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'sms' | 'email'>('sms');
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -25,7 +24,6 @@ export default function SentMessagesPage() {
     setIsLoading(true);
     try {
       const filters: MessageFilters = {
-        channel: activeTab,
         page,
         per_page: 20,
       };
@@ -42,15 +40,12 @@ export default function SentMessagesPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [projectId, activeTab, page, search]);
+  }, [projectId, page, search]);
 
   useEffect(() => {
     fetchMessages();
   }, [fetchMessages]);
 
-  useEffect(() => {
-    setPage(1);
-  }, [activeTab]);
 
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
@@ -138,7 +133,7 @@ export default function SentMessagesPage() {
         {/* Messages Table */}
         <MessageTable
           messages={transformedMessages}
-          channel={activeTab}
+          channel="both"
           isLoading={isLoading}
           page={page}
           totalPages={totalPages}
