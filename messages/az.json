@@ -632,6 +632,7 @@
     "messageHistory": "Mesaj Tarixçəsi",
     "campaignMessages": "Kampaniya Mesajları",
     "sentAt": "Göndərilmə vaxtı",
+    "source": "Mənbə",
     "deliveredAt": "Çatdırılma vaxtı",
     "rateLimits": "Sorğu Limitləri",
     "rateLimitsDescription": "API sorğuları hər istifadəçi üçün dəqiqədə 60 sorğu ilə məhdudlaşdırılıb.",

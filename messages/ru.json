@@ -632,6 +632,7 @@
     "messageHistory": "История сообщений",
     "campaignMessages": "Сообщения кампании",
     "sentAt": "Отправлено",
+    "source": "Источник",
     "deliveredAt": "Доставлено",
     "rateLimits": "Ограничения запросов",
     "rateLimitsDescription": "API запросы ограничены до 60 запросов в минуту на пользователя.",
