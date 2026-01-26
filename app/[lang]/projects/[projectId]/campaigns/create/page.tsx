@@ -77,15 +77,6 @@ export default function CreateCampaignPage() {
   // Track which field is currently active for variable insertion
   const [activeField, setActiveField] = useState<'sms' | 'email_subject' | 'email_body'>('sms');
 
-  // Update activeField default when channel changes
-  useEffect(() => {
-    if (formData.channel === 'email') {
-      setActiveField('email_subject');
-    } else {
-      setActiveField('sms');
-    }
-  }, [formData.channel]);
-
   // Insert variable into the active field and focus at the end
   const insertVariable = (variable: string) => {
     const varText = `{{${variable}}}`;
@@ -161,6 +152,15 @@ export default function CreateCampaignPage() {
     run_end_hour: 18,
     ends_at: '',
   });
+
+  // Update activeField default when channel changes
+  useEffect(() => {
+    if (formData.channel === 'email') {
+      setActiveField('email_subject');
+    } else {
+      setActiveField('sms');
+    }
+  }, [formData.channel]);
 
   // Set default service type key when service types load
   useEffect(() => {
