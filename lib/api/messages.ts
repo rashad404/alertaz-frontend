@@ -20,6 +20,7 @@ export interface Message {
   delivered_at?: string;
   created_at: string;
   is_test?: boolean;
+  source?: 'customer' | 'service' | 'api' | 'campaign';
 }
 
 export interface MessageFilters {

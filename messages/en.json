@@ -633,6 +633,7 @@
     "messageHistory": "Message History",
     "campaignMessages": "Campaign Messages",
     "sentAt": "Sent at",
+    "source": "Source",
     "deliveredAt": "Delivered at",
     "rateLimits": "Rate Limits",
     "rateLimitsDescription": "API requests are limited to 60 requests per minute per user.",

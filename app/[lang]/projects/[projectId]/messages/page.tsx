@@ -79,6 +79,7 @@ export default function SentMessagesPage() {
     cost: msg.cost,
     sent_at: msg.sent_at,
     is_test: msg.is_test,
+    source: msg.source,
     sender: msg.sender,
   }));
 

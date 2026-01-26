@@ -39,6 +39,7 @@ export interface MessageData {
   cost?: number;
   sent_at?: string | null;
   is_test?: boolean;
+  source?: 'customer' | 'service' | 'api' | 'campaign' | string | null;
   sender?: string | null;
   can_receive_sms?: boolean;
   can_receive_email?: boolean;
@@ -317,6 +318,9 @@ export default function MessageTable({
                           {t('smsApi.status')}
                         </th>
                         <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                          {t('smsApi.source')}
+                        </th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                           {t('smsApi.cost')}
                         </th>
                         <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
@@ -391,6 +395,9 @@ export default function MessageTable({
                                   </span>
                                 )}
                               </div>
+                            </td>
+                            <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-600 dark:text-gray-400 capitalize">
+                              {msg.source || '-'}
                             </td>
                             <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">
                               {msg.cost ?? 0} AZN
