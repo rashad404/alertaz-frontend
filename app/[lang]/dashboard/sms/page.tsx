@@ -200,7 +200,7 @@ export default function SMSHistoryPage() {
               {t('common.refresh')}
             </button>
             <Link
-              href="/sms-api"
+              href="/docs/sms-api"
               className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-500 text-white rounded-xl hover:shadow-lg transition-all"
             >
               <Code className="w-5 h-5" />

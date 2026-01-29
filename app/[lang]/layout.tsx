@@ -5,6 +5,7 @@ import { i18n, type Locale } from "@/i18n-config";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import PushNotificationPrompt from "@/components/notifications/PushNotificationPrompt";
+import SatisWidget from "@/components/chat/SatisWidget";
 import type { Metadata } from "next";
 
 interface LangLayoutProps {
@@ -45,6 +46,7 @@ export default async function LangLayout({
         </main>
         <Footer />
         <PushNotificationPrompt />
+        <SatisWidget />
       </div>
     </NextIntlClientProvider>
   );
