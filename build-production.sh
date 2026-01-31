@@ -47,7 +47,13 @@ fi
 echo "✓ Build completed successfully!"
 echo ""
 
-# Quick swap (2-3 seconds downtime)
+# Copy old chunks to new build (so old clients still work)
+echo "📦 Preserving old chunks for active users..."
+if [ -d ".next/static/chunks" ]; then
+    cp -r .next/static/chunks/* .next-new/static/chunks/ 2>/dev/null || true
+fi
+
+# Quick swap
 echo "🔄 Quick swap..."
 rm -rf .next-old
 mv .next .next-old 2>/dev/null || true
