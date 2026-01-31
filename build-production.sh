@@ -2,6 +2,7 @@
 
 echo "========================================="
 echo "Production Build Script for alert.az"
+echo "(Minimal-downtime deployment)"
 echo "========================================="
 echo ""
 
@@ -25,14 +26,7 @@ sed -i "s|NEXT_PUBLIC_SATIS_WIDGET_URL=.*|NEXT_PUBLIC_SATIS_WIDGET_URL=https://a
 echo "✓ Build version set to: ${BUILD_VERSION}"
 echo ""
 
-# Clean old build
-echo "🧹 Cleaning old build..."
-rm -rf .next
-
-# Clean and reinstall dependencies
-echo "🧹 Cleaning node_modules..."
-rm -rf node_modules
-
+# Install dependencies (incremental - no delete)
 echo "📦 Installing dependencies..."
 npm install
 
@@ -41,9 +35,9 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-# Run the production build
-echo "🔨 Building production bundle..."
-NODE_ENV=production npm run build
+# Build to temp directory while old is still running
+echo "🔨 Building new version (old version still serving)..."
+DIST_DIR=.next-new NODE_ENV=production npm run build
 
 if [ $? -ne 0 ]; then
     echo "❌ Build failed!"
@@ -53,27 +47,31 @@ fi
 echo "✓ Build completed successfully!"
 echo ""
 
-# Check if PM2 process exists and handle accordingly
-echo "🔍 Checking PM2 processes..."
+# Quick swap (2-3 seconds downtime)
+echo "🔄 Quick swap..."
+rm -rf .next-old
+mv .next .next-old 2>/dev/null || true
+mv .next-new .next
+
+# Restart PM2
 if pm2 list | grep -q "next.alert.az"; then
-    echo "🔄 Restarting existing PM2 process..."
+    echo "🔄 Restarting PM2..."
     pm2 restart next.alert.az
 else
-    echo "🚀 Starting new PM2 process on port 3030..."
+    echo "🚀 Starting PM2 on port 3032..."
     pm2 start npm --name next.alert.az -- start -- -p 3032
 fi
 
-# Save PM2 configuration
+# Cleanup
+rm -rf .next-old
+
 pm2 save
 
 echo ""
 echo "========================================="
 echo "✅ Production deployment complete!"
-echo "✅ Debug mode is OFF"
 echo "✅ Using API: https://api.alert.az"
 echo "========================================="
 echo ""
-echo "📊 Check status with: pm2 status next.alert.az"
-echo "📜 View logs with: pm2 logs next.alert.az"
-echo ""
-echo "⚠️  Note: Clear nginx cache in WHM if users see old version"
+echo "📊 pm2 status next.alert.az"
+echo "📜 pm2 logs next.alert.az"
