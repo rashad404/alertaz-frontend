@@ -17,11 +17,12 @@ fi
 echo "✓ Git pull completed"
 echo ""
 
-# Update widget cache buster
-echo "🔄 Updating Satis widget version..."
-WIDGET_VERSION=$(date +%s)
-sed -i '' "s/NEXT_PUBLIC_SATIS_WIDGET_URL=.*/NEXT_PUBLIC_SATIS_WIDGET_URL=https:\/\/api.satis.az\/widget.js?v=${WIDGET_VERSION}/" .env.production
-echo "✓ Widget version set to: ${WIDGET_VERSION}"
+# Update build version and widget cache buster
+echo "🔄 Updating build version..."
+BUILD_VERSION=$(date +%s)
+sed -i '' "s/NEXT_PUBLIC_BUILD_VERSION=.*/NEXT_PUBLIC_BUILD_VERSION=${BUILD_VERSION}/" .env.production
+sed -i '' "s/NEXT_PUBLIC_SATIS_WIDGET_URL=.*/NEXT_PUBLIC_SATIS_WIDGET_URL=https:\/\/api.satis.az\/widget.js?v=${BUILD_VERSION}/" .env.production
+echo "✓ Build version set to: ${BUILD_VERSION}"
 echo ""
 
 # Clean old build
