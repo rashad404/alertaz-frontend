@@ -627,7 +627,7 @@
     "validationFailed": "Validation failed",
     "smsSendFailed": "Failed to send SMS",
     "pricing": "Pricing",
-    "pricingDescription": "Each SMS costs 0.04 AZN. Balance can be added manually by contacting support.",
+    "pricingDescription": "Each SMS costs 0.05 AZN. Balance can be added manually by contacting support.",
     "codeExamples": "Code Examples",
     "curl": "cURL",
     "php": "PHP",
