@@ -626,7 +626,7 @@
     "validationFailed": "Ошибка валидации",
     "smsSendFailed": "Не удалось отправить SMS",
     "pricing": "Стоимость",
-    "pricingDescription": "Каждое SMS стоит 0.04 AZN. Баланс можно пополнить, связавшись со службой поддержки.",
+    "pricingDescription": "Каждое SMS стоит 0.05 AZN. Баланс можно пополнить, связавшись со службой поддержки.",
     "codeExamples": "Примеры кода",
     "curl": "cURL",
     "php": "PHP",

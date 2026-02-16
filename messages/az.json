@@ -626,7 +626,7 @@
     "validationFailed": "Validasiya uğursuz oldu",
     "smsSendFailed": "SMS göndərilmədi",
     "pricing": "Qiymətləndirmə",
-    "pricingDescription": "Hər SMS 0.04 AZN başa gəlir. Balans dəstək ilə əlaqə saxlayaraq əlavə edilə bilər.",
+    "pricingDescription": "Hər SMS 0.05 AZN başa gəlir. Balans dəstək ilə əlaqə saxlayaraq əlavə edilə bilər.",
     "codeExamples": "Kod Nümunələri",
     "curl": "cURL",
     "php": "PHP",

@@ -63,7 +63,7 @@ const PhoneSettings: React.FC<PhoneSettingsProps> = ({ user, onUpdate, onUserCha
       // Handle insufficient balance error (402 status)
       if (err?.response?.status === 402 || err?.response?.data?.error_code === 'insufficient_balance') {
         const balance = err?.response?.data?.data?.current_balance ?? 0;
-        const required = err?.response?.data?.data?.required_amount ?? 0.04;
+        const required = err?.response?.data?.data?.required_amount ?? 0.05;
         setError(`Insufficient balance to send SMS. Your balance: ${balance} AZN. Required: ${required} AZN. Please add funds to continue.`);
       } else {
         setError('Failed to send verification code');

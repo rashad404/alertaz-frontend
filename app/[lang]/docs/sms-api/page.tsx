@@ -144,7 +144,7 @@ export default function SMSAPIDocsPage() {
     "transaction_id": "987654321",
     "phone": "994501234567",
     "sender": "Alert.az",
-    "cost": 0.04,
+    "cost": 0.05,
     "remaining_balance": 9.96
   }
 }`}
@@ -180,7 +180,7 @@ export default function SMSAPIDocsPage() {
   "data": {
     "sms_credits": 10.00,
     "total_spent": 5.60,
-    "cost_per_sms": 0.04
+    "cost_per_sms": 0.05
   }
 }`}
               </pre>
