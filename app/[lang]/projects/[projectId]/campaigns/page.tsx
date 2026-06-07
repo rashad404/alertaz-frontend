@@ -350,10 +350,10 @@ export default function CampaignsListPage() {
                         {campaign.status === 'draft' && (
                           <>
                             <button
-                              onClick={() => handleExecute(campaign.id)}
+                              onClick={() => campaign.type === 'automated' ? handleActivate(campaign.id) : handleExecute(campaign.id)}
                               disabled={isLoading}
                               className="p-2 rounded-lg text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20 transition-colors"
-                              title={t('smsApi.campaigns.actions.execute')}
+                              title={campaign.type === 'automated' ? t('smsApi.campaigns.actions.activate') : t('smsApi.campaigns.actions.execute')}
                             >
                               <Play className="w-5 h-5" />
                             </button>
