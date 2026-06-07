@@ -58,6 +58,10 @@ interface MessageTableProps {
   emailCount?: number;
   onPageChange: (page: number) => void;
   formatDate: (date: string) => string;
+  // Controlled SMS/email tab. When provided, the parent owns the tab so it can
+  // filter server-side (correct pagination). Falls back to internal state otherwise.
+  activeTab?: 'sms' | 'email';
+  onTabChange?: (tab: 'sms' | 'email') => void;
   // Optional props
   title?: string;
   nextRunAt?: string | null;
@@ -112,6 +116,8 @@ export default function MessageTable({
   emailCount = 0,
   onPageChange,
   formatDate,
+  activeTab: controlledActiveTab,
+  onTabChange,
   title,
   nextRunAt,
   emailSender,
@@ -122,7 +128,12 @@ export default function MessageTable({
   emailRate = DEFAULT_EMAIL_RATE,
 }: MessageTableProps) {
   const t = useTranslations();
-  const [activeTab, setActiveTab] = useState<'sms' | 'email'>('sms');
+  const [internalActiveTab, setInternalActiveTab] = useState<'sms' | 'email'>('sms');
+  const activeTab = controlledActiveTab ?? internalActiveTab;
+  const handleTabChange = (tab: 'sms' | 'email') => {
+    if (onTabChange) onTabChange(tab);
+    else setInternalActiveTab(tab);
+  };
   const [modalData, setModalData] = useState<ModalData | null>(null);
 
   // Filter messages based on active tab for "both" channel
@@ -223,7 +234,7 @@ export default function MessageTable({
             {channel === 'both' && (
               <div className="flex gap-2">
                 <button
-                  onClick={() => setActiveTab('sms')}
+                  onClick={() => handleTabChange('sms')}
                   className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all ${
                     activeTab === 'sms'
                       ? 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-700'
@@ -241,7 +252,7 @@ export default function MessageTable({
                   </span>
                 </button>
                 <button
-                  onClick={() => setActiveTab('email')}
+                  onClick={() => handleTabChange('email')}
                   className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all ${
                     activeTab === 'email'
                       ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-700'

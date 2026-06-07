@@ -19,6 +19,7 @@ export default function SentMessagesPage() {
   const [totalPages, setTotalPages] = useState(1);
   const [smsCount, setSmsCount] = useState(0);
   const [emailCount, setEmailCount] = useState(0);
+  const [activeChannel, setActiveChannel] = useState<'sms' | 'email'>('sms');
 
   const fetchMessages = useCallback(async () => {
     setIsLoading(true);
@@ -26,6 +27,7 @@ export default function SentMessagesPage() {
       const filters: MessageFilters = {
         page,
         per_page: 20,
+        channel: activeChannel,
       };
       if (search) {
         filters.search = search;
@@ -40,7 +42,13 @@ export default function SentMessagesPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [projectId, page, search]);
+  }, [projectId, page, search, activeChannel]);
+
+  // Switch SMS/email tab: filter server-side and restart pagination
+  const handleTabChange = (tab: 'sms' | 'email') => {
+    setActiveChannel(tab);
+    setPage(1);
+  };
 
   useEffect(() => {
     fetchMessages();
@@ -135,6 +143,8 @@ export default function SentMessagesPage() {
         <MessageTable
           messages={transformedMessages}
           channel="both"
+          activeTab={activeChannel}
+          onTabChange={handleTabChange}
           isLoading={isLoading}
           page={page}
           totalPages={totalPages}
